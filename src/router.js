@@ -6,9 +6,7 @@ import Login from "./views/Login.vue";
 import Authentication from "./views/Authentication.vue";
 
 import Domains from "./views/Domains.vue";
-import Setting from "./views/setting.vue";
-// import CDN from "./views/settingCDN.vue";
-// import iRouteCDN from "./views/settingiRouteCDN.vue";
+import DomainSettings from "./views/DomainSettings.vue";
 
 Vue.use(Router);
 
@@ -21,7 +19,7 @@ export default new Router({
             path: "/auth",
             meta: {
                 requireAuth: false,
-                auth: 2
+                auth: 0
             },
             component: Authentication
         },
@@ -29,7 +27,7 @@ export default new Router({
             path: "/login",
             meta: {
                 requireAuth: false,
-                auth: 2
+                auth: 0
             },
             component: Login
         },
@@ -37,7 +35,7 @@ export default new Router({
             path: "/logout",
             meta: {
                 requireAuth: true,
-                auth: 2
+                auth: 0
             },
             component: Logout
         },
@@ -46,7 +44,7 @@ export default new Router({
             path: "/admin",
             meta: {
                 requireAuth: true,
-                auth: 2
+                auth: 0
             },
             component: Layout,
             children: [
@@ -55,44 +53,26 @@ export default new Router({
                     redirect: "domains",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 0
                     }
                 },
                 {
                     path: "domains",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 0
                     },
                     component: Domains
                 },
                 {
-                    path: "setting",
-                    name: "setting",
+                    path: "domain-settings",
+                    name: "domainSettings",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 0
                     },
-                    component: Setting
+                    component: DomainSettings
                 }
-                // {
-                //     path: "settingCDN",
-                //     name: "settingCDN",
-                //     meta: {
-                //         requireAuth: true,
-                //         auth: 2
-                //     },
-                //     component: CDN
-                // },
-                // {
-                //     path: "settingiRouteCDN",
-                //     name: "settingiRouteCDN",
-                //     meta: {
-                //         requireAuth: true,
-                //         auth: 2
-                //     },
-                //     component: iRouteCDN
-                // }
             ]
         }
     ]
