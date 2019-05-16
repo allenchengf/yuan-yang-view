@@ -27,7 +27,7 @@ export default {
             mini: false,
             menu: false,
             items: [
-                { header: "Administration", auth: 2 },
+                { header: "General", auth: 0 },
                 {
                     title: "Domains List",
                     icon: "account_circle",
@@ -39,7 +39,8 @@ export default {
                     icon: "settings",
                     router: "/admin/setting",
                     auth: 0
-                }
+                },
+                { header: "Administration", auth: 2 }
             ],
             right: null
         };
