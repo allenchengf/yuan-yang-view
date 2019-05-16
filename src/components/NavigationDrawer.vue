@@ -37,7 +37,7 @@ export default {
                 {
                     title: "Domain Settings",
                     icon: "settings",
-                    router: "/admin/setting",
+                    router: "/admin/domain-settings",
                     auth: 0
                 },
                 { header: "Administration", auth: 2 }

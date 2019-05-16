@@ -60,6 +60,7 @@ export default {
                     function(result) {
                         console.log(result);
                         this.filterData = result.data.domains[0];
+                        console.log(this.filterData);
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -78,10 +79,16 @@ export default {
     watch: {
         domain_id: function() {
             this.getDomain();
+            // console.log(this.domain_id, "watch");
         }
     },
     mounted() {
-        this.getDomain();
+        var domain_data = this.$route.query.data;
+        if (domain_data !== null) {
+            this.filterData = domain_data;
+        } else {
+            this.getDomain();
+        }
     }
 };
 </script>

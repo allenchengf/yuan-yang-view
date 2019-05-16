@@ -18,11 +18,11 @@
                                 td.text-xs-left {{props.index +1}}
                                 td.text-xs-left() 
                                     .name.font-weight-medium {{props.item.name}}
-                                td.text-xs-left {{props.item.cname}}
+                                td.text-xs-left {{props.item.cname}}.{{dnsPodDomain}}
                                 td.text-xs-left
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit domain")
                                         v-icon(small) edit
-                                    v-btn(color="primary" dark small outline :to="{ name: 'setting', query :{ data:  props.item } }") More
+                                    v-btn(color="primary" dark small outline :to="{ name: 'domainSettings', query :{ data:  props.item } }") More
                     v-layout.px-2(row align-center)
                         v-flex.text-xs-left.py-3(xs4)
                         v-flex.text-xs-right.py-3(xs8)
@@ -34,7 +34,6 @@
                 v-card-text
                     v-form(ref="editForm")
                         v-text-field(v-model="domain.name" label="Domain Name" type="text" name="name" :rules="[rules.required]")
-                        v-text-field(v-model="domain.cname" label="CName" type="text" name="cname")
                         v-alert.text-md-left(:value="error.status" color="error" icon="warning" outline transition="scale-transition") {{error.message}}
                 v-card-actions  
                     v-spacer
@@ -45,13 +44,13 @@
 
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
-import setting from "./setting";
+import DomainSettings from "./DomainSettings";
 
 export default {
     mixins: [textFieldRules],
 
     component: {
-        setting
+        DomainSettings
     },
     data() {
         return {
@@ -105,9 +104,8 @@ export default {
             },
             domain: {},
             editedIndex: -1,
-            // groupData: [],
-            operatorAuth: 0
-            // userGroups: []
+            operatorAuth: 0,
+            dnsPodDomain: ""
         };
     },
     methods: {
@@ -117,9 +115,8 @@ export default {
                 .dispatch("domains/getAllDomains")
                 .then(
                     function(result) {
-                        // console.log(result.data.domain);
                         this.filterData = result.data.domains;
-                        // this.handleData();
+                        this.dnsPodDomain = result.data.dnsPodDomain;
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -165,12 +162,17 @@ export default {
                 if (this.editedIndex == -1) {
                     this.addNewDomain();
                 } else {
+                    this.domain.cname = this.domain.name;
                     this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("domains/updateDomain", this.domain)
                         .then(
                             function(result) {
                                 this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarSuccess",
+                                    "Change domain name success!"
+                                );
                                 this.getAllDomains();
                                 this.closeEditDialog();
                             }.bind(this)
@@ -196,7 +198,7 @@ export default {
             this.domain.user_group_id = this.$store.getters[
                 "account/accountGroupId"
             ]();
-            // console.log(this.domain);
+            this.domain.cname = this.domain.name;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -206,7 +208,7 @@ export default {
                         function(result) {
                             this.$store.dispatch(
                                 "global/showSnackbarSuccess",
-                                "Update user success!"
+                                "Add new domain success!"
                             );
                             this.getAllDomains();
                             this.$store.dispatch("global/finishLoading");

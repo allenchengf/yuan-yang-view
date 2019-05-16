@@ -47,142 +47,142 @@ export default {
             selectedCDN: [],
             iRouteCDN: {},
             filterData: [
-                {
-                    id: 1,
-                    continent_id: 1,
-                    country_id: 2,
-                    location: "All",
-                    isp: "All",
-                    network_id: 2,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "all",
-                    country_name: "not china",
-                    network_name: "国外",
-                    cdn_id: 2,
-                    cdn_name: "dnspod"
-                },
-                {
-                    id: 2,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "All",
-                    isp: "All",
-                    network_id: 1,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "国内",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 3,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "All",
-                    isp: "Dian xin",
-                    network_id: 3,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "电信",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 4,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "All",
-                    isp: "Lian tong",
-                    network_id: 4,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "联通",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 5,
-                    continent_id: 1,
-                    country_id: 2,
-                    location: "All",
-                    isp: "All",
-                    network_id: 15,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "all",
-                    country_name: "not china",
-                    network_name: "国外",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 6,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "All",
-                    isp: "All",
-                    network_id: 16,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "国内",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 7,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "Beijing",
-                    isp: "Yidong",
-                    network_id: 101,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "北京移动",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                },
-                {
-                    id: 8,
-                    continent_id: 4,
-                    country_id: 1,
-                    location: "Beijing",
-                    isp: "Dian xin",
-                    network_id: 33,
-                    edited_by: null,
-                    created_at: "2019-05-15 15:29:18",
-                    updated_at: "2019-05-15 15:29:18",
-                    deleted_at: null,
-                    continent_name: "asia",
-                    country_name: "china",
-                    network_name: "北京电信",
-                    cdn_id: null,
-                    cdn_name: "hiero7"
-                }
+                // {
+                //     id: 1,
+                //     continent_id: 1,
+                //     country_id: 2,
+                //     location: "All",
+                //     isp: "All",
+                //     network_id: 2,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "all",
+                //     country_name: "not china",
+                //     network_name: "国外",
+                //     cdn_id: 2,
+                //     cdn_name: "dnspod"
+                // },
+                // {
+                //     id: 2,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "All",
+                //     isp: "All",
+                //     network_id: 1,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "国内",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 3,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "All",
+                //     isp: "Dian xin",
+                //     network_id: 3,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "电信",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 4,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "All",
+                //     isp: "Lian tong",
+                //     network_id: 4,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "联通",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 5,
+                //     continent_id: 1,
+                //     country_id: 2,
+                //     location: "All",
+                //     isp: "All",
+                //     network_id: 15,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "all",
+                //     country_name: "not china",
+                //     network_name: "国外",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 6,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "All",
+                //     isp: "All",
+                //     network_id: 16,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "国内",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 7,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "Beijing",
+                //     isp: "Yidong",
+                //     network_id: 101,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "北京移动",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // },
+                // {
+                //     id: 8,
+                //     continent_id: 4,
+                //     country_id: 1,
+                //     location: "Beijing",
+                //     isp: "Dian xin",
+                //     network_id: 33,
+                //     edited_by: null,
+                //     created_at: "2019-05-15 15:29:18",
+                //     updated_at: "2019-05-15 15:29:18",
+                //     deleted_at: null,
+                //     continent_name: "asia",
+                //     country_name: "china",
+                //     network_name: "北京电信",
+                //     cdn_id: null,
+                //     cdn_name: "hiero7"
+                // }
             ],
             pagination: {
                 rowsPerPage: 20
@@ -229,6 +229,32 @@ export default {
         };
     },
     methods: {
+        getAllCDNs: function() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getAllCDNs", this.domain_id)
+                .then(
+                    function(result) {
+                        var cdnData = result.data;
+                        this.cdnProvider = [
+                            ...new Set(cdnData.map(x => x.name))
+                        ];
+                        console.log(this.cdnProvider, "vv");
+                        // this.cdn.domain_id = this.tab.domain_id;
+                        // this.setPages();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         getAlliRouteCDNs() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -270,9 +296,10 @@ export default {
                 ...new Set(this.filterData.map(x => x.continent_name))
             ];
             this.network = [...new Set(this.filterData.map(x => x.isp))];
-            this.cdnProvider = [
-                ...new Set(this.filterData.map(x => x.cdn_name))
-            ];
+            // this.cdnProvider = [
+            //     ...new Set(this.filterData.map(x => x.cdn_name))
+            // ];
+            // console.log(this.cdnProvider);
 
             this.setPages();
         },
@@ -284,7 +311,7 @@ export default {
             console.log(this.iRouteCDN, "dx");
             if (type == 0) {
                 // 打api
-                // this.updateiRouteCDN();
+                this.updateiRouteCDN();
                 console.log("dd");
             }
         },
@@ -296,8 +323,11 @@ export default {
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Change CDN Provider Success!"
+                        );
                         this.getAlliRouteCDNs();
-                        this.closeEditDialog();
                     }.bind(this)
                 )
                 .catch(
@@ -325,12 +355,22 @@ export default {
         },
         searchText: function() {
             // this.getAllCDNs();
-            console.log(this.searchText);
+            // console.log(this.searchText);
+        },
+        domain_id: function(value) {
+            this.getAllCDNs();
+            this.getAlliRouteCDNs();
         }
     },
     mounted() {
-        this.handleData();
         console.log(this.domain_id, "domain_id");
+        this.getAllCDNs();
+        this.getAlliRouteCDNs();
     }
 };
 </script>
+<style lang="sass">
+.v-input
+    padding: 0 10px
+</style>
+
