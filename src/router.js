@@ -6,6 +6,11 @@ import Login from "./views/Login.vue";
 import Authentication from "./views/Authentication.vue";
 
 import Domains from "./views/Domains.vue";
+
+import NetworkSetting from "./views/admin/NetworkSetting.vue";
+
+// import CDN from "./views/settingCDN.vue";
+// import iRouteCDN from "./views/settingiRouteCDN.vue";
 import DomainSettings from "./views/DomainSettings.vue";
 
 Vue.use(Router);
@@ -72,6 +77,15 @@ export default new Router({
                         auth: 0
                     },
                     component: DomainSettings
+                },
+                {
+                    path: "networks",
+                    name: "networks",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: NetworkSetting
                 }
             ]
         }
