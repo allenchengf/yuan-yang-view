@@ -9,8 +9,8 @@
                             component(:is="item.component" :domain_id="domain_id")
 </template>
 <script>
-import Location from "./iRoute/location";
-import Group from "./iRoute/group";
+import Location from "../domainSettings/iRoute/Location";
+import Group from "../domainSettings/iRoute/Group";
 
 export default {
     components: { Location, Group },

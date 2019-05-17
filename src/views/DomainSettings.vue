@@ -1,8 +1,8 @@
 <template lang="pug">
-    v-container#setting
+    v-container#domainSettings
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Setting
+                .title.text-xs-left.mb-4 Domain Settings
         v-layout(wrap column)  
             //- v-flex(xs12 sm4 md4)
             //-     v-autocomplete(:items="filterData" :filter="customFilter" label="Choose your domain to setting" item-text="name" v-model="select")
@@ -12,18 +12,18 @@
                     v-tab(v-for="tab in tabs" @click="domain_id = tab.domain_id;currentTab = tab" v-model="currentTab") {{tab.name}} 
                     v-tabs-items
                         v-tab-item(v-for="tab in tabs")
-                            //- h4 {{currentTab.domain_id}}
+                            h4 {{currentTab.domain_id}}
                             component(:is="tab.component" :tab="tab" :domain_id="currentTab.domain_id")
 
 </template>
 
 <script>
-import domainInfo from "../components/domainInfo";
-import CDNsetting from "../components/CDNsetting";
-import iRouteCDNsetting from "../components/iRouteCDNsetting";
+import DomainInfo from "../components/domainSettings/DomainInfo";
+import CDNsetting from "../components/domainSettings/CDNsetting";
+import IRouteCdnSetting from "../components/domainSettings/IRouteCdnSetting";
 
 export default {
-    components: { domainInfo, CDNsetting, iRouteCDNsetting },
+    components: { DomainInfo, CDNsetting, IRouteCdnSetting },
 
     data() {
         return {
@@ -33,18 +33,15 @@ export default {
             tabs: [
                 {
                     name: "General",
-                    route: "admin/setting",
-                    component: domainInfo
+                    component: DomainInfo
                 },
                 {
                     name: "CDNs",
-                    route: "settingCDN",
                     component: CDNsetting
                 },
                 {
                     name: "iRouteCDN",
-                    route: "settingiRouteCDN",
-                    component: iRouteCDNsetting
+                    component: IRouteCdnSetting
                 }
             ],
             filterData: [],
@@ -101,12 +98,12 @@ export default {
     },
     watch: {
         select: function() {
-            console.log(this.select);
+            // console.log(this.select);
             this.mapping();
-            console.log(this.tabs, "watch");
+            // console.log(this.tabs, "watch");
         },
         domain_id: function() {
-            console.log(this.domain_id);
+            // console.log(this.domain_id);
         }
     },
     mounted() {
@@ -117,7 +114,7 @@ export default {
         this.domain = domainData;
         if (domainData !== "") {
             this.select = domainData.name;
-            console.log(this.currentTab);
+            // console.log(this.currentTab);
             this.tabs.forEach((o, i) => {
                 o.domain_id = this.domain.id;
             });

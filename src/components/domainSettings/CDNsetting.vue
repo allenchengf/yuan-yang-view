@@ -52,7 +52,7 @@
 </template>
 
 <script>
-import textFieldRules from "../utils/textFieldRules.js";
+import textFieldRules from "../../utils/textFieldRules.js";
 
 export default {
     mixins: [textFieldRules],
@@ -247,7 +247,7 @@ export default {
     },
     mounted() {
         this.getAllCDNs();
-        console.log(this.editedIndex);
+        // console.log(this.editedIndex);
     }
 };
 </script>
