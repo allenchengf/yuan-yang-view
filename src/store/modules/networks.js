@@ -11,10 +11,7 @@ export default {
     },
     actions: {
         getNetworks: (context, id) => {
-            var url = "yuanyang/networks/";
-            // if (id != null) url = url + "?schemes_id=" + id;
-            if (id != null) url = url + id;
-            
+            var url = "yuanyang/schemes/" + id + "/networks";
             return axios.get(url)
                 .then(function(response) {
                     return Promise.resolve(response.data);

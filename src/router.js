@@ -9,8 +9,6 @@ import Domains from "./views/Domains.vue";
 
 import NetworkSetting from "./views/admin/NetworkSetting.vue";
 
-// import CDN from "./views/settingCDN.vue";
-// import iRouteCDN from "./views/settingiRouteCDN.vue";
 import DomainSettings from "./views/DomainSettings.vue";
 
 Vue.use(Router);
