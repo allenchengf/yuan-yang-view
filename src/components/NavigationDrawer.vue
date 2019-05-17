@@ -40,7 +40,13 @@ export default {
                     router: "/admin/setting",
                     auth: 0
                 },
-                { header: "Administration", auth: 2 }
+                { header: "Administration", auth: 2 },
+                {
+                    title: "Networks",
+                    icon: "settings",
+                    router: "/admin/networks",
+                    auth: 2
+                }
             ],
             right: null
         };

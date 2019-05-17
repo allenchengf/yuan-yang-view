@@ -4,6 +4,7 @@ import account from "./modules/account";
 import global from "./modules/global";
 
 import domains from "./modules/domains";
+import networks from "./modules/networks";
 
 Vue.use(Vuex);
 
@@ -11,6 +12,7 @@ export default new Vuex.Store({
     modules: {
         account,
         global,
-        domains
+        domains,
+        networks
     }
 });
