@@ -35,7 +35,7 @@
 </template>
 <script>
 export default {
-    props: ["domain_id", "tab"],
+    props: ["domain_id", "tab", "select"],
     data() {
         return {
             selected: [],
@@ -226,6 +226,14 @@ export default {
         perPage: function(value) {
             this.pagination.rowsPerPage = value;
             this.setPages();
+        },
+        select: function() {
+            this.getAllCDNs();
+            this.getAlliRouteCDNs();
+            this.continentFilter = "";
+            this.countryFilter = "";
+            this.networkFilter = "";
+            this.cdnProviderFilter = "";
         },
         domain_id: function() {
             console.log(this.domain_id, "domain");

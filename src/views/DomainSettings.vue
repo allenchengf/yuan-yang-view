@@ -108,9 +108,11 @@ export default {
     },
     created() {
         var domainData = this.$route.query.data;
+        this.dnsPodDomain = this.$route.query.dnsPodDomain;
         this.select = domainData.name;
         this.domain = domainData;
         this.domain_id = domainData.id;
+
         this.$router.push("domain-settings");
         this.getAllDomains();
     }

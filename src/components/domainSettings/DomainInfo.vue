@@ -31,10 +31,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -57,3 +57,7 @@ export default {
     }
 };
 </script>
+<style lang="sass">
+#domainInfo
+    padding: 20px 0 
+</style>

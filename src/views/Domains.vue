@@ -37,7 +37,7 @@
                 v-card-title.title {{formTitle}}
                 v-card-text
                     v-form(ref="editForm")
-                        v-text-field(v-model="domain.name" label="Domain Name" type="text" name="name" :rules="[rules.required]")
+                        v-text-field(v-model="domain.name" label="Domain Name" type="text" name="name" :rules="[rules.domain]")
                         v-alert.text-md-left(:value="error.status" color="error" icon="warning" outline transition="scale-transition") {{error.message}}
                 v-card-actions  
                     v-spacer
@@ -49,7 +49,6 @@
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
 import DomainSettings from "./DomainSettings";
-import node_xj from "xls-to-json";
 
 export default {
     mixins: [textFieldRules],
@@ -245,10 +244,10 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            // this.$store.dispatch(
-                            //     "global/showSnackbarError",
-                            //     error.message
-                            // );
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     );

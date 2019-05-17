@@ -262,10 +262,18 @@ export default {
         },
         domain_id: function() {
             this.getAllCDNs();
+        },
+        select: function() {
+            this.getAllCDNs();
         }
     },
     mounted() {
         this.getAllCDNs();
+        console.log(this.select, "cdn");
     }
 };
 </script>
+<style lang="sass">
+#cdnSetting
+    padding: 0
+</style>
