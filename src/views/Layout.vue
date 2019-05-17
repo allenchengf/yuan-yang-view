@@ -23,8 +23,8 @@
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
         //- Snackbar
-        //- v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
-        //-     v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
+        v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
+            v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
 
         v-content
             router-view
