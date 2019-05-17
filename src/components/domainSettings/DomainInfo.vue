@@ -3,92 +3,57 @@
         v-layout(wrap)
             v-flex(xs12)
                 v-layout(column)
-                    h4(v-show) {{filterData}}
-                    h3 Domain Name : {{filterData.name}}
-                    h3 CName : {{filterData.cname}}.{{dnsPodDomain}}
+                    h3 Domain Name : {{domain.name}}
+                    h3 CName : {{domain.cname}}.{{dnsPodDomain}}
 </template>
 <script>
 export default {
-    props: ["tab", "domain_id"],
+    props: ["domain", "select"],
     data() {
         return {
             dnsPodDomain: "",
-            filterData: [],
-            domainData: [],
-            data: []
+            filterData: []
         };
     },
     methods: {
-        // getAllDomains: function() {
-        //     this.$store.dispatch("global/startLoading");
-        //     this.$store
-        //         .dispatch("domains/getAllDomains")
-        //         .then(
-        //             function(result) {
-        //                 this.filterData = result.data.domains;
-        //                 this.dnsPodDomain = result.data.dnsPodDomain;
-        //                 this.mapping();
-        //                 this.$store.dispatch("global/finishLoading");
-        //             }.bind(this)
-        //         )
-        //         .catch(
-        //             function(error) {
-        //                 this.$store.dispatch("global/finishLoading");
-        //                 this.$store.dispatch(
-        //                     "global/showSnackbarError",
-        //                     error.message
-        //                 );
-        //             }.bind(this)
-        //         );
-        // },
-        // mapping() {
-        //     this.filterData.forEach((o, i) => {
-        //         if (o.id == this.domain_id) {
-        //             this.domainData = o;
-        //         }
-        //     });
-        // },
-        getDomain() {
-            this.data.domain_id = this.domain_id;
-            console.log(this.domain_id);
-            this.data.ugid = this.$store.getters["account/accountGroupId"]();
-            console.log(this.data, "data");
+        getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getDomain", this.data)
+                .dispatch("domains/getAllDomains")
                 .then(
                     function(result) {
-                        console.log(result);
-                        this.filterData = result.data.domains[0];
-                        console.log(this.filterData);
+                        this.filterData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
+                        this.mapping();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
+        },
+        mapping() {
+            this.filterData.forEach((o, i) => {
+                if (o.name == this.select) {
+                    this.domain = o;
+                }
+            });
         }
     },
     watch: {
-        domain_id: function() {
-            this.getDomain();
-            // console.log(this.domain_id, "watch");
+        select: function() {
+            this.mapping();
         }
     },
     mounted() {
-        var domain_data = this.$route.query.data;
-        if (domain_data !== null) {
-            this.filterData = domain_data;
-        } else {
-            this.getDomain();
-        }
+        this.getAllDomains();
+        this.mapping();
     }
 };
 </script>

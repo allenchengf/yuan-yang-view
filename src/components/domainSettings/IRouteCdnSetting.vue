@@ -6,7 +6,7 @@
                     v-tab(v-for="item in items" @click="currentItem = item" v-model="currentItem" :disabled="item.disabled") {{item.name}} 
                     v-tabs-items
                         v-tab-item(v-for="item in items" )
-                            component(:is="item.component" :domain_id="domain_id")
+                            component(:is="item.component" :domain_id="domain_id" :tab="tab")
 </template>
 <script>
 import Location from "../domainSettings/iRoute/Location";
@@ -25,12 +25,8 @@ export default {
         };
     },
     watch: {
-        perPage: function(value) {
-            this.pagination.rowsPerPage = value;
-            this.setPages();
-        },
         domain_id: function() {
-            // this.getAllCDNs();
+            console.log(this.domain_id);
         }
     },
     mounted() {

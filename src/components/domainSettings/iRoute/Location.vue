@@ -2,28 +2,28 @@
     v-container#iRouteCdnSetting
         v-layout(wrap)
             v-flex(xs12 sm3 d-flex)
-                v-autocomplete(:items="continent" :filter="customFilter" label="Continent" item-text="name" v-model="searchText")
+                v-select(:items="continent" :filter="customFilter" label="Continent" item-text="name" v-model="continentFilter" )
             v-flex(xs12 sm3 d-flex)
-                v-autocomplete(:items="country" :filter="customFilter" label="Country" item-text="name" v-model="searchText")
+                v-select(:items="country" :filter="customFilter" label="Country" item-text="name" v-model="countryFilter" )
             v-flex(xs12 sm3 d-flex)
-                v-autocomplete(:items="network" :filter="customFilter" label="Network" item-text="name" v-model="searchText")
+                v-select(:items="network" :filter="customFilter" label="Network" item-text="name" v-model="networkFilter" )
             v-flex(xs12 sm3 d-flex)
-                v-autocomplete(:items="cdnProvider" :filter="customFilter" label="CDN Provider" item-text="name" v-model="searchText")
+                v-select(:items="cdnProvider" :filter="customFilter" label="CDN Provider" item-text="name" v-model="cdnProviderFilter" )
         v-card
             v-card-title
                 v-layout(row align-center)
-                    v-flex(xs12 sm6)
+                    //- v-flex(xs12 sm6)
                         v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                     v-spacer
                     v-btn(color="primary" dark) Batch Override
-            v-data-table.elevation-1(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :pagination.sync="pagination"  hide-actions :search="searchText" v-model="selected" select-all)
+            v-data-table.elevation-1(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :pagination.sync="pagination" hide-actions v-model="selected" select-all :custom-filter="customFilter")
                 v-progress-linear(v-slot:progress color="primary")
                 template(slot="items" slot-scope="props")
                     tr
                         td.text-xs-left
                             v-checkbox(v-model="props.selected" primary hide-details)
                         td.text-xs-left {{props.index +1}}
-                        td.text-xs-left {{props.item.country_name}} / {{props.item.location}}
+                        td.text-xs-left.location {{props.item.country_name}} / {{props.item.location}}
                         td.text-xs-left {{props.item.isp}}
                         td.text-xs-left
                             v-select(:items="cdnProvider" v-model="props.item.cdn_name" @change="editItem(props.item, 0)")
@@ -35,7 +35,7 @@
 </template>
 <script>
 export default {
-    props: ["domain_id"],
+    props: ["domain_id", "tab"],
     data() {
         return {
             selected: [],
@@ -46,144 +46,7 @@ export default {
             cdnProvider: [],
             selectedCDN: [],
             iRouteCDN: {},
-            filterData: [
-                // {
-                //     id: 1,
-                //     continent_id: 1,
-                //     country_id: 2,
-                //     location: "All",
-                //     isp: "All",
-                //     network_id: 2,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "all",
-                //     country_name: "not china",
-                //     network_name: "国外",
-                //     cdn_id: 2,
-                //     cdn_name: "dnspod"
-                // },
-                // {
-                //     id: 2,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "All",
-                //     isp: "All",
-                //     network_id: 1,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "国内",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 3,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "All",
-                //     isp: "Dian xin",
-                //     network_id: 3,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "电信",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 4,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "All",
-                //     isp: "Lian tong",
-                //     network_id: 4,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "联通",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 5,
-                //     continent_id: 1,
-                //     country_id: 2,
-                //     location: "All",
-                //     isp: "All",
-                //     network_id: 15,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "all",
-                //     country_name: "not china",
-                //     network_name: "国外",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 6,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "All",
-                //     isp: "All",
-                //     network_id: 16,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "国内",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 7,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "Beijing",
-                //     isp: "Yidong",
-                //     network_id: 101,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "北京移动",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // },
-                // {
-                //     id: 8,
-                //     continent_id: 4,
-                //     country_id: 1,
-                //     location: "Beijing",
-                //     isp: "Dian xin",
-                //     network_id: 33,
-                //     edited_by: null,
-                //     created_at: "2019-05-15 15:29:18",
-                //     updated_at: "2019-05-15 15:29:18",
-                //     deleted_at: null,
-                //     continent_name: "asia",
-                //     country_name: "china",
-                //     network_name: "北京电信",
-                //     cdn_id: null,
-                //     cdn_name: "hiero7"
-                // }
-            ],
+            filterData: [],
             pagination: {
                 rowsPerPage: 20
             },
@@ -198,7 +61,10 @@ export default {
                 message: ""
             },
             editedIndex: -1,
-            searchText: "",
+            continentFilter: "",
+            countryFilter: "",
+            networkFilter: "",
+            cdnProviderFilter: "",
             headers: [
                 {
                     text: "#",
@@ -228,6 +94,21 @@ export default {
             ]
         };
     },
+    computed: {
+        filteredItems() {
+            return this.filterData.filter(i => {
+                return (
+                    (!this.continentFilter ||
+                        i.continent_name === this.continentFilter) &&
+                    (!this.networkFilter || i.isp === this.networkFilter) &&
+                    (!this.countryFilter ||
+                        i.country_name === this.countryFilter) &&
+                    (!this.cdnProviderFilter ||
+                        i.cdn_name === this.cdnProviderFilter)
+                );
+            });
+        }
+    },
     methods: {
         getAllCDNs: function() {
             this.$store.dispatch("global/startLoading");
@@ -239,19 +120,16 @@ export default {
                         this.cdnProvider = [
                             ...new Set(cdnData.map(x => x.name))
                         ];
-                        console.log(this.cdnProvider, "vv");
-                        // this.cdn.domain_id = this.tab.domain_id;
-                        // this.setPages();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -262,6 +140,7 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data;
+                        console.log(this.filterData);
                         this.handleData();
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
@@ -270,10 +149,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -296,21 +175,16 @@ export default {
                 ...new Set(this.filterData.map(x => x.continent_name))
             ];
             this.network = [...new Set(this.filterData.map(x => x.isp))];
-            // this.cdnProvider = [
-            //     ...new Set(this.filterData.map(x => x.cdn_name))
-            // ];
-            // console.log(this.cdnProvider);
-
-            this.setPages();
         },
         editItem: function(item, type) {
-            console.log(item);
             this.editedIndex = this.filterData.indexOf(item);
             this.iRouteCDN = Object.assign({}, item);
             this.iRouteCDN.domain_id = this.domain_id;
             console.log(this.iRouteCDN, "dx");
             if (type == 0) {
                 // 打api
+                console.log(this.iRouteCDN, "dx");
+
                 this.updateiRouteCDN();
                 console.log("dd");
             }
@@ -333,10 +207,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -353,24 +227,28 @@ export default {
             this.pagination.rowsPerPage = value;
             this.setPages();
         },
-        searchText: function() {
-            // this.getAllCDNs();
-            // console.log(this.searchText);
-        },
-        domain_id: function(value) {
+        domain_id: function() {
+            console.log(this.domain_id, "domain");
             this.getAllCDNs();
             this.getAlliRouteCDNs();
+            this.continentFilter = "";
+            this.countryFilter = "";
+            this.networkFilter = "";
+            this.cdnProviderFilter = "";
         }
     },
     mounted() {
-        console.log(this.domain_id, "domain_id");
         this.getAllCDNs();
         this.getAlliRouteCDNs();
     }
 };
 </script>
-<style lang="sass">
+
+<style lang="sass" scoped>
 .v-input
     padding: 0 10px
+td.location
+  text-transform: capitalize
+
 </style>
 

@@ -4,16 +4,13 @@
             v-flex(xs12)
                 .title.text-xs-left.mb-4 Domain Settings
         v-layout(wrap column)  
-            //- v-flex(xs12 sm4 md4)
-            //-     v-autocomplete(:items="filterData" :filter="customFilter" label="Choose your domain to setting" item-text="name" v-model="select")
             v-flex(xs12 sm4 md4)
                 v-tabs(slider-color="primary" right)
                     v-autocomplete(:items="filterData" :filter="customFilter" label="Choose your domain to setting" item-text="name" v-model="select")
                     v-tab(v-for="tab in tabs" @click="domain_id = tab.domain_id;currentTab = tab" v-model="currentTab") {{tab.name}} 
                     v-tabs-items
                         v-tab-item(v-for="tab in tabs")
-                            h4 {{currentTab.domain_id}}
-                            component(:is="tab.component" :tab="tab" :domain_id="currentTab.domain_id")
+                            component(:is="tab.component" :tab="tab" :domain_id="currentTab.domain_id" :domain="domain" :select="select")
 
 </template>
 
@@ -66,10 +63,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -98,7 +95,7 @@ export default {
     },
     watch: {
         select: function() {
-            // console.log(this.select);
+            console.log(this.select);
             this.mapping();
             // console.log(this.tabs, "watch");
         },
@@ -111,14 +108,11 @@ export default {
     },
     created() {
         var domainData = this.$route.query.data;
+        this.select = domainData.name;
         this.domain = domainData;
-        if (domainData !== "") {
-            this.select = domainData.name;
-            // console.log(this.currentTab);
-            this.tabs.forEach((o, i) => {
-                o.domain_id = this.domain.id;
-            });
-        }
+        this.domain_id = domainData.id;
+        this.$router.push("domain-settings");
+        this.getAllDomains();
     }
 };
 </script>

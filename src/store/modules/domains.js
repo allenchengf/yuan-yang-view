@@ -88,7 +88,12 @@ export default {
                         data.domain_id +
                         "/iRouteCDN/" +
                         data.id,
-                    data
+                    {
+                        continent_id: data.continent_id,
+                        country_id: data.country_id,
+                        network_id: data.network_id,
+                        cdn_name: data.cdn_name
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -109,7 +114,11 @@ export default {
         },
         newCDN: (context, data) => {
             return axios
-                .post("yuanyang/domains/" + data.domain_id + "/cdn", data)
+                .post("yuanyang/domains/" + data.domain_id + "/cdn", {
+                    name: data.name,
+                    cname: data.cname,
+                    ttl: data.ttl
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

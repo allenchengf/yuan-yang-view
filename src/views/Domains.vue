@@ -11,6 +11,10 @@
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
                             v-btn(color="primary" dark @click="addItem") Add Domain
+                            v-btn(color="primary" dark @click="pickFile") Batch Add Domain
+                                v-icon attach_file 
+                                input.d-none(ref="file" type="file" @change="handleFileUpload()")
+
                     v-data-table.elevation-1(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :pagination.sync="pagination"  hide-actions :search="searchText")
                         v-progress-linear(v-slot:progress color="primary")
                         template(slot="items" slot-scope="props")
@@ -22,7 +26,7 @@
                                 td.text-xs-left
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit domain")
                                         v-icon(small) edit
-                                    v-btn(color="primary" dark small outline :to="{ name: 'domainSettings', query :{ data:  props.item } }") More
+                                    v-btn(color="primary" dark small outline :to="{ name: 'domainSettings', query :{ data:  props.item , dnsPodDomain} }") More
                     v-layout.px-2(row align-center)
                         v-flex.text-xs-left.py-3(xs4)
                         v-flex.text-xs-right.py-3(xs8)
@@ -45,6 +49,7 @@
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
 import DomainSettings from "./DomainSettings";
+import node_xj from "xls-to-json";
 
 export default {
     mixins: [textFieldRules],
@@ -105,10 +110,34 @@ export default {
             domain: {},
             editedIndex: -1,
             operatorAuth: 0,
-            dnsPodDomain: ""
+            dnsPodDomain: "",
+            form: []
         };
     },
     methods: {
+        pickFile() {
+            this.$refs.file.click();
+        },
+        handleFileUpload() {
+            this.form.attachment = this.$refs.file.files[0];
+            console.log(this.$refs.file.files[0]);
+            node_xj(
+                {
+                    input: this.$refs.file.files[0], // input xls
+                    output: "output.json", // output json
+                    sheet: "sheetname", // specific sheetname
+                    rowsToSkip: 5 // number of rows to skip at the top of the sheet; defaults to 0
+                },
+                function(err, result) {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.log(result);
+                    }
+                }
+            );
+        },
+
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -124,10 +153,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -180,10 +209,10 @@ export default {
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
-                                this.$store.dispatch(
-                                    "global/showSnackbarError",
-                                    error.message
-                                );
+                                // this.$store.dispatch(
+                                //     "global/showSnackbarError",
+                                //     error.message
+                                // );
                             }.bind(this)
                         );
                 }
@@ -216,10 +245,10 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
+                            // this.$store.dispatch(
+                            //     "global/showSnackbarError",
+                            //     error.message
+                            // );
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     );
