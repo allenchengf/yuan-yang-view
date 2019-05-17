@@ -8,6 +8,10 @@ import errorHandler from "./utils/errorHandler";
 
 Vue.config.productionTip = false;
 
+//component
+import datatable from "./components/DataTable";
+Vue.component('h7-data-table', datatable);
+
 Vue.prototype.$axios = axios;
 Vue.prototype.$errorHandler = errorHandler;
 router.beforeEach((to, from, next) => {

@@ -34,13 +34,19 @@ export default {
                     router: "/admin/domains",
                     auth: 0
                 },
-                // {
-                //     title: "Domain Settings",
-                //     icon: "settings",
-                //     router: "/admin/domain-settings",
-                //     auth: 0
-                // },
-                { header: "Administration", auth: 2 }
+                {
+                    title: "Domain Settings",
+                    icon: "settings",
+                    router: "/admin/domain-settings",
+                    auth: 0
+                },
+                { header: "Administration", auth: 2 },
+                {
+                    title: "Networks",
+                    icon: "settings",
+                    router: "/admin/networks",
+                    auth: 2
+                }
             ],
             right: null
         };
