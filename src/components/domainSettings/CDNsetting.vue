@@ -40,7 +40,7 @@
                 v-card-text
                     v-form(ref="editForm")
                         v-text-field(v-model="cdn.name" label="CDN Name" type="text" name="name" :rules="[rules.required]")
-                        v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname")
+                        v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
                         v-text-field(v-model="cdn.ttl" label="TTL" type="number" name="ttl" :rules="[rules.ttl]")
                         v-alert.text-md-left(:value="error.status" color="error" icon="warning" outline transition="scale-transition") {{error.message}}
                 v-card-actions  
@@ -62,7 +62,7 @@ import textFieldRules from "../../utils/textFieldRules.js";
 
 export default {
     mixins: [textFieldRules],
-    props: ["tab", "domain_id", "select"],
+    props: ["domain_id", "select"],
     data() {
         return {
             pagination: {
@@ -75,9 +75,7 @@ export default {
             perPage: 20,
             pages: 0,
             dialog: {
-                edit: false
-            },
-            dialog: {
+                edit: false,
                 changeDefault: false
             },
             error: {
@@ -128,18 +126,20 @@ export default {
                     width: "200px"
                 }
             ],
-            cdn: {}
+            cdn: {},
+            domainData: [],
+            dnsPodDomain: ""
         };
     },
     methods: {
         getAllCDNs: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getAllCDNs", this.tab.domain_id)
+                .dispatch("domains/getAllCDNs", this.domain_id)
                 .then(
                     function(result) {
                         this.filterData = result.data;
-                        this.cdn.domain_id = this.tab.domain_id;
+                        this.cdn.domain_id = this.domain_id;
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -147,10 +147,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -160,11 +160,10 @@ export default {
             if (type == 0) {
                 this.cdn.default = !this.cdn.default;
                 this.dialog.changeDefault = true;
-                console.log(this.cdn);
             }
         },
         updateCDN: function() {
-            this.cdn.domain_id = this.tab.domain_id;
+            this.cdn.domain_id = this.domain_id;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 if (this.editedIndex == -1) {
@@ -192,10 +191,10 @@ export default {
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
-                                // this.$store.dispatch(
-                                //     "global/showSnackbarError",
-                                //     error.message
-                                // );
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    error.message
+                                );
                             }.bind(this)
                         );
                 }
@@ -207,8 +206,7 @@ export default {
             this.dialog.edit = true;
         },
         addNewCDN: function() {
-            this.cdn.domain_id = this.tab.domain_id;
-
+            this.cdn.domain_id = this.domain_id;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -226,10 +224,10 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            // this.$store.dispatch(
-                            //     "global/showSnackbarError",
-                            //     error.message
-                            // );
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     );
@@ -262,14 +260,10 @@ export default {
         },
         domain_id: function() {
             this.getAllCDNs();
-        },
-        select: function() {
-            this.getAllCDNs();
         }
     },
     mounted() {
         this.getAllCDNs();
-        console.log(this.select, "cdn");
     }
 };
 </script>

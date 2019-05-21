@@ -92,7 +92,7 @@ export default {
                         continent_id: data.continent_id,
                         country_id: data.country_id,
                         network_id: data.network_id,
-                        cdn_name: data.cdn_name
+                        cdn_id: data.cdn_id
                     }
                 )
                 .then(function(response) {

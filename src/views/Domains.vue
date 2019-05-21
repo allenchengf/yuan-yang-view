@@ -11,7 +11,7 @@
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
                             v-btn(color="primary" dark @click="addItem") Add Domain
-                            v-btn(color="primary" dark @click="pickFile") Batch Add Domain
+                            //- v-btn(color="primary" dark @click="pickFile") Batch Add Domain
                                 v-icon attach_file 
                                 input.d-none(ref="file" type="file" @change="handleFileUpload()")
 
@@ -114,28 +114,28 @@ export default {
         };
     },
     methods: {
-        pickFile() {
-            this.$refs.file.click();
-        },
-        handleFileUpload() {
-            this.form.attachment = this.$refs.file.files[0];
-            console.log(this.$refs.file.files[0]);
-            node_xj(
-                {
-                    input: this.$refs.file.files[0], // input xls
-                    output: "output.json", // output json
-                    sheet: "sheetname", // specific sheetname
-                    rowsToSkip: 5 // number of rows to skip at the top of the sheet; defaults to 0
-                },
-                function(err, result) {
-                    if (err) {
-                        console.error(err);
-                    } else {
-                        console.log(result);
-                    }
-                }
-            );
-        },
+        // pickFile() {
+        //     this.$refs.file.click();
+        // },
+        // handleFileUpload() {
+        //     this.form.attachment = this.$refs.file.files[0];
+        //     // console.log(this.$refs.file.files[0]);
+        //     node_xj(
+        //         {
+        //             input: this.$refs.file.files[0], // input xls
+        //             output: "output.json", // output json
+        //             sheet: "sheetname", // specific sheetname
+        //             rowsToSkip: 5 // number of rows to skip at the top of the sheet; defaults to 0
+        //         },
+        //         function(err, result) {
+        //             if (err) {
+        //                 console.error(err);
+        //             } else {
+        //                 console.log(result);
+        //             }
+        //         }
+        //     );
+        // },
 
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
@@ -190,7 +190,7 @@ export default {
                 if (this.editedIndex == -1) {
                     this.addNewDomain();
                 } else {
-                    this.domain.cname = this.domain.name;
+                    // this.domain.cname = this.domain.name;
                     this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("domains/updateDomain", this.domain)
@@ -208,10 +208,11 @@ export default {
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
-                                // this.$store.dispatch(
-                                //     "global/showSnackbarError",
-                                //     error.message
-                                // );
+                                this.closeEditDialog();
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    error.message
+                                );
                             }.bind(this)
                         );
                 }

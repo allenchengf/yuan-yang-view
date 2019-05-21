@@ -54,6 +54,7 @@ export default {
     mounted() {
         this.getAllDomains();
         this.mapping();
+        console.log(this.domain);
     }
 };
 </script>

@@ -10,7 +10,7 @@
                     v-tab(v-for="tab in tabs" @click="domain_id = tab.domain_id;currentTab = tab" v-model="currentTab") {{tab.name}} 
                     v-tabs-items
                         v-tab-item(v-for="tab in tabs")
-                            component(:is="tab.component" :tab="tab" :domain_id="currentTab.domain_id" :domain="domain" :select="select")
+                            component(:is="tab.component" :domain_id.sync="domain.id" :domain.sync="domain" :select="select")
 
 </template>
 
@@ -26,7 +26,7 @@ export default {
         return {
             currentTab: "",
             loading: false,
-            select: "",
+            select: "" || "www.testhiero7.com",
             tabs: [
                 {
                     name: "General",
@@ -55,18 +55,17 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data.domains;
-                        // this.handleData();
-                        this.setPages();
+                        this.dnsPodDomain = result.data.dnsPodDomain;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -83,24 +82,14 @@ export default {
         mapping() {
             this.filterData.forEach((o, i) => {
                 if (o.name == this.select) {
-                    this.tabs.forEach((obj, idx) => {
-                        obj.domain_id = o.id;
-                    });
+                    this.domain = o;
                 }
             });
         }
     },
-    mounted() {
-        this.getAllDomains();
-    },
     watch: {
         select: function() {
-            console.log(this.select);
             this.mapping();
-            // console.log(this.tabs, "watch");
-        },
-        domain_id: function() {
-            // console.log(this.domain_id);
         }
     },
     mounted() {
@@ -111,10 +100,8 @@ export default {
         this.dnsPodDomain = this.$route.query.dnsPodDomain;
         this.select = domainData.name;
         this.domain = domainData;
-        this.domain_id = domainData.id;
 
         this.$router.push("domain-settings");
-        this.getAllDomains();
     }
 };
 </script>
