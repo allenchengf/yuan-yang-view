@@ -205,11 +205,12 @@ export default {
             };
 
             if (item.location_network != null) {
+                console.log(item.location_network);
                 this.editedIndex = item.location_network.id;
                 this.editedLoaction = this.editedNetwork.location_network;
             } else {
                 this.$refs.editForm.reset();
-                this.editedIndex == -1;
+                this.editedIndex = -1;
             }
             this.dialog.edit = true;
         },
