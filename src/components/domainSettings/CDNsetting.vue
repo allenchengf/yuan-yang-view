@@ -7,8 +7,6 @@
                         v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                     v-spacer
                     v-btn(color="primary" dark @click="addItem") Add CDN
-                    h4 {{tab.domain_id}}
-
             v-data-table.elevation-1(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :pagination.sync="pagination"  hide-actions :search="searchText")
                 v-progress-linear(v-slot:progress color="primary")
                 template(slot="items" slot-scope="props")
@@ -21,14 +19,14 @@
                         td.text-xs-left
                             v-icon(large color="green darken-2" v-if="props.item.default == true") check
                         td.text-xs-left
-                            v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit cdn")
+                            //- v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit cdn")
                                 v-icon(small) edit
                             v-menu(offset-y left) 
                                 template(v-slot:activator="{on}")
-                                    v-btn.ma-0(flat icon small color="primary" v-on="on" )
+                                    v-btn.ma-0(flat icon small color="primary" v-on="on")
                                         v-icon( small) more_vert
                                 v-list.pa-0
-                                    v-list-tile()
+                                    v-list-tile(@click="editItem(props.item, 0)")
                                         v-list-tile-title Change to default
                                         
             v-layout.px-2(row align-center)
@@ -42,12 +40,20 @@
                 v-card-text
                     v-form(ref="editForm")
                         v-text-field(v-model="cdn.name" label="CDN Name" type="text" name="name" :rules="[rules.required]")
-                        v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname")
+                        v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
                         v-text-field(v-model="cdn.ttl" label="TTL" type="number" name="ttl" :rules="[rules.ttl]")
                         v-alert.text-md-left(:value="error.status" color="error" icon="warning" outline transition="scale-transition") {{error.message}}
                 v-card-actions  
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                    v-btn(color="primary" flat="flat" @click="updateCDN") Save
+        v-dialog.edit-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
+            v-card
+                v-card-title.title Change CDN Default
+                v-card-text Are you sure want to change your CDN provider to  "{{cdn.name}}" ?
+                v-card-actions  
+                    v-spacer
+                    v-btn(color="grey" flat="flat" @click="closeChangeDialog") Cancel
                     v-btn(color="primary" flat="flat" @click="updateCDN") Save
 </template>
 
@@ -56,7 +62,7 @@ import textFieldRules from "../../utils/textFieldRules.js";
 
 export default {
     mixins: [textFieldRules],
-    props: ["tab", "domain_id"],
+    props: ["domain_id", "select"],
     data() {
         return {
             pagination: {
@@ -69,7 +75,8 @@ export default {
             perPage: 20,
             pages: 0,
             dialog: {
-                edit: false
+                edit: false,
+                changeDefault: false
             },
             error: {
                 status: false,
@@ -119,18 +126,20 @@ export default {
                     width: "200px"
                 }
             ],
-            cdn: {}
+            cdn: {},
+            domainData: [],
+            dnsPodDomain: ""
         };
     },
     methods: {
         getAllCDNs: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getAllCDNs", this.tab.domain_id)
+                .dispatch("domains/getAllCDNs", this.domain_id)
                 .then(
                     function(result) {
                         this.filterData = result.data;
-                        this.cdn.domain_id = this.tab.domain_id;
+                        this.cdn.domain_id = this.domain_id;
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -149,11 +158,12 @@ export default {
             this.editedIndex = this.filterData.indexOf(item);
             this.cdn = Object.assign({}, item);
             if (type == 0) {
-                this.dialog.edit = true;
+                this.cdn.default = !this.cdn.default;
+                this.dialog.changeDefault = true;
             }
         },
         updateCDN: function() {
-            this.cdn.domain_id = this.tab.domain_id;
+            this.cdn.domain_id = this.domain_id;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 if (this.editedIndex == -1) {
@@ -170,8 +180,12 @@ export default {
                         .then(
                             function(result) {
                                 this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarSuccess",
+                                    "Change default CDN provider success!"
+                                );
                                 this.getAllCDNs();
-                                this.closeEditDialog();
+                                this.closeChangeDialog();
                             }.bind(this)
                         )
                         .catch(
@@ -192,7 +206,7 @@ export default {
             this.dialog.edit = true;
         },
         addNewCDN: function() {
-            this.cdn.domain_id = this.tab.domain_id;
+            this.cdn.domain_id = this.domain_id;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -223,6 +237,9 @@ export default {
         closeEditDialog: function() {
             this.dialog.edit = false;
         },
+        closeChangeDialog: function() {
+            this.dialog.changeDefault = false;
+        },
         setPages: function() {
             if (this.perPage == null || this.filterData == null) {
                 this.pages = null;
@@ -247,7 +264,10 @@ export default {
     },
     mounted() {
         this.getAllCDNs();
-        // console.log(this.editedIndex);
     }
 };
 </script>
+<style lang="sass">
+#cdnSetting
+    padding: 0
+</style>

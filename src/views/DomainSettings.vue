@@ -4,16 +4,13 @@
             v-flex(xs12)
                 .title.text-xs-left.mb-4 Domain Settings
         v-layout(wrap column)  
-            //- v-flex(xs12 sm4 md4)
-            //-     v-autocomplete(:items="filterData" :filter="customFilter" label="Choose your domain to setting" item-text="name" v-model="select")
             v-flex(xs12 sm4 md4)
                 v-tabs(slider-color="primary" right)
                     v-autocomplete(:items="filterData" :filter="customFilter" label="Choose your domain to setting" item-text="name" v-model="select")
                     v-tab(v-for="tab in tabs" @click="domain_id = tab.domain_id;currentTab = tab" v-model="currentTab") {{tab.name}} 
                     v-tabs-items
                         v-tab-item(v-for="tab in tabs")
-                            h4 {{currentTab.domain_id}}
-                            component(:is="tab.component" :tab="tab" :domain_id="currentTab.domain_id")
+                            component(:is="tab.component" :domain_id.sync="domain.id" :domain.sync="domain" :select="select")
 
 </template>
 
@@ -29,7 +26,7 @@ export default {
         return {
             currentTab: "",
             loading: false,
-            select: "",
+            select: "" || "www.testhiero7.com",
             tabs: [
                 {
                     name: "General",
@@ -58,8 +55,7 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data.domains;
-                        // this.handleData();
-                        this.setPages();
+                        this.dnsPodDomain = result.data.dnsPodDomain;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -86,24 +82,14 @@ export default {
         mapping() {
             this.filterData.forEach((o, i) => {
                 if (o.name == this.select) {
-                    this.tabs.forEach((obj, idx) => {
-                        obj.domain_id = o.id;
-                    });
+                    this.domain = o;
                 }
             });
         }
     },
-    mounted() {
-        this.getAllDomains();
-    },
     watch: {
         select: function() {
-            // console.log(this.select);
             this.mapping();
-            // console.log(this.tabs, "watch");
-        },
-        domain_id: function() {
-            // console.log(this.domain_id);
         }
     },
     mounted() {
@@ -111,14 +97,11 @@ export default {
     },
     created() {
         var domainData = this.$route.query.data;
+        this.dnsPodDomain = this.$route.query.dnsPodDomain;
+        this.select = domainData.name;
         this.domain = domainData;
-        if (domainData !== "") {
-            this.select = domainData.name;
-            // console.log(this.currentTab);
-            this.tabs.forEach((o, i) => {
-                o.domain_id = this.domain.id;
-            });
-        }
+
+        this.$router.push("domain-settings");
     }
 };
 </script>

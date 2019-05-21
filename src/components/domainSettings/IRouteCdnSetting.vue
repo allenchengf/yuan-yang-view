@@ -6,7 +6,7 @@
                     v-tab(v-for="item in items" @click="currentItem = item" v-model="currentItem" :disabled="item.disabled") {{item.name}} 
                     v-tabs-items
                         v-tab-item(v-for="item in items" )
-                            component(:is="item.component" :domain_id="domain_id")
+                            component(:is="item.component" :domain_id="domain_id" :select="select")
 </template>
 <script>
 import Location from "../domainSettings/iRoute/Location";
@@ -14,7 +14,7 @@ import Group from "../domainSettings/iRoute/Group";
 
 export default {
     components: { Location, Group },
-    props: ["tab", "domain_id"],
+    props: ["domain_id", "select"],
     data() {
         return {
             items: [
@@ -23,18 +23,11 @@ export default {
             ],
             currentItem: ""
         };
-    },
-    watch: {
-        perPage: function(value) {
-            this.pagination.rowsPerPage = value;
-            this.setPages();
-        },
-        domain_id: function() {
-            // this.getAllCDNs();
-        }
-    },
-    mounted() {
-        console.log(this.domain_id);
     }
 };
 </script>
+
+<style lang="sass">
+#iRouteCdnSetting
+    padding: 0
+</style>
