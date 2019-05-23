@@ -15,8 +15,8 @@
                     //- v-flex(xs12 sm6)
                         v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                     v-spacer
-                    //- v-btn(color="primary" dark) Batch Override
-            v-data-table.elevation-1(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :pagination.sync="pagination" hide-actions v-model="selected" select-all :custom-filter="customFilter")
+                    v-btn(color="primary" dark @click="batchChangeCDN(-1)") Batch Override
+            v-data-table.elevation-1(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :pagination.sync="pagination" v-model="selected" hide-actions select-all :custom-filter="customFilter")
                 v-progress-linear(v-slot:progress color="primary")
                 template(slot="items" slot-scope="props")
                     tr
@@ -32,24 +32,32 @@
                 v-flex.text-xs-right.py-3(xs8)
                     v-pagination(v-model="pagination.page" :length="pages" :total-visible="7" color="primary")
         //- Dialogs
-        //- v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
-        //-     v-card
-        //-         v-card-title.title Batch Change CDN Provider
-        //-         v-card-text What CDN Provider you want to change for this {{selected.length}} iRouteCDN?
-        //-         v-card-text {{seleted}}
-        //-         tr
-        //-             td.text-xs-left
-        //-                     v-select(:items="cdnProvider" v-model="selected[0].cdn.name") 
-        //-         v-card-actions  
-        //-             v-spacer
-        //-             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-        //-             v-btn(color="primary" flat="flat" @click="updateCdnProvider") Save
+        v-dialog.edit-dialog(v-model="dialog.edit" width="600")
+            v-card
+                v-card-title.title {{formTitle}}
+                v-data-table.elevation-1(:headers="headers" :items="selected" hide-actions v-if="editedIndex == -1")
+                    v-progress-linear(v-slot:progress color="primary")
+                    template(slot="items" slot-scope="props")
+                        tr
+                            td.text-xs-left {{props.index +1}}
+                            td.text-xs-left.location {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
+                            td.text-xs-left {{props.item.isp}}
+                            td.text-xs-left {{props.item.cdn.name}} 
+                v-card-text {{formText}}
+                tr(v-if="editedIndex == -1")
+                    td.text-xs-left
+                        v-select(:items="cdnProvider" v-on:change="editBatchCdn(`${selectCDN}`)" v-model="selectCDN") 
+                v-card-actions  
+                    v-spacer
+                    v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                    v-btn(color="primary" flat="flat" @click="updateCdnProvider") Save
 </template>
 <script>
 export default {
     props: ["domain_id", "select"],
     data() {
         return {
+            selectCDN: "",
             dialog: {
                 edit: false
             },
@@ -124,6 +132,20 @@ export default {
                         i.cdn_name === this.cdnProviderFilter)
                 );
             });
+        },
+        formTitle() {
+            return this.editedIndex === -1
+                ? "Batch Change CDN Provider"
+                : "Change CDN Provider";
+        },
+        formText() {
+            return this.editedIndex === -1
+                ? "Which CDN Provider you want to change for this " +
+                      this.selected.length +
+                      " iRouteCDN?"
+                : "Are you sure you want to change CDN provider to '" +
+                      this.iRouteCDN.cdn_name +
+                      "' ?";
         }
     },
     methods: {
@@ -134,9 +156,10 @@ export default {
                 .then(
                     function(result) {
                         this.cdnData = result.data;
-                        this.cdnProvider = [
+                        this.cdnProvider[0] = "All";
+                        this.cdnProvider.push(
                             ...new Set(this.cdnData.map(x => x.name))
-                        ];
+                        );
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -185,27 +208,30 @@ export default {
         },
         handleData() {
             this.location = [...new Set(this.filterData.map(x => x.location))];
-            this.country = [
+            this.country[0] = "All";
+            this.continent[0] = "All";
+            this.network[0] = "All";
+            this.country.push(
                 ...new Set(this.filterData.map(x => x.country.name))
-            ];
-            this.continent = [
+            );
+            this.continent.push(
                 ...new Set(this.filterData.map(x => x.continent.name))
-            ];
-            this.network = [...new Set(this.filterData.map(x => x.isp))];
+            );
+            this.network.push(...new Set(this.filterData.map(x => x.isp)));
         },
         editItem: function(item, type, cdn_name) {
             this.editedIndex = this.filterData.indexOf(item);
+            console.log(this.editedIndex);
             this.iRouteCDN = Object.assign({}, item);
             this.iRouteCDN.domain_id = this.domain_id;
             this.cdnData.forEach((o, i) => {
                 if (o.name == cdn_name) {
                     this.iRouteCDN.cdn_id = o.id;
+                    this.iRouteCDN.cdn_name = cdn_name;
                 }
             });
-            console.log(this.iRouteCDN, "dx");
             if (type == 0) {
-                // 打api
-                this.updateiRouteCDN();
+                this.dialog.edit = true;
             }
         },
         updateiRouteCDN: function() {
@@ -239,18 +265,60 @@ export default {
             } else {
                 this.pages = Math.ceil(this.filterData.length / this.perPage);
             }
+        },
+        batchChangeCDN(type) {
+            this.editedIndex = type;
+            this.dialog.edit = true;
+        },
+        closeEditDialog() {
+            this.dialog.edit = false;
+            this.selected = [];
+            console.log(this.filterData);
+            this.getAlliRouteCDNs();
+        },
+        editBatchCdn(a) {
+            this.cdnData.forEach((o, i) => {
+                if (o.name == a) {
+                    this.selected.forEach((obj, idx) => {
+                        obj.cdn_id = o.id;
+                        obj.domain_id = this.domain_id;
+                    });
+                }
+            });
+        },
+        updateCdnProvider() {
+            if (this.editedIndex !== -1) {
+                this.updateiRouteCDN();
+            } else {
+                this.selected.forEach((o, i) => {
+                    this.$store.dispatch("global/startLoading");
+                    this.$store
+                        .dispatch("domains/updateiRouteCDN", o)
+                        .then(
+                            function(result) {
+                                this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarSuccess",
+                                    "Change CDN Provider Success!"
+                                );
+                                this.getAlliRouteCDNs();
+                            }.bind(this)
+                        )
+                        .catch(
+                            function(error) {
+                                this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    error.message
+                                );
+                            }.bind(this)
+                        );
+                });
+            }
+            this.closeEditDialog();
+            this.selected = [];
+            this.selectCDN = "";
         }
-        // batchChangeCDN() {
-        //     console.log(this.selected);
-        //     this.dialog.edit = true;
-        // },
-        // closeEditDialog() {
-        //     this.dialog.edit = false;
-        // },
-        // updateCdnProvider() {},
-        // editBatchItem(item) {
-        //     console.log(item);
-        // }
     },
     watch: {
         perPage: function(value) {
@@ -278,10 +346,11 @@ export default {
 </script>
 
 <style lang="sass" scoped>
-.v-input
+.v-select
     padding: 10px
 td.location
   text-transform: capitalize
-
+.v-dialog .v-card
+        padding: 10px
 </style>
 
