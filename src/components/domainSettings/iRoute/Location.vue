@@ -2,13 +2,13 @@
     v-container#iRouteCdnSetting
         v-layout(wrap)
             v-flex(xs12 sm3 d-flex)
-                v-select(:items="continent" :filter="customFilter" label="Continent" item-text="name" v-model="continentFilter" )
+                v-select(:items="continent" :filter="customFilter" label="Continent" item-text="name" v-model="continentFilter")
             v-flex(xs12 sm3 d-flex)
-                v-select(:items="country" :filter="customFilter" label="Country" item-text="name" v-model="countryFilter" )
+                v-select(:items="country" :filter="customFilter" label="Country" item-text="name" v-model="countryFilter")
             v-flex(xs12 sm3 d-flex)
-                v-select(:items="network" :filter="customFilter" label="Network" item-text="name" v-model="networkFilter" )
+                v-select(:items="isp" :filter="customFilter" label="ISP" item-text="name" v-model="ispFilter")
             v-flex(xs12 sm3 d-flex)
-                v-select(:items="cdnProvider" :filter="customFilter" label="CDN Provider" item-text="name" v-model="cdnProviderFilter" )
+                v-select(:items="cdnProvider" :filter="customFilter" label="CDN Provider" item-text="name" v-model="cdnProviderFilter")
         v-card
             v-card-title
                 v-layout(row align-center)
@@ -62,10 +62,9 @@ export default {
                 edit: false
             },
             selected: [],
-            location: [],
             country: [],
             continent: [],
-            network: [],
+            isp: [],
             cdnProvider: [],
             selectedCDN: [],
             iRouteCDN: {},
@@ -86,7 +85,7 @@ export default {
             editedIndex: -1,
             continentFilter: "",
             countryFilter: "",
-            networkFilter: "",
+            ispFilter: "",
             cdnProviderFilter: "",
             headers: [
                 {
@@ -103,7 +102,7 @@ export default {
                     value: "Location"
                 },
                 {
-                    text: "Network",
+                    text: "ISP",
                     align: "left",
                     sortable: true,
                     value: "Network"
@@ -115,24 +114,24 @@ export default {
                     value: "CDN Provider"
                 }
             ],
-            cdnData: []
+            cdnData: [],
+            filteredItems: []
         };
     },
     computed: {
-        filteredItems() {
-            return this.filterData.filter(i => {
-                return (
-                    (!this.continentFilter ||
-                        i.continent.name === this.continentFilter) &&
-                    (!this.networkFilter ||
-                        i.network.name === this.networkFilter) &&
-                    (!this.countryFilter ||
-                        i.country.name === this.countryFilter) &&
-                    (!this.cdnProviderFilter ||
-                        i.cdn_name === this.cdnProviderFilter)
-                );
-            });
-        },
+        // filteredItems() {
+        //     return this.filterData.filter(i => {
+        //         return (
+        //             (!this.continentFilter ||
+        //                 i.continent.name === this.continentFilter) &&
+        //             (!this.ispFilter || i.isp === this.ispFilter) &&
+        //             (!this.countryFilter ||
+        //                 i.country.name === this.countryFilter) &&
+        //             (!this.cdnProviderFilter ||
+        //                 i.cdn.name === this.cdnProviderFilter)
+        //         );
+        //     });
+        // },
         formTitle() {
             return this.editedIndex === -1
                 ? "Batch Change CDN Provider"
@@ -156,7 +155,6 @@ export default {
                 .then(
                     function(result) {
                         this.cdnData = result.data;
-                        this.cdnProvider[0] = "All";
                         this.cdnProvider.push(
                             ...new Set(this.cdnData.map(x => x.name))
                         );
@@ -180,7 +178,7 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data;
-                        // console.log(this.filterData);
+                        this.filteredItems = this.filterData;
                         this.handleData();
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
@@ -206,18 +204,56 @@ export default {
                 // textTwo.indexOf(searchText) > -1
             );
         },
+        getContinentList() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getContinentList")
+                .then(
+                    function(result) {
+                        this.continent[0] = "All";
+                        var continentData = result.data;
+                        continentData.forEach((o, i) => {
+                            this.continent.push(o.name);
+                        });
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getCountriesList() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getCountriesList")
+                .then(
+                    function(result) {
+                        this.country[0] = "All";
+                        var countriesData = result.data;
+                        countriesData.forEach((o, i) => {
+                            this.country.push(o.name);
+                        });
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         handleData() {
-            this.location = [...new Set(this.filterData.map(x => x.location))];
-            this.country[0] = "All";
-            this.continent[0] = "All";
-            this.network[0] = "All";
-            this.country.push(
-                ...new Set(this.filterData.map(x => x.country.name))
-            );
-            this.continent.push(
-                ...new Set(this.filterData.map(x => x.continent.name))
-            );
-            this.network.push(...new Set(this.filterData.map(x => x.isp)));
+            this.isp.push(...new Set(this.filterData.map(x => x.isp)));
         },
         editItem: function(item, type, cdn_name) {
             this.editedIndex = this.filterData.indexOf(item);
@@ -273,8 +309,6 @@ export default {
         closeEditDialog() {
             this.dialog.edit = false;
             this.selected = [];
-            console.log(this.filterData);
-            this.getAlliRouteCDNs();
         },
         editBatchCdn(a) {
             this.cdnData.forEach((o, i) => {
@@ -301,7 +335,6 @@ export default {
                                     "global/showSnackbarSuccess",
                                     "Change CDN Provider Success!"
                                 );
-                                this.getAlliRouteCDNs();
                             }.bind(this)
                         )
                         .catch(
@@ -315,6 +348,7 @@ export default {
                         );
                 });
             }
+            this.getAlliRouteCDNs();
             this.closeEditDialog();
             this.selected = [];
             this.selectCDN = "";
@@ -332,15 +366,55 @@ export default {
             this.countryFilter = "";
             this.networkFilter = "";
             this.cdnProviderFilter = "";
+            this.cdnProvider = [];
         },
-        domain_id: function() {
-            console.log(this.domain_id);
+        continentFilter: function() {
+            if (this.continentFilter == "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.continent.name !== this.continentFilter;
+                });
+            } else {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        !this.continentFilter ||
+                        i.continent.name === this.continentFilter
+                    );
+                });
+            }
+        },
+        countryFilter: function() {
+            if (this.countryFilter == "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.country.name !== this.countryFilter;
+                });
+            } else {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        !this.countryFilter ||
+                        i.country.name === this.countryFilter
+                    );
+                });
+            }
+        },
+        ispFilter: function() {
+            this.filteredItems = this.filterData.filter(i => {
+                return !this.ispFilter || i.isp === this.ispFilter;
+            });
+        },
+        cdnProviderFilter: function() {
+            this.filteredItems = this.filterData.filter(i => {
+                return (
+                    !this.cdnProviderFilter ||
+                    i.cdn.name === this.cdnProviderFilter
+                );
+            });
         }
     },
     mounted() {
         this.getAllCDNs();
         this.getAlliRouteCDNs();
-        console.log(this.select);
+        this.getContinentList();
+        this.getCountriesList();
     }
 };
 </script>
