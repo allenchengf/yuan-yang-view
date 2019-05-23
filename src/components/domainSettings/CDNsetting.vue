@@ -19,11 +19,14 @@
                         td.text-xs-left
                             v-icon(large color="green darken-2" v-if="props.item.default == true") check
                         td.text-xs-left
-                            v-tooltip(right) 
-                                template(v-slot:activator="{on}")
-                                    v-btn.ma-0(flat icon small color="primary" v-on="on" @click="editItem(props.item, 0)" :disabled="props.item.default === false ? false : true")
-                                        v-icon(small) more_vert
-                                span Change to default
+                            v-menu(offset-y left) 
+                                v-tooltip(right slot="activator") 
+                                    v-btn.ma-0(flat icon small color="primary" slot="activator")
+                                        v-icon( small) more_vert
+                                    span More
+                                v-list.pa-0
+                                    v-list-tile(@click="editItem(props.item, 0)" :disabled="props.item.default == false ? false : true")
+                                        v-list-tile-title Change to default
                                         
             v-layout.px-2(row align-center)
                 v-flex.text-xs-left.py-3(xs4)
@@ -151,17 +154,14 @@ export default {
                 );
         },
         editItem: function(item, type) {
-            console.log(item);
             this.editedIndex = this.filterData.indexOf(item);
             this.cdn = Object.assign({}, item);
-            console.log(this.cdn);
             if (type == 0) {
                 this.cdn.default = !this.cdn.default;
                 this.dialog.changeDefault = true;
             }
         },
         updateCDN: function() {
-            console.log(this.cdn, "cdn");
             this.cdn.domain_id = this.domain_id;
             this.$store.dispatch("global/startLoading");
             if (this.editedIndex == -1) {
@@ -172,7 +172,6 @@ export default {
                 } else {
                     this.cdn.default = 1;
                 }
-                console.log("dd");
                 this.$store.dispatch("global/startLoading");
                 this.$store
                     .dispatch("domains/updateCDN", this.cdn)
