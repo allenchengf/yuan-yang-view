@@ -26,7 +26,7 @@ export default {
         return {
             currentTab: "",
             loading: false,
-            select: "" || "www.testhiero7.com",
+            select: "",
             tabs: [
                 {
                     name: "General",
@@ -90,6 +90,7 @@ export default {
     watch: {
         select: function() {
             this.mapping();
+            document.cookie = "selectedDomain = " + this.select;
         }
     },
     mounted() {
@@ -97,11 +98,23 @@ export default {
     },
     created() {
         var domainData = this.$route.query.data;
-        this.dnsPodDomain = this.$route.query.dnsPodDomain;
-        this.select = domainData.name;
-        this.domain = domainData;
+        console.log(this.select);
+        if (domainData !== "") {
+            this.dnsPodDomain = this.$route.query.dnsPodDomain;
+            this.select = domainData.name;
+            this.domain = domainData;
 
-        this.$router.push("domain-settings");
+            this.$router.push("domain-settings");
+        } else {
+            this.$router.push("domains");
+        }
     }
 };
 </script>
+<style lang="sass">
+*
+    // border: .5px solid black
+.v-autocomplete
+    padding-left: 15px
+</style>
+

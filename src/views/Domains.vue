@@ -11,7 +11,7 @@
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
                             v-btn(color="primary" dark @click="addItem") Add Domain
-                            //- v-btn(color="primary" dark @click="pickFile") Batch Add Domain
+                            v-btn(color="primary" dark @click="pickFile") Batch Add Domain
                                 v-icon attach_file 
                                 input.d-none(ref="file" type="file" @change="handleFileUpload()")
 
@@ -49,6 +49,7 @@
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
 import DomainSettings from "./DomainSettings";
+import XLSX from "xlsx";
 
 export default {
     mixins: [textFieldRules],
@@ -110,32 +111,96 @@ export default {
             editedIndex: -1,
             operatorAuth: 0,
             dnsPodDomain: "",
-            form: []
+            form: [],
+            batchData: {
+                domains: [
+                    {
+                        cdn_cname: "kkday.com",
+                        cdn_name: "kkday.com",
+                        domain_name: "karentest.com",
+                        ttl: 600
+                    },
+                    {
+                        cdn_cname: "kktest.com",
+                        cdn_name: "kktest.com",
+                        domain_name: "karentest.com",
+                        ttl: 600
+                    },
+                    {
+                        cdn_cname: "llday.com",
+                        cdn_name: "llday.com",
+                        domain_name: "leetest.com",
+                        ttl: 600
+                    },
+                    {
+                        cdn_cname: "ooday.com",
+                        cdn_name: "ooday.com",
+                        domain_name: "leotest.com",
+                        ttl: 600
+                    }
+                ]
+            },
+            domains: []
         };
     },
     methods: {
-        // pickFile() {
-        //     this.$refs.file.click();
-        // },
-        // handleFileUpload() {
-        //     this.form.attachment = this.$refs.file.files[0];
-        //     // console.log(this.$refs.file.files[0]);
-        //     node_xj(
-        //         {
-        //             input: this.$refs.file.files[0], // input xls
-        //             output: "output.json", // output json
-        //             sheet: "sheetname", // specific sheetname
-        //             rowsToSkip: 5 // number of rows to skip at the top of the sheet; defaults to 0
-        //         },
-        //         function(err, result) {
-        //             if (err) {
-        //                 console.error(err);
-        //             } else {
-        //                 console.log(result);
-        //             }
-        //         }
-        //     );
-        // },
+        pickFile() {
+            this.$refs.file.click();
+        },
+        handleFileUpload() {
+            var vm = this;
+            var fileUpload = this.$refs.file;
+            var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+            if (regex.test(fileUpload.value.toLowerCase())) {
+                if (typeof FileReader != "undefined") {
+                    var reader = new FileReader();
+
+                    //For Browsers other than IE.
+                    if (reader.readAsBinaryString) {
+                        reader.onload = function(e) {
+                            vm.ProcessExcel(e.target.result);
+                        };
+                        reader.readAsBinaryString(fileUpload.files[0]);
+                    } else {
+                        //For IE Browser.
+                        reader.onload = function(e) {
+                            var data = "";
+                            var bytes = new Uint8Array(e.target.result);
+                            for (var i = 0; i < bytes.byteLength; i++) {
+                                data += String.fromCharCode(bytes[i]);
+                            }
+                            vm.ProcessExcel(data);
+                        };
+                        reader.readAsArrayBuffer(fileUpload.files[0]);
+                    }
+                } else {
+                    alert("This browser does not support HTML5.");
+                }
+            } else {
+                alert("Please upload a valid Excel file.");
+            }
+        },
+        ProcessExcel(data) {
+            //Read the Excel File data.
+            var workbook = XLSX.read(data, {
+                type: "binary"
+            });
+
+            //Fetch the name of First Sheet.
+            var firstSheet = workbook.SheetNames[0];
+
+            //Read all rows from First Sheet into an JSON array.
+            var excelRows = XLSX.utils.sheet_to_row_object_array(
+                workbook.Sheets[firstSheet]
+            );
+            // console.log(excelRows);
+            this.convertExcel(excelRows);
+        },
+        convertExcel(excelRows) {
+            this.batchData.domains = [];
+            this.batchData.domains.push(excelRows);
+            console.log(this.batchData);
+        },
 
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
@@ -264,6 +329,18 @@ export default {
             } else {
                 this.pages = Math.ceil(this.filterData.length / this.perPage);
             }
+        },
+        transformData() {
+            this.batchData.domains.forEach((o, i) => {
+                o.cdns = [];
+                var cdns = {};
+                o.name = o.domain_name;
+                cdns.cname = o.cdn_cname;
+                cdns.ttl = o.ttl;
+                cdns.name = o.cdn_name;
+                o.cdns.push(cdns);
+            });
+            console.log(this.batchData);
         }
     },
     computed: {
@@ -280,6 +357,8 @@ export default {
     mounted() {
         this.$router.push("admin/domains");
         this.getAllDomains();
+        // console.log(this.batchData);
+        this.transformData();
     },
     created() {
         this.getAllDomains();
