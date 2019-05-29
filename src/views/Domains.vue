@@ -115,28 +115,28 @@ export default {
             batchData: {
                 domains: [
                     {
-                        cdn_cname: "kkday.com",
-                        cdn_name: "kkday.com",
-                        domain_name: "karentest.com",
-                        ttl: 600
+                        Cloudflare: "www.hiero9.com.cloudflare.com",
+                        Cloudfront: "efsfijdd.cloudfront.com",
+                        Domain: "www.hiero9.com",
+                        H7CDN: "wwefdsf.speedxxx.com"
                     },
                     {
-                        cdn_cname: "kktest.com",
-                        cdn_name: "kktest.com",
-                        domain_name: "karentest.com",
-                        ttl: 600
+                        Cloudflare: "www.hiero10.com.cloudflare.com",
+                        Cloudfront: "esfijfodd.cloudfront.com",
+                        Domain: "www.hiero10.com",
+                        H7CDN: "2wdsf.speedxxx.com"
                     },
                     {
-                        cdn_cname: "llday.com",
-                        cdn_name: "llday.com",
-                        domain_name: "leetest.com",
-                        ttl: 600
+                        Cloudflare: "www.hiero11.com.cloudflare.com",
+                        Cloudfront: "efsjfodd.cloudfront.com",
+                        Domain: "www.hiero11.com",
+                        H7CDN: "2weff.speedxxx.com"
                     },
                     {
-                        cdn_cname: "ooday.com",
-                        cdn_name: "ooday.com",
-                        domain_name: "leotest.com",
-                        ttl: 600
+                        Cloudflare: "www.hiero12.com.cloudflare.com",
+                        Cloudfront: "efsodd.cloudfront.com",
+                        Domain: "www.hiero12.com",
+                        H7CDN: "2efdsf.speedxxx.com"
                     }
                 ]
             },
@@ -154,15 +154,12 @@ export default {
             if (regex.test(fileUpload.value.toLowerCase())) {
                 if (typeof FileReader != "undefined") {
                     var reader = new FileReader();
-
-                    //For Browsers other than IE.
                     if (reader.readAsBinaryString) {
                         reader.onload = function(e) {
                             vm.ProcessExcel(e.target.result);
                         };
                         reader.readAsBinaryString(fileUpload.files[0]);
                     } else {
-                        //For IE Browser.
                         reader.onload = function(e) {
                             var data = "";
                             var bytes = new Uint8Array(e.target.result);
@@ -181,27 +178,57 @@ export default {
             }
         },
         ProcessExcel(data) {
-            //Read the Excel File data.
             var workbook = XLSX.read(data, {
                 type: "binary"
             });
-
-            //Fetch the name of First Sheet.
             var firstSheet = workbook.SheetNames[0];
-
-            //Read all rows from First Sheet into an JSON array.
             var excelRows = XLSX.utils.sheet_to_row_object_array(
                 workbook.Sheets[firstSheet]
             );
-            // console.log(excelRows);
-            this.convertExcel(excelRows);
+            this.transformData(excelRows);
         },
-        convertExcel(excelRows) {
+        transformData(excelRows) {
             this.batchData.domains = [];
-            this.batchData.domains.push(excelRows);
-            console.log(this.batchData);
+            this.batchData.domains = excelRows;
+            this.batchData.domains.forEach((o, i) => {
+                o.cdns = [];
+                o.cdns = Object.entries(o).map(([name, cname]) => ({
+                    name,
+                    cname
+                }));
+                o.cdns.forEach((obj, idx) => {
+                    obj["ttl"] = 600;
+                });
+                o.cdns.splice(0, 1);
+                o.cdns.pop();
+                o.name = o.Domain;
+                delete o.H7CDN;
+                delete o.Cloudflare;
+                delete o.Cloudfront;
+                delete o.Domain;
+            });
+            this.batchAddDomains();
         },
-
+        batchAddDomains() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
+                .then(
+                    function(result) {
+                        this.getAllDomains();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -217,10 +244,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -329,19 +356,27 @@ export default {
             } else {
                 this.pages = Math.ceil(this.filterData.length / this.perPage);
             }
-        },
-        transformData() {
-            this.batchData.domains.forEach((o, i) => {
-                o.cdns = [];
-                var cdns = {};
-                o.name = o.domain_name;
-                cdns.cname = o.cdn_cname;
-                cdns.ttl = o.ttl;
-                cdns.name = o.cdn_name;
-                o.cdns.push(cdns);
-            });
-            console.log(this.batchData);
         }
+        // transformData() {
+        //     console.log(this.batchData);
+        //     this.batchData.domains.forEach((o, i) => {
+        //         o.cdns = [];
+        //         o.cdns = Object.entries(o).map(([name, cname]) => ({
+        //             name,
+        //             cname
+        //         }));
+        //         o.cdns.forEach((obj, idx) => {
+        //             obj["ttl"] = 600;
+        //         });
+        //         o.cdns.splice(2, 1);
+        //         o.cdns.pop();
+        //         o.name = o.Domain;
+        //         delete o.H7CDN;
+        //         delete o.Cloudflare;
+        //         delete o.Cloudfront;
+        //         delete o.Domain;
+        //     });
+        // }
     },
     computed: {
         formTitle() {
