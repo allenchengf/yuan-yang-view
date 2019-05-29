@@ -422,6 +422,9 @@ export default {
 <style lang="sass" scoped>
 .v-select
     padding: 10px
+    text-transform: capitalize
+.v-select-list
+    text-transform: capitalize
 td.location
   text-transform: capitalize
 .v-dialog .v-card
