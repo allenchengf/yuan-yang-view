@@ -20,7 +20,8 @@
         "vuetify": "^1.5.5",
         "vuex": "^3.0.1",
         "xls-to-json": "^0.5.2",
-        "xlsx": "^0.14.3"
+        "xlsx": "^0.14.3",
+        "xlsx-to-json": "^0.3.0"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^3.0.2",

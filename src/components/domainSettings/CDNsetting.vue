@@ -19,14 +19,13 @@
                         td.text-xs-left
                             v-icon(large color="green darken-2" v-if="props.item.default == true") check
                         td.text-xs-left
-                            //- v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit cdn")
-                                v-icon(small) edit
                             v-menu(offset-y left) 
-                                template(v-slot:activator="{on}")
-                                    v-btn.ma-0(flat icon small color="primary" v-on="on")
+                                v-tooltip(right slot="activator") 
+                                    v-btn.ma-0(flat icon small color="primary" slot="activator")
                                         v-icon( small) more_vert
+                                    span More
                                 v-list.pa-0
-                                    v-list-tile(@click="editItem(props.item, 0)")
+                                    v-list-tile(@click="editItem(props.item, 0)" :disabled="props.item.default == false ? false : true")
                                         v-list-tile-title Change to default
                                         
             v-layout.px-2(row align-center)
@@ -164,40 +163,38 @@ export default {
         },
         updateCDN: function() {
             this.cdn.domain_id = this.domain_id;
-            if (this.$refs.editForm.validate()) {
-                this.$store.dispatch("global/startLoading");
-                if (this.editedIndex == -1) {
-                    this.addNewCDN();
+            this.$store.dispatch("global/startLoading");
+            if (this.editedIndex == -1) {
+                this.addNewCDN();
+            } else {
+                if (this.cdn.default == false) {
+                    this.cdn.default = 0;
                 } else {
-                    if (this.cdn.default == false) {
-                        this.cdn.default = 0;
-                    } else {
-                        this.cdn.default = 1;
-                    }
-                    this.$store.dispatch("global/startLoading");
-                    this.$store
-                        .dispatch("domains/updateCDN", this.cdn)
-                        .then(
-                            function(result) {
-                                this.$store.dispatch("global/finishLoading");
-                                this.$store.dispatch(
-                                    "global/showSnackbarSuccess",
-                                    "Change default CDN provider success!"
-                                );
-                                this.getAllCDNs();
-                                this.closeChangeDialog();
-                            }.bind(this)
-                        )
-                        .catch(
-                            function(error) {
-                                this.$store.dispatch("global/finishLoading");
-                                this.$store.dispatch(
-                                    "global/showSnackbarError",
-                                    error.message
-                                );
-                            }.bind(this)
-                        );
+                    this.cdn.default = 1;
                 }
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("domains/updateCDN", this.cdn)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Change default CDN provider success!"
+                            );
+                            this.getAllCDNs();
+                            this.closeChangeDialog();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
             }
         },
         addItem: function() {

@@ -11,7 +11,7 @@
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
                             v-btn(color="primary" dark @click="addItem") Add Domain
-                            //- v-btn(color="primary" dark @click="pickFile") Batch Add Domain
+                            v-btn(color="primary" dark @click="pickFile") Batch Add Domain
                                 v-icon attach_file 
                                 input.d-none(ref="file" type="file" @change="handleFileUpload()")
 
@@ -49,6 +49,7 @@
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
 import DomainSettings from "./DomainSettings";
+import XLSX from "xlsx";
 
 export default {
     mixins: [textFieldRules],
@@ -110,33 +111,124 @@ export default {
             editedIndex: -1,
             operatorAuth: 0,
             dnsPodDomain: "",
-            form: []
+            form: [],
+            batchData: {
+                domains: [
+                    {
+                        Cloudflare: "www.hiero9.com.cloudflare.com",
+                        Cloudfront: "efsfijdd.cloudfront.com",
+                        Domain: "www.hiero9.com",
+                        H7CDN: "wwefdsf.speedxxx.com"
+                    },
+                    {
+                        Cloudflare: "www.hiero10.com.cloudflare.com",
+                        Cloudfront: "esfijfodd.cloudfront.com",
+                        Domain: "www.hiero10.com",
+                        H7CDN: "2wdsf.speedxxx.com"
+                    },
+                    {
+                        Cloudflare: "www.hiero11.com.cloudflare.com",
+                        Cloudfront: "efsjfodd.cloudfront.com",
+                        Domain: "www.hiero11.com",
+                        H7CDN: "2weff.speedxxx.com"
+                    },
+                    {
+                        Cloudflare: "www.hiero12.com.cloudflare.com",
+                        Cloudfront: "efsodd.cloudfront.com",
+                        Domain: "www.hiero12.com",
+                        H7CDN: "2efdsf.speedxxx.com"
+                    }
+                ]
+            },
+            domains: []
         };
     },
     methods: {
-        // pickFile() {
-        //     this.$refs.file.click();
-        // },
-        // handleFileUpload() {
-        //     this.form.attachment = this.$refs.file.files[0];
-        //     // console.log(this.$refs.file.files[0]);
-        //     node_xj(
-        //         {
-        //             input: this.$refs.file.files[0], // input xls
-        //             output: "output.json", // output json
-        //             sheet: "sheetname", // specific sheetname
-        //             rowsToSkip: 5 // number of rows to skip at the top of the sheet; defaults to 0
-        //         },
-        //         function(err, result) {
-        //             if (err) {
-        //                 console.error(err);
-        //             } else {
-        //                 console.log(result);
-        //             }
-        //         }
-        //     );
-        // },
-
+        pickFile() {
+            this.$refs.file.click();
+        },
+        handleFileUpload() {
+            var vm = this;
+            var fileUpload = this.$refs.file;
+            var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+            if (regex.test(fileUpload.value.toLowerCase())) {
+                if (typeof FileReader != "undefined") {
+                    var reader = new FileReader();
+                    if (reader.readAsBinaryString) {
+                        reader.onload = function(e) {
+                            vm.ProcessExcel(e.target.result);
+                        };
+                        reader.readAsBinaryString(fileUpload.files[0]);
+                    } else {
+                        reader.onload = function(e) {
+                            var data = "";
+                            var bytes = new Uint8Array(e.target.result);
+                            for (var i = 0; i < bytes.byteLength; i++) {
+                                data += String.fromCharCode(bytes[i]);
+                            }
+                            vm.ProcessExcel(data);
+                        };
+                        reader.readAsArrayBuffer(fileUpload.files[0]);
+                    }
+                } else {
+                    alert("This browser does not support HTML5.");
+                }
+            } else {
+                alert("Please upload a valid Excel file.");
+            }
+        },
+        ProcessExcel(data) {
+            var workbook = XLSX.read(data, {
+                type: "binary"
+            });
+            var firstSheet = workbook.SheetNames[0];
+            var excelRows = XLSX.utils.sheet_to_row_object_array(
+                workbook.Sheets[firstSheet]
+            );
+            this.transformData(excelRows);
+        },
+        transformData(excelRows) {
+            this.batchData.domains = [];
+            this.batchData.domains = excelRows;
+            this.batchData.domains.forEach((o, i) => {
+                o.cdns = [];
+                o.cdns = Object.entries(o).map(([name, cname]) => ({
+                    name,
+                    cname
+                }));
+                o.cdns.forEach((obj, idx) => {
+                    obj["ttl"] = 600;
+                });
+                o.cdns.splice(0, 1);
+                o.cdns.pop();
+                o.name = o.Domain;
+                delete o.H7CDN;
+                delete o.Cloudflare;
+                delete o.Cloudfront;
+                delete o.Domain;
+            });
+            this.batchAddDomains();
+        },
+        batchAddDomains() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
+                .then(
+                    function(result) {
+                        this.getAllDomains();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -152,10 +244,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -265,6 +357,26 @@ export default {
                 this.pages = Math.ceil(this.filterData.length / this.perPage);
             }
         }
+        // transformData() {
+        //     console.log(this.batchData);
+        //     this.batchData.domains.forEach((o, i) => {
+        //         o.cdns = [];
+        //         o.cdns = Object.entries(o).map(([name, cname]) => ({
+        //             name,
+        //             cname
+        //         }));
+        //         o.cdns.forEach((obj, idx) => {
+        //             obj["ttl"] = 600;
+        //         });
+        //         o.cdns.splice(2, 1);
+        //         o.cdns.pop();
+        //         o.name = o.Domain;
+        //         delete o.H7CDN;
+        //         delete o.Cloudflare;
+        //         delete o.Cloudfront;
+        //         delete o.Domain;
+        //     });
+        // }
     },
     computed: {
         formTitle() {
@@ -280,6 +392,8 @@ export default {
     mounted() {
         this.$router.push("admin/domains");
         this.getAllDomains();
+        // console.log(this.batchData);
+        this.transformData();
     },
     created() {
         this.getAllDomains();

@@ -102,6 +102,16 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        batchNewDomainsAndCdns: (context, data) => {
+            return axios
+                .post("yuanyang/domains/batch", data)
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         newDomain: (context, data) => {
             return axios
                 .post("yuanyang/domains", data)
@@ -141,6 +151,26 @@ export default {
                 .delete(
                     "yuanyang/domains/" + data.domain_id + "/cdn/" + data.id
                 )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getContinentList: context => {
+            return axios
+                .get("yuanyang/continents")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getCountriesList: context => {
+            return axios
+                .get("yuanyang/countries")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

@@ -60,5 +60,5 @@ export default {
 </script>
 <style lang="sass">
 #domainInfo
-    padding: 20px 0 
+    padding: 20px 15px
 </style>
