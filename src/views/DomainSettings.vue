@@ -15,7 +15,7 @@
 </template>
 
 <script>
-import DomainInfo from "../components/domainSettings/DomainInfo";
+import DomainInfo from "../components/domainSettings/DomainInfoSetting";
 import CDNsetting from "../components/domainSettings/CDNsetting";
 import IRouteCdnSetting from "../components/domainSettings/IRouteCdnSetting";
 
