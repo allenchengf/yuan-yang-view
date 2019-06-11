@@ -1,15 +1,22 @@
 import Vue from "vue";
 import Router from "vue-router";
-import Layout from "./views/Layout.vue";
+import AdminLayout from "./views/Layout.vue";
 import Logout from "./views/Logout.vue";
-import Login from "./views/Login.vue";
 import Authentication from "./views/Authentication.vue";
 
+import Dashboard from "./views/Dashboard.vue";
 import Domains from "./views/Domains.vue";
-
-import NetworkSetting from "./views/admin/NetworkSetting.vue";
-
 import DomainSettings from "./views/DomainSettings.vue";
+import CdnSetting from "./views/admin/CdnSetting";
+import DomainsSetting from "./views/admin/DomainsSetting.vue";
+import DomainInfo from "./views/admin/DomainInfo.vue";
+import GroupingSetting from "./views/admin/GroupingSetting.vue";
+import IRouteCdnSetting from "./views/IRouteCdn.vue";
+import Logs from "./views/admin/Logs.vue";
+import DnsLookup from "./views/admin/tools/DnsLookup.vue";
+import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
+
+import NetworkSetting from "./views/h7admin/NetworkSetting.vue";
 
 Vue.use(Router);
 
@@ -17,7 +24,6 @@ export default new Router({
     mode: "history",
     base: process.env.BASE_URL,
     routes: [
-        { path: "*", redirect: "/admin" },
         {
             path: "/auth",
             meta: {
@@ -27,57 +33,117 @@ export default new Router({
             component: Authentication
         },
         {
-            path: "/login",
+            path: "/logout",
             meta: {
                 requireAuth: false,
                 auth: 0
             },
-            component: Login
-        },
-        {
-            path: "/logout",
-            meta: {
-                requireAuth: true,
-                auth: 0
-            },
             component: Logout
         },
-
+        { path: "*", redirect: "/" },
         {
-            path: "/admin",
+            path: "/",
             meta: {
-                requireAuth: true,
-                auth: 0
+                requireAuth: true
             },
-            component: Layout,
+            component: AdminLayout,
             children: [
                 {
                     path: "",
-                    redirect: "domains",
+                    redirect: "dashboard",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     }
                 },
                 {
-                    path: "domains",
+                    path: "dashboard",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: Domains
+                    component: Dashboard
                 },
                 {
-                    path: "domain-settings",
-                    name: "domainSettings",
+                    path: "dashboard",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: DomainSettings
+                    component: Dashboard
                 },
                 {
-                    path: "networks",
+                    path: "/admin/cdns",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: CdnSetting
+                },
+                {
+                    path: "/admin/domains",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: DomainsSetting
+                },
+                {
+                    name: "domainInfo",
+                    path: "/admin/domain/:domain_id",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: DomainInfo,
+                    props: route => ({
+                        ...route.params
+                    })
+                },
+
+                {
+                    path: "/admin/grouping",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: GroupingSetting
+                },
+                {
+                    name: "iRouteCDN",
+                    path: "iroutecdn",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: IRouteCdnSetting
+                },
+                {
+                    path: "/admin/logs",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: Logs
+                },
+                {
+                    path: "/admin/dns-lookup",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: DnsLookup
+                },
+                {
+                    path: "/admin/config-backup",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: ConfigBackup
+                },
+                {
+                    path: "/admin/networks",
                     name: "networks",
                     meta: {
                         requireAuth: true,
