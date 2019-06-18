@@ -73,7 +73,7 @@ export default new Router({
                     component: Dashboard
                 },
                 {
-                    path: "/admin/cdns",
+                    path: "/admin/cdn-providers",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -90,7 +90,7 @@ export default new Router({
                 },
                 {
                     name: "domainInfo",
-                    path: "/admin/domain/:domain_id",
+                    path: "/admin/domains/:domain_id",
                     meta: {
                         requireAuth: true,
                         auth: 1
