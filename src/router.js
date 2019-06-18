@@ -5,8 +5,6 @@ import Logout from "./views/Logout.vue";
 import Authentication from "./views/Authentication.vue";
 
 import Dashboard from "./views/Dashboard.vue";
-import Domains from "./views/Domains.vue";
-import DomainSettings from "./views/DomainSettings.vue";
 import CdnSetting from "./views/admin/CdnSetting";
 import DomainsSetting from "./views/admin/DomainsSetting.vue";
 import DomainInfo from "./views/admin/DomainInfo.vue";
@@ -15,7 +13,6 @@ import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import Logs from "./views/admin/Logs.vue";
 import DnsLookup from "./views/admin/tools/DnsLookup.vue";
 import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
-
 import NetworkSetting from "./views/h7admin/NetworkSetting.vue";
 
 Vue.use(Router);
