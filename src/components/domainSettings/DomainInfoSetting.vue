@@ -1,99 +1,98 @@
 <template lang="pug">
-    v-container#domainInfoSetting
-        v-layout(wrap)
-            v-flex(xs12)
-                v-card
-                    v-card-title 
-                        .subheading Domain Info
-                        v-spacer
-                        v-btn.my-0(color="primary" title="edit" @click="editItem(domainInfo,'domainInfo')") Edit
-                    v-divider
-                    v-card-text
-                        v-layout(wrap row)
-                            v-flex(sm5 md2)
-                                .text.font-weight-bold Domain Name
-                            v-flex(sm5 md10)
-                                .text {{domainInfo.name}}
-                            v-flex(sm5 md2)
-                                .text.font-weight-bold Cname
-                            v-flex(sm5 md10)
-                                .text {{domainInfo.name}}.{{domainInfo.user_group_id}}.{{dnsPodDomain}}
-                            v-flex(sm5 md2)
-                                .text.font-weight-bold Group
-                            v-flex(sm5 md10)
-                                .text {{domainInfo.group.name}}
-                    v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
-                        v-card
-                            v-card-title.title Edit Domain
-                            v-card-text
-                                v-form(ref="editForm")
-                                    v-text-field(v-model="domainInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                    v-text-field(v-model="domainInfo.label" label="Label" type="text" name="label")
-                            v-card-actions  
-                                v-spacer
-                                v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                                v-btn(color="primary" flat="flat" @click="updateDomain") Save
-            v-flex(xs12)
-                v-card
-                    v-card-title
-                        .subheading CDN
-                        v-spacer
-                        v-btn.my-0(color="primary" @click="addItem") Add CDN
-                    v-divider
-                    v-card-text
-                        v-layout(wrap)
-                            v-flex(xs12 sm6 md4)
-                                v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="cdnData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="3" single-line)
-                        template(slot="items" slot-scope="{props, index}")
-                            tr
-                                td {{props.index +1}}
-                                td {{props.item.name}}
-                                td {{props.item.cname}}
-                                td
-                                    v-icon(large color="green darken-2" v-if="props.item.default == true") check
-                                td
-                                    v-menu(offset-y left) 
-                                        v-tooltip(right slot="activator") 
-                                            v-btn.ma-0(flat icon small color="primary" slot="activator")
-                                                v-icon( small) more_vert
-                                            span More
-                                        v-list.pa-0
-                                            v-list-tile(@click="editItem(props.item, 0)" :disabled="props.item.default == false ? false : true")
-                                                v-list-tile-title Change to default
-                                            v-list-tile(@click="editItem(props.item, 1)" :disabled="props.item.default == false ? false : true")
-                                                v-list-tile-title Delete
-                v-dialog.edit-dialog(v-model="dialog.editCDN" max-width="460" persistent)
+    v-layout(wrap)
+        v-flex(xs12)
+            v-card
+                v-card-title 
+                    .subheading Domain Info
+                    v-spacer
+                    v-btn.my-0(color="primary" title="edit" @click="editItem(domainInfo,'domainInfo')") Edit
+                v-divider
+                v-card-text
+                    v-layout(wrap row)
+                        v-flex(sm5 md2)
+                            .text.font-weight-bold Domain Name
+                        v-flex(sm5 md10)
+                            .text {{domainInfo.name}}
+                        v-flex(sm5 md2)
+                            .text.font-weight-bold Cname
+                        v-flex(sm5 md10)
+                            .text {{domainInfo.name}}.{{domainInfo.user_group_id}}.{{dnsPodDomain}}
+                        v-flex(sm5 md2)
+                            .text.font-weight-bold Group
+                        v-flex(sm5 md10)
+                            .text group1
+                        v-flex(sm5 md2)
+                            .text.font-weight-bold Label
+                        v-flex(sm5 md10)
+                            .text {{domainInfo.label}}
+                v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
-                        v-card-title.title New CDN
+                        v-card-title.title Edit Domain
                         v-card-text
-                            v-form(ref="editForm")
-                                v-text-field(v-model="cdn.name" label="CDN Name" type="text" name="name" :rules="[rules.required]")
-                                v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
+                            v-form(ref="editDomainForm")
+                                v-text-field(v-model="domainInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                v-text-field(v-model="domainInfo.label" label="Label" type="text" name="label")
                         v-card-actions  
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateCDN('newCDN')") Save
-                v-dialog.edit-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
-                    v-card
-                        v-card-title.title Change CDN Default
-                        v-card-text Are you sure want to change your CDN provider to  "{{cdn.name}}" ?
-                        v-card-actions  
-                            v-spacer
-                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateCDN('changeDefault')") Save
-                v-dialog.edit-dialog(v-model="dialog.delete" max-width="460" persistent)
-                    v-card
-                        v-card-title.title Delete CDN Provider
-                        v-card-text Are you sure want to delete your CDN provider "{{cdn.name}}" ?
-                        v-card-actions  
-                            v-spacer
-                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateCDN('deleteCDN')") Save
-            //- v-flex(xs12)
-            //-     v-layout(column)
-            //-         h3 Domain Name : {{domain.name}}
-            //-         h3 CName : {{domain.cname}}.{{dnsPodDomain}}
+                            v-btn(color="primary" flat="flat" @click="updateDomain") Save
+        v-flex(xs12)
+            v-card
+                v-card-title
+                    .subheading CDN
+                    v-spacer
+                    v-btn.my-0(color="primary" @click="addItem") Add CDN
+                v-divider
+                v-card-text
+                    v-layout(wrap)
+                        v-flex(xs12 sm6 md4)
+                            v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                h7-data-table(:headers="headers" :items="cdnData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    template(slot="items" slot-scope="{props, index}")
+                        tr(:class="props.item.cdn_provider.status ? '' : 'grey--text'")
+                            td {{index}}
+                            td {{props.item.cdn_provider.name}}
+                            td {{props.item.cname}}
+                            td
+                                v-icon(large color="green darken-2" v-if="props.item.default == true") check
+                            td
+                                v-menu(offset-y left :disabled="props.item.cdn_provider.status?false:true") 
+                                    v-tooltip(right slot="activator") 
+                                        v-btn.ma-0(flat icon small color="primary" slot="activator" )
+                                            v-icon(small) more_vert
+                                        span More
+                                    v-list.pa-0
+                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? false : true")
+                                            v-list-tile-title Change to default
+                                        v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true")
+                                            v-list-tile-title Delete
+            v-dialog.edit-dialog(v-model="dialog.editCDN" max-width="460" persistent)
+                v-card
+                    v-card-title.title New CDN
+                    v-card-text
+                        v-form(ref="editForm")
+                            v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN(cdn.cdn_provider_id)" v-model="cdn.cdn_provider_id" )
+                            v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                        v-btn(color="primary" flat="flat" @click="updateCDN('newCDN')") Save
+            v-dialog.edit-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
+                v-card
+                    v-card-title.title Change CDN Default
+                    v-card-text Are you sure want to change your CDN provider to  "{{cdn.cdn_provider.name}}" ?
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                        v-btn(color="primary" flat="flat" @click="updateCDN('changeDefault')") Save
+            v-dialog.edit-dialog(v-model="dialog.delete" max-width="460" persistent)
+                v-card
+                    v-card-title.title Delete CDN Provider
+                    v-card-text Are you sure want to delete your CDN provider "{{cdn.cdn_provider.name}}" ?
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                        v-btn(color="primary" flat="flat" @click="updateCDN('deleteCDN')") Save
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -104,7 +103,7 @@ export default {
     data() {
         return {
             searchText: "",
-            dnsPodDomain: "shiftcdn.com",
+            dnsPodDomain: "",
             headers: [
                 {
                     text: "#",
@@ -138,69 +137,109 @@ export default {
                     width: "150px"
                 }
             ],
-            filterData: [
-                {
-                    id: 3,
-                    user_group_id: 2,
-                    name: "rd.test1.com",
-                    cname: "rd.test1.com",
-                    group: {
-                        name: "group1"
-                    },
-                    cdns: [{ name: "H7CDN" }, { name: "CloudFlare" }],
-                    edited_by: null,
-                    created_at: null,
-                    updated_at: null
-                }
-            ],
-            cdnData: [
-                {
-                    cname: "leo.pod.com",
-                    default: true,
-                    dns_provider_id: 428438012,
-                    domain_id: 1,
-                    edited_by: "be81b1f9-24ac-4de2-86a2-5575356e2a47",
-                    id: 1,
-                    name: "DNSPod",
-                    ttl: 6000
-                },
-                {
-                    cname: "leo.cdn.com",
-                    default: false,
-                    dns_provider_id: 0,
-                    domain_id: 1,
-                    edited_by: "be81b1f9-24ac-4de2-86a2-5575356e2a47",
-                    id: 2,
-                    name: "LeoCDN",
-                    ttl: 5040
-                }
-            ],
+            filterData: [],
+            cdnData: [],
             domainInfo: {},
-            cdn: {},
+            cdn: {
+                cdn_provider: {
+                    name: ""
+                }
+            },
             dialog: {
                 edit: false,
                 editCDN: false,
                 changeDefault: false,
                 delete: false
-            }
+            },
+            cdnProvider: [],
+            type: ""
         };
     },
     methods: {
+        chooseCDN(value) {
+            // console.log(value);
+        },
         getDomainInfo() {
-            this.domainInfo = this.filterData[0];
+            // this.domainInfo = this.filterData[0];
+
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getDomainById", this.domain_id)
+                .then(
+                    function(result) {
+                        this.domainInfo = result.data.domain;
+                        this.dnsPodDomain = result.data.dnsPodDomain;
+                        // console.log(result.data, "inner");
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getAllCdnProvider() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/getAllCdnProvider")
+                .then(
+                    function(result) {
+                        this.cdnProvider = result.data;
+                        // console.log(this.cdnProvider);
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getCdnData() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/getCDNsByDomainId", this.domain_id)
+                .then(
+                    function(result) {
+                        this.cdnData = result.data;
+                        // console.log(this.cdnData, "cdndata");
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         addItem: function() {
             this.$refs.editForm.reset();
             this.editedIndex = -1;
             this.dialog.editCDN = true;
+            this.type = "NewCdn";
         },
         editItem: function(item, type) {
+            this.type = type;
+            // console.log(item);
             if (type == "domainInfo") {
-                console.log(item);
+                // console.log(item);
                 this.editedIndex = this.filterData.indexOf(item);
                 this.dialog.edit = true;
                 this.domainInfo = Object.assign({}, item);
-            } else if (type == 0) {
+            } else if (type == "changeDefault") {
                 //changeDefault
                 this.dialog.changeDefault = true;
                 this.cdn = Object.assign({}, item);
@@ -211,61 +250,148 @@ export default {
             }
         },
         updateDomain: function() {
-            console.log(this.domainInfo, "edit");
-            this.closeEditDialog();
+            // console.log(this.domainInfo, "edit");
+            if (this.$refs.editDomainForm.validate()) {
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("domains/updateDomain", this.domainInfo)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Update domain info success!"
+                            );
+                            this.getDomainInfo();
+                            this.closeEditDialog();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.closeEditDialog();
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            }
         },
         updateCDN: function(type) {
-            console.log(type);
-            console.log(this.cdn, type);
-            this.closeEditDialog();
+            // console.log(type);
+            // console.log(this.cdn, type);
+            this.cdn.domain_id = this.domain_id;
+            if (type == "newCDN") {
+                this.addNewCdn();
+            } else if (type == "changeDefault") {
+                this.changeDefaultCdnProvider();
+            } else {
+                this.deleteCdn();
+            }
+        },
+        addNewCdn() {
+            // console.log(this.cdn);
+            if (this.$refs.editForm.validate()) {
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("cdns/newCDN", this.cdn)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Add CDN success!"
+                            );
+                            this.getCdnData();
+                            this.closeEditDialog();
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+            }
+        },
+        changeDefaultCdnProvider() {
+            this.cdn.default = !this.cdn.default;
+            // console.log(this.cdn);
+
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/updateCDN", this.cdn)
+                .then(
+                    function(result) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Change default CDN provider success!"
+                        );
+                        this.getCdnData();
+                        this.closeEditDialog();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        deleteCdn() {
+            // console.log(this.cdn);
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/deleteCDN", this.cdn)
+                .then(
+                    function(result) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Change default CDN provider success!"
+                        );
+                        this.getCdnData();
+                        this.closeEditDialog();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         closeEditDialog: function() {
-            this.dialog.edit = false;
-            this.dialog.editCDN = false;
-            this.dialog.changeDefault = false;
-            this.dialog.delete = false;
-            this.cdn = {};
+            if (this.type == "domainInfo") {
+                this.dialog.edit = false;
+                this.getDomainInfo();
+            } else {
+                this.dialog.editCDN = false;
+                this.dialog.changeDefault = false;
+                this.dialog.delete = false;
+                this.cdn = {
+                    cdn_provider: {
+                        name: ""
+                    }
+                };
+            }
         }
-        // getAllDomains: function() {
-        //     this.$store.dispatch("global/startLoading");
-        //     this.$store
-        //         .dispatch("domains/getAllDomains")
-        //         .then(
-        //             function(result) {
-        //                 this.filterData = result.data.domains;
-        //                 this.dnsPodDomain = result.data.dnsPodDomain;
-        //                 this.mapping();
-        //                 this.$store.dispatch("global/finishLoading");
-        //             }.bind(this)
-        //         )
-        //         .catch(
-        //             function(error) {
-        //                 this.$store.dispatch("global/finishLoading");
-        //                 this.$store.dispatch(
-        //                     "global/showSnackbarError",
-        //                     error.message
-        //                 );
-        //             }.bind(this)
-        //         );
-        // },
-        // mapping() {
-        //     this.filterData.forEach((o, i) => {
-        //         if (o.name == this.select) {
-        //             this.domain = o;
-        //         }
-        //     });
-        // }
-    },
-    watch: {
-        // select: function() {
-        //     this.mapping();
-        // }
     },
     mounted() {
         this.getDomainInfo();
-        // this.getAllDomains();
-        // this.mapping();
-        console.log(this.domain_id);
+        this.getAllCdnProvider();
+        this.getCdnData();
     }
 };
 </script>
