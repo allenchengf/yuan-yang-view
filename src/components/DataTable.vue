@@ -36,7 +36,7 @@ export default {
     data() {
         return {
             pagination: {
-                rowsPerPage: 20
+                rowsPerPage: 10
             },
             pages: 0
         };

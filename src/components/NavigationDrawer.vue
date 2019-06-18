@@ -37,7 +37,7 @@ export default {
                 {
                     title: "CDN",
                     icon: "settings_input_component",
-                    router: "/admin/cdns",
+                    router: "/admin/cdn-providers",
                     auth: 1
                 },
                 {
