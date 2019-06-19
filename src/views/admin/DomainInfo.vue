@@ -6,12 +6,13 @@
             v-flex(xs12)
                 v-breadcrumbs.pa-0(:items="breadcrumbsItems")
             v-flex(xs12)
-                v-card 
-                    v-tabs(v-model="tabsModel" slider-color="primary")
-                        v-tab(v-for="item in tabItems" :key="item.key") {{item.title}}
-                        v-tabs-items
-                            v-tab-item(v-for="item in tabItems" )
-                                component(:is="item.component" :domain_id="domain_id")
+                v-tabs(v-model="tabsModel" slider-color="primary" color="transparent" @change="nowTab($route.query.tab)")
+                    v-tab(v-for="item in tabItems" :key="item.key") {{item.title}}
+                v-divider
+            v-flex(xs12)
+                    v-tabs-items(v-model="tabsModel")
+                        v-tab-item(v-for="item in tabItems" :key="item.key")
+                            component(:is="item.component" :domain_id="domain_id" :currentTab="reloadPage")
                         
                             
             
@@ -22,24 +23,28 @@ import IRouteCdnInfoSetting from "../../components/domainSettings/IRouteCdnSetti
 
 export default {
     components: { DomainInfoSetting, IRouteCdnInfoSetting },
+    props: ["info"],
     data() {
         return {
             currentTab: "",
             breadcrumbsItems: [
                 {
-                    text: "Domains Setting",
+                    text: "Domains",
                     disabled: false,
-                    href: "/admin/domains"
+                    exact: true,
+                    to: "/admin/domains"
                 },
                 {
-                    text: "Domain Info",
-                    disabled: true,
-                    href: "/admin/domains/domain_id"
+                    text: "",
+                    disabled: false,
+                    exact: true,
+                    to: ""
                 },
                 {
                     text: "General",
                     disabled: true,
-                    href: ""
+                    exact: true,
+                    to: ""
                 }
             ],
             tabItems: [
@@ -53,21 +58,9 @@ export default {
             tabsModel: 0,
             domain_id: "",
             dnsPodDomain: "shiftcdn.com",
-            domainInfo: [
-                {
-                    id: 3,
-                    user_group_id: 2,
-                    name: "rd.test1.com",
-                    cname: "rd.test1.com",
-                    group: {
-                        name: "group1"
-                    },
-                    cdns: [{ name: "H7CDN" }, { name: "CloudFlare" }],
-                    edited_by: null,
-                    created_at: null,
-                    updated_at: null
-                }
-            ]
+            domainInfo: {},
+            currentTab: "",
+            reloadPage: ""
         };
     },
     watch: {
@@ -77,20 +70,48 @@ export default {
                 query: { tab: this.tabItems[value].title }
             });
             this.breadcrumbsItems[2].text = this.tabItems[value].title;
+        },
+        currentTab: function(value) {
+            this.reloadPage = value;
         }
     },
     methods: {
+        nowTab(value) {
+            this.currentTab = value;
+        },
         getDomainInfo() {
-            this.domainInfo = this.domainInfo[0];
+            // this.domainInfo = this.domainInfo[0];
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getDomainById", this.domain_id)
+                .then(
+                    function(result) {
+                        this.domainInfo = result.data.domain;
+                        this.dnsPodDomain = result.data.dnsPodDomain;
+                        // console.log(this.domainInfo, "data");
+                        this.breadcrumbsItems[1].text = this.domainInfo.name;
+                        this.breadcrumbsItems[1].to =
+                            "/admin/domains/" + this.domain_id;
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         }
     },
     mounted() {
         this.domain_id = this.$route.params.domain_id;
-        console.log(this.domain_id);
         this.getDomainInfo();
-        // this.$router.push("/admin/domain/" + this.domain_id);
     },
     created() {
+        this.domain_id = this.$route.params.domain_id;
         var query = this.$route.query;
         if (query.tab != null) {
             var idx = this.tabItems.findIndex(elem => {
