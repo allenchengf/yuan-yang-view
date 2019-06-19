@@ -14,17 +14,16 @@
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="3" single-line)
+                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
-                            tr
-                                td.text-xs-left {{ props.index + 1}}
-                                td.text-xs-left {{ props.item.name }}
-                                td.text-xs-left {{ props.item.ttl }}
-                                td.text-xs-left
-                                    v-switch(color="primary" v-model="props.item.is_open" @change="switchAction(props.item)")
-                                td.text-xs-left
-                                    v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)")
-                                        v-icon(small) edit
+                            td {{ index }}
+                            td {{ props.item.name }}
+                            td {{ props.item.ttl }}
+                            td
+                                v-switch(color="primary" v-model="props.item.status" @change="switchAction(props.item)")
+                            td
+                                v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)")
+                                    v-icon(small) edit
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
@@ -43,7 +42,7 @@
                         v-card-actions  
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateStatus") Save
+                            v-btn(color="primary" flat="flat" @click="updateStatus") Yes
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -60,26 +59,7 @@ export default {
                 edit: false,
                 changeStatus: false
             },
-            filterData: [
-                {
-                    id: 6,
-                    domain_id: 1,
-                    name: "test",
-                    cname: "test",
-                    is_open: false,
-                    ttl: 3600,
-                    edited_by: 1
-                },
-                {
-                    id: 7,
-                    domain_id: 1,
-                    name: "3489032",
-                    cname: "5438904",
-                    is_open: true,
-                    ttl: 3600,
-                    edited_by: 1
-                }
-            ],
+            filterData: [],
             headers: [
                 {
                     text: "#",
@@ -131,36 +111,36 @@ export default {
     methods: {
         switchAction(item) {
             this.switchItem = item;
-            console.log(item);
+            // console.log(item);
             this.dialog.changeStatus = true;
-            if (item.is_open == true) {
+            if (item.status == true) {
                 this.open = true;
             } else {
                 this.open = false;
             }
         },
         getAllCDNs: function() {
-            console.log(this.filterData);
-            // this.$store.dispatch("global/startLoading");
-            // this.$store
-            //     .dispatch("domains/getAllCDNs", this.domain_id)
-            //     .then(
-            //         function(result) {
-            //             this.filterData = result.data;
-            //             this.cdn.domain_id = this.domain_id;
-            //             this.setPages();
-            //             this.$store.dispatch("global/finishLoading");
-            //         }.bind(this)
-            //     )
-            //     .catch(
-            //         function(error) {
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarError",
-            //                 error.message
-            //             );
-            //         }.bind(this)
-            //     );
+            // console.log(this.filterData);
+
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/getAllCdnProvider")
+                .then(
+                    function(result) {
+                        this.filterData = result.data;
+                        // console.log(this.filterData);
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         addItem: function() {
             this.$refs.editForm.reset();
@@ -176,86 +156,99 @@ export default {
             if (this.editedIndex == -1) {
                 this.addNewCDN();
             } else {
-                console.log(this.cdn, "edit");
-                this.closeEditDialog();
-            }
+                // console.log(this.cdn, "edit");
+                this.$store.dispatch("global/startLoading");
+                if (this.$refs.editForm.validate()) {
+                    this.$store
+                        .dispatch("cdnProviders/updateCdnProvider", this.cdn)
+                        .then(
+                            function(result) {
+                                this.getAllCDNs();
+                                this.closeEditDialog();
+                                this.$store.dispatch("global/finishLoading");
+                            }.bind(this)
+                        )
+                        .catch(
+                            function(error) {
+                                this.getAllCDNs();
 
-            // this.cdn.domain_id = this.domain_id;
-            // this.$store.dispatch("global/startLoading");
-            // if (this.editedIndex == -1) {
-            //     this.addNewCDN();
-            // } else {
-            //     if (this.cdn.default == false) {
-            //         this.cdn.default = 0;
-            //     } else {
-            //         this.cdn.default = 1;
-            //     }
-            //     this.$store.dispatch("global/startLoading");
-            //     this.$store
-            //         .dispatch("domains/updateCDN", this.cdn)
-            //         .then(
-            //             function(result) {
-            //                 this.$store.dispatch("global/finishLoading");
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarSuccess",
-            //                     "Change default CDN provider success!"
-            //                 );
-            //                 this.getAllCDNs();
-            //                 this.closeChangeDialog();
-            //             }.bind(this)
-            //         )
-            //         .catch(
-            //             function(error) {
-            //                 this.$store.dispatch("global/finishLoading");
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarError",
-            //                     error.message
-            //                 );
-            //             }.bind(this)
-            //         );
-            // }
+                                this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    error.message
+                                );
+                            }.bind(this)
+                        );
+                }
+            }
         },
         updateStatus() {
-            console.log(this.switchItem, "status");
+            // console.log(this.switchItem, "status");
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch(
+                    "cdnProviders/changeCdnProviderStatus",
+                    this.switchItem
+                )
+                .then(
+                    function(result) {
+                        this.getAllCDNs();
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.getAllCDNs();
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         addNewCDN: function() {
-            console.log(this.cdn, "add");
-            this.closeEditDialog();
-            // this.cdn.domain_id = this.domain_id;
-            // var vm = this;
-            // if (this.$refs.editForm.validate()) {
-            //     this.$store.dispatch("global/startLoading");
-            //     this.$store
-            //         .dispatch("domains/newCDN", this.cdn)
-            //         .then(
-            //             function(result) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarSuccess",
-            //                     "Update user success!"
-            //                 );
-            //                 this.getAllCDNs();
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         )
-            //         .catch(
-            //             function(error) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarError",
-            //                     error.message
-            //                 );
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         );
-            //     this.closeEditDialog();
-            // }
+            // console.log(this.cdn, "add");
+            if (this.$refs.editForm.validate()) {
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("cdnProviders/newCdnProvider", this.cdn)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Add CDN Provider success!"
+                            );
+                            this.getAllCDNs();
+                            this.closeEditDialog();
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.getAllCDNs();
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+                this.closeEditDialog();
+            }
         },
         closeEditDialog: function() {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
+            this.getAllCDNs();
         }
     },
     mounted() {
-        console.log(this.filterData);
+        this.cdn.user_group_id = this.$store.getters[
+            "account/accountGroupId"
+        ]();
         this.getAllCDNs();
     }
 };
