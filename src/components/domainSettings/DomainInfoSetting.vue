@@ -26,16 +26,16 @@
                         v-flex(sm5 md10)
                             .text {{domainInfo.label}}
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
-                    v-card
-                        v-card-title.title Edit Domain
-                        v-card-text
-                            v-form(ref="editDomainForm")
-                                v-text-field(v-model="domainInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                v-text-field(v-model="domainInfo.label" label="Label" type="text" name="label")
-                        v-card-actions  
-                            v-spacer
-                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateDomain") Save
+                        v-card
+                            v-card-title.title Edit Domain
+                            v-card-text
+                                v-form(ref="editDomainForm")
+                                    v-text-field(v-model="domainInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                    v-text-field(v-model="domainInfo.label" label="Label" type="text" name="label")
+                            v-card-actions  
+                                v-spacer
+                                v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                                v-btn(color="primary" flat="flat" @click="updateDomain") Save
         v-flex(xs12)
             v-card
                 v-card-title
@@ -66,6 +66,7 @@
                                             v-list-tile-title Change to default
                                         v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true")
                                             v-list-tile-title Delete
+
             v-dialog.edit-dialog(v-model="dialog.editCDN" max-width="460" persistent)
                 v-card
                     v-card-title.title New CDN
@@ -93,6 +94,7 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateCDN('deleteCDN')") Save
+
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -145,6 +147,7 @@ export default {
                     name: ""
                 }
             },
+
             dialog: {
                 edit: false,
                 editCDN: false,
@@ -159,9 +162,9 @@ export default {
         chooseCDN(value) {
             // console.log(value);
         },
+
         getDomainInfo() {
             // this.domainInfo = this.filterData[0];
-
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/getDomainById", this.domain_id)
@@ -233,9 +236,9 @@ export default {
         },
         editItem: function(item, type) {
             this.type = type;
-            // console.log(item);
             if (type == "domainInfo") {
                 // console.log(item);
+
                 this.editedIndex = this.filterData.indexOf(item);
                 this.dialog.edit = true;
                 this.domainInfo = Object.assign({}, item);
@@ -372,7 +375,9 @@ export default {
                     }.bind(this)
                 );
         },
+
         closeEditDialog: function() {
+            // console.log(this.type);
             if (this.type == "domainInfo") {
                 this.dialog.edit = false;
                 this.getDomainInfo();
