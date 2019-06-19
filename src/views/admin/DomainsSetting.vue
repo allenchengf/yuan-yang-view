@@ -17,21 +17,21 @@
                                 v-list-tile(@click="pickFile")
                                     v-list-tile-title Import domain's info
                                         input.d-none(ref="file" type="file" @change="handleFileUpload()")
-                                v-list-tile(@click="")
+                                v-list-tile(@click="exportFile")
                                     v-list-tile-title Export domain's data
                     v-divider
                     v-card-text
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="3" single-line)
+                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             tr(@click="goToNextPage(props.item)" style="cursor: pointer")
-                                td {{ props.index + 1}}
+                                td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.name }}.{{props.item.user_group_id}}.{{dnsPodDomain}}
-                                td {{ props.item.cdnArray }}
-                                td {{ props.item.group.name }}
+                                td {{ props.item.cdnArray.join(', ') }}
+                                td group1
                                 td
                                     v-icon(small) keyboard_arrow_right
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
@@ -48,11 +48,13 @@
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
+import XLSX from "xlsx";
 
 export default {
     mixins: [textFieldRules],
     data() {
         return {
+            user_group_id: "",
             editedIndex: -1,
             domain: {},
             searchText: "",
@@ -64,61 +66,10 @@ export default {
             dnsPodDomain: "shiftcdn.com",
             form: [],
             batchData: {
-                domains: [
-                    {
-                        Cloudflare: "www.hiero9.com.cloudflare.com",
-                        Cloudfront: "efsfijdd.cloudfront.com",
-                        Domain: "www.hiero9.com",
-                        H7CDN: "wwefdsf.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero10.com.cloudflare.com",
-                        Cloudfront: "esfijfodd.cloudfront.com",
-                        Domain: "www.hiero10.com",
-                        H7CDN: "2wdsf.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero11.com.cloudflare.com",
-                        Cloudfront: "efsjfodd.cloudfront.com",
-                        Domain: "www.hiero11.com",
-                        H7CDN: "2weff.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero12.com.cloudflare.com",
-                        Cloudfront: "efsodd.cloudfront.com",
-                        Domain: "www.hiero12.com",
-                        H7CDN: "2efdsf.speedxxx.com"
-                    }
-                ]
+                domains: []
             },
-            filterData: [
-                {
-                    id: 3,
-                    user_group_id: 2,
-                    name: "rd.test1.com",
-                    cname: "rd.test1.com",
-                    group: {
-                        name: "group1"
-                    },
-                    cdns: [{ name: "H7CDN" }, { name: "CloudFlare" }],
-                    edited_by: null,
-                    created_at: null,
-                    updated_at: null
-                },
-                {
-                    id: 4,
-                    user_group_id: 2,
-                    name: "rd.test2.com",
-                    cname: "rd.test2.com",
-                    group: {
-                        name: "group2"
-                    },
-                    cdns: [{ name: "H7CDN" }, { name: "CloudFront" }],
-                    edited_by: null,
-                    created_at: null,
-                    updated_at: null
-                }
-            ],
+            filterData: [],
+            rawData: [],
             headers: [
                 {
                     text: "#",
@@ -158,7 +109,9 @@ export default {
                     sortable: false,
                     width: "150px"
                 }
-            ]
+            ],
+            exportData: [],
+            cdnProvider: []
         };
     },
     computed: {
@@ -213,15 +166,16 @@ export default {
         transformData(excelRows) {
             this.batchData.domains = [];
             this.batchData.domains = excelRows;
+            // console.log(excelRows);
             this.batchData.domains.forEach((o, i) => {
                 o.cdns = [];
                 o.cdns = Object.entries(o).map(([name, cname]) => ({
                     name,
                     cname
                 }));
-                o.cdns.forEach((obj, idx) => {
-                    obj["ttl"] = 600;
-                });
+                // o.cdns.forEach((obj, idx) => {
+                //     obj["ttl"] = 600;
+                // });
                 o.cdns.splice(0, 1);
                 o.cdns.pop();
                 o.name = o.Domain;
@@ -231,162 +185,191 @@ export default {
                 delete o.Domain;
             });
             this.batchAddDomains();
+            // console.log(this.batchData.domains);
         },
         batchAddDomains() {
-            console.log(this.batchData);
-            // this.$store.dispatch("global/startLoading");
-            // this.$store
-            //     .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
-            //     .then(
-            //         function(result) {
-            //             this.getAllDomains();
-            //             this.$store.dispatch("global/finishLoading");
-            //         }.bind(this)
-            //     )
-            //     .catch(
-            //         function(error) {
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarError",
-            //                 error.message
-            //             );
-            //         }.bind(this)
-            //     );
+            // console.log(this.batchData);
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
+                .then(
+                    function(result) {
+                        this.getAllDomains();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
-        getAllDomains: function() {
+        exportFile() {
+            // console.log(this.cdnProvider, "cc");
+            // this.getAllDomains();
+            this.exportData = [];
+            // console.log(this.filterData, "ff");
+            // this.exportData = this.filterData;
             this.filterData.forEach((o, i) => {
+                var exportData = {};
+                exportData.Domain = o.name;
+                exportData.cdns = [];
+                o.cdns.forEach((obj, idx) => {
+                    var cdnData = {};
+                    this.cdnProvider.forEach((object, index) => {
+                        if (obj.cdn_provider_id == object.id) {
+                            obj.name = object.name;
+                        }
+                    });
+                    cdnData.name = obj.name;
+                    cdnData.cname = obj.cname;
+                    exportData.cdns.push(cdnData);
+                });
+                this.exportData.push(exportData);
+            });
+            this.exportData.forEach((o, i) => {
+                o.cdns.forEach((obj, idx) => {
+                    o[obj.name] = obj.cname;
+                });
+                delete o.cdns;
+            });
+            // console.log(this.exportData, "export");
+            var domainWS = XLSX.utils.json_to_sheet(this.exportData);
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, domainWS, "domain");
+            XLSX.writeFile(
+                wb,
+                "domains" + new Date().toLocaleDateString() + ".xlsx"
+            );
+        },
+        getAllCdnProvider(filterData) {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/getAllCdnProvider")
+                .then(
+                    function(result) {
+                        this.cdnProvider = result.data;
+                        this.mapping();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        mapping() {
+            this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdns.forEach((obj, idx) => {
-                    o.cdnArray.push(obj.name);
+                    this.cdnProvider.forEach((object, index) => {
+                        if (obj.cdn_provider_id == object.id) {
+                            obj.cdn_provider_name = object.name;
+                        }
+                    });
+                    o.cdnArray.push(obj.cdn_provider_name);
                 });
             });
-            console.log(this.filterData);
-            // this.$store.dispatch("global/startLoading");
-            // this.$store
-            //     .dispatch("domains/getAllDomains")
-            //     .then(
-            //         function(result) {
-            //             this.filterData = result.data.domains;
-            //             this.dnsPodDomain = result.data.dnsPodDomain;
-            //             this.setPages();
-            //             this.$store.dispatch("global/finishLoading");
-            //         }.bind(this)
-            //     )
-            //     .catch(
-            //         function(error) {
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarError",
-            //                 error.message
-            //             );
-            //         }.bind(this)
-            //     );
+            this.filterData = this.rawData;
+            // console.log(this.filterData, "mm");
+        },
+        getAllDomains: function() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getAllDomains", this.user_group_id)
+                .then(
+                    function(result) {
+                        this.rawData = result.data.domains;
+                        this.dnsPodDomain = result.data.dnsPodDomain;
+                        // console.log(this.filterData, "ffff");
+                        // this.filterData.forEach((o, i) => {
+                        //     o.cdnArray = [];
+                        // });
+
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         addItem: function() {
             this.$refs.editForm.reset();
             this.editedIndex = -1;
             this.dialog.edit = true;
         },
-        editItem: function(item) {
-            console.log(item);
-            this.editedIndex = this.filterData.indexOf(item);
-            this.dialog.edit = true;
-            this.domain = Object.assign({}, item);
-        },
         updateDomain: function() {
             if (this.editedIndex == -1) {
                 this.addNewDomain();
-            } else {
-                console.log(this.cdn, "edit");
-                this.closeEditDialog();
             }
-
-            // this.cdn.domain_id = this.domain_id;
-            // this.$store.dispatch("global/startLoading");
-            // if (this.editedIndex == -1) {
-            //     this.addNewCDN();
-            // } else {
-            //     if (this.cdn.default == false) {
-            //         this.cdn.default = 0;
-            //     } else {
-            //         this.cdn.default = 1;
-            //     }
-            //     this.$store.dispatch("global/startLoading");
-            //     this.$store
-            //         .dispatch("domains/updateCDN", this.cdn)
-            //         .then(
-            //             function(result) {
-            //                 this.$store.dispatch("global/finishLoading");
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarSuccess",
-            //                     "Change default CDN provider success!"
-            //                 );
-            //                 this.getAllCDNs();
-            //                 this.closeChangeDialog();
-            //             }.bind(this)
-            //         )
-            //         .catch(
-            //             function(error) {
-            //                 this.$store.dispatch("global/finishLoading");
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarError",
-            //                     error.message
-            //                 );
-            //             }.bind(this)
-            //         );
-            // }
-        },
-        updateStatus() {
-            console.log(this.switchItem, "status");
         },
         addNewDomain: function() {
-            console.log(this.cdn, "add");
-            this.closeEditDialog();
-            // this.cdn.domain_id = this.domain_id;
-            // var vm = this;
-            // if (this.$refs.editForm.validate()) {
-            //     this.$store.dispatch("global/startLoading");
-            //     this.$store
-            //         .dispatch("domains/newCDN", this.cdn)
-            //         .then(
-            //             function(result) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarSuccess",
-            //                     "Update user success!"
-            //                 );
-            //                 this.getAllCDNs();
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         )
-            //         .catch(
-            //             function(error) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarError",
-            //                     error.message
-            //                 );
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         );
-            //     this.closeEditDialog();
-            // }
+            // console.log(this.domain, "add");
+            this.domain.user_group_id = this.$store.getters[
+                "account/accountGroupId"
+            ]();
+            this.domain.cname = this.domain.name;
+            var vm = this;
+            if (this.$refs.editForm.validate()) {
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("domains/newDomain", this.domain)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Add new domain success!"
+                            );
+                            this.getAllDomains();
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+                this.closeEditDialog();
+            }
         },
         closeEditDialog: function() {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
         },
         goToNextPage(data) {
-            console.log(data);
             this.$router.push({
                 name: "domainInfo",
                 params: {
-                    domain_id: data.id
-                    // info: data
+                    domain_id: data.id,
+                    info: data
                 }
             });
         }
     },
     mounted() {
+        this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.getAllDomains();
+        this.getAllCdnProvider();
+        // this.mapping();
     }
 };
 </script>
