@@ -325,7 +325,7 @@ export default {
                     .then(
                         function(result) {
                             this.$store.dispatch("global/showSnackbarSuccess", "Add new domain success!");
-                            this.getAllDomains();
+                            this.initialApis();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
