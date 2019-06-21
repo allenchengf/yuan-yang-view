@@ -9,6 +9,7 @@ import cdns from "./modules/cdns";
 import cdnProviders from "./modules/cdnProviders";
 import iRouteCdn from "./modules/iRouteCdn";
 import locationInfo from "./modules/locationInfo";
+import grouping from "./modules/grouping";
 
 Vue.use(Vuex);
 
@@ -21,6 +22,7 @@ export default new Vuex.Store({
         cdns,
         cdnProviders,
         iRouteCdn,
-        locationInfo
+        locationInfo,
+        grouping
     }
 });
