@@ -36,7 +36,7 @@ export default {
     data() {
         return {
             pagination: {
-                rowsPerPage: 10
+                rowsPerPage: this.perPage
             },
             pages: 0
         };
@@ -50,14 +50,21 @@ export default {
             );
         },
         setPages: function() {
-            if (this.perPage == null || this.items == null) {
+            if (this.perPage == null || this.pagination.totalItems == null) {
                 this.pages = null;
             } else {
-                this.pages = Math.ceil(this.items.length / this.perPage);
+                var length =
+                    this.pagination.totalItems == 0
+                        ? this.items.length
+                        : this.pagination.totalItems;
+                this.pages = Math.ceil(length / this.pagination.rowsPerPage);
             }
         }
     },
     watch: {
+        pagination: function(value) {
+            this.setPages();
+        },
         perPage: function(value) {
             this.pagination.rowsPerPage = value;
             this.setPages();
