@@ -5,10 +5,11 @@ import Logout from "./views/Logout.vue";
 import Authentication from "./views/Authentication.vue";
 
 import Dashboard from "./views/Dashboard.vue";
-import CdnSetting from "./views/admin/CdnSetting";
+import CdnProvidersSetting from "./views/admin/CdnProvidersSetting";
 import DomainsSetting from "./views/admin/DomainsSetting.vue";
 import DomainInfo from "./views/admin/DomainInfo.vue";
 import GroupingSetting from "./views/admin/GroupingSetting.vue";
+import GroupInfo from "./views/admin/GroupInfo.vue";
 import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import Logs from "./views/admin/Logs.vue";
 import DnsLookup from "./views/admin/tools/DnsLookup.vue";
@@ -47,10 +48,10 @@ export default new Router({
             children: [
                 {
                     path: "",
-                    redirect: "dashboard",
+                    redirect: "/admin/cdn-providers",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 1
                     }
                 },
                 {
@@ -75,7 +76,7 @@ export default new Router({
                         requireAuth: true,
                         auth: 1
                     },
-                    component: CdnSetting
+                    component: CdnProvidersSetting
                 },
                 {
                     path: "/admin/domains",
@@ -105,6 +106,18 @@ export default new Router({
                         auth: 1
                     },
                     component: GroupingSetting
+                },
+                {
+                    name: "groupInfo",
+                    path: "/admin/grouping/:group_id",
+                    meta: {
+                        requireAuth: true,
+                        auth: 1
+                    },
+                    component: GroupInfo,
+                    props: route => ({
+                        ...route.params
+                    })
                 },
                 {
                     name: "iRouteCDN",

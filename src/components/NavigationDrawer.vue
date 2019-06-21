@@ -28,14 +28,14 @@ export default {
             menu: false,
             items: [
                 { header: "General", auth: 0 },
+                // {
+                //     title: "Dashboard",
+                //     icon: "dashboard",
+                //     router: "/dashboard",
+                //     auth: 0
+                // },
                 {
-                    title: "Dashboard",
-                    icon: "dashboard",
-                    router: "/dashboard",
-                    auth: 0
-                },
-                {
-                    title: "CDN",
+                    title: "CDN Providers",
                     icon: "settings_input_component",
                     router: "/admin/cdn-providers",
                     auth: 1
