@@ -29,9 +29,9 @@
                             tr(@click="goToNextPage(props.item)" style="cursor: pointer")
                                 td {{ index }}
                                 td {{ props.item.name }}
-                                td {{ props.item.name }}.{{props.item.user_group_id}}.{{dnsPodDomain}}
+                                td {{ props.item.cname }}.{{dnsPodDomain}}
                                 td {{ props.item.cdnArray.join(', ') }}
-                                td group1
+                                td {{props.item.domain_group.name}}
                                 td
                                     v-icon(small) keyboard_arrow_right
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
@@ -290,6 +290,7 @@ export default {
                     function(result) {
                         this.rawData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
+                        this.getAllCdnProvider();
                         // console.log(this.filterData, "ffff");
                         // this.filterData.forEach((o, i) => {
                         //     o.cdnArray = [];
@@ -369,7 +370,7 @@ export default {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.getAllDomains();
         this.getAllCdnProvider();
-        // this.mapping();
+        this.mapping();
     }
 };
 </script>

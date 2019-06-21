@@ -25,7 +25,7 @@
                         td {{index}}
                         td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
                         td {{props.item.isp}}
-                        td {{props.item.cdn.cdn_provider.name}}
+                        td {{props.item.cdn == null ? props.item.cdn : props.item.cdn.cdn_provider.name}}
 </template>
 <script>
 export default {
@@ -124,9 +124,7 @@ export default {
     },
     watch: {
         currentTab: function(value) {
-            if (value == "General") {
-                this.getAlliRouteCDNs();
-            }
+            this.getAlliRouteCDNs();
         },
         selectedContinent: function() {
             if (this.selectedContinent == "All") {

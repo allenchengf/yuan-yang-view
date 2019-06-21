@@ -16,11 +16,11 @@
                         v-flex(sm5 md2)
                             .text.font-weight-bold Cname
                         v-flex(sm5 md10)
-                            .text {{domainInfo.name}}.{{domainInfo.user_group_id}}.{{dnsPodDomain}}
+                            .text {{domainInfo.cname}}.{{dnsPodDomain}}
                         v-flex(sm5 md2)
                             .text.font-weight-bold Group
                         v-flex(sm5 md10)
-                            .text group1
+                            .text {{domainInfo.domain_group.name}}
                         v-flex(sm5 md2)
                             .text.font-weight-bold Label
                         v-flex(sm5 md10)
@@ -78,7 +78,7 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateCDN('newCDN')") Save
-            v-dialog.edit-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
+            v-dialog.change-default-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
                 v-card
                     v-card-title.title Change CDN Default
                     v-card-text Are you sure want to change your CDN provider to  "{{cdn.cdn_provider.name}}" ?
@@ -86,14 +86,14 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateCDN('changeDefault')") Save
-            v-dialog.edit-dialog(v-model="dialog.delete" max-width="460" persistent)
+            v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
                 v-card
                     v-card-title.title Delete CDN Provider
                     v-card-text Are you sure want to delete your CDN provider "{{cdn.cdn_provider.name}}" ?
                     v-card-actions  
                         v-spacer
+                        v-btn(color="error" flat="flat" @click="updateCDN('deleteCDN')") Delete
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                        v-btn(color="primary" flat="flat" @click="updateCDN('deleteCDN')") Save
 
 </template>
 <script>
@@ -141,7 +141,9 @@ export default {
             ],
             filterData: [],
             cdnData: [],
-            domainInfo: {},
+            domainInfo: {
+                domain_group: []
+            },
             cdn: {
                 cdn_provider: {
                     name: ""
@@ -155,6 +157,7 @@ export default {
                 delete: false
             },
             cdnProvider: [],
+            cdnProviderData: [],
             type: ""
         };
     },
@@ -193,7 +196,7 @@ export default {
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
-                        // console.log(this.cdnProvider);
+                        // this.mapping();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -207,6 +210,21 @@ export default {
                     }.bind(this)
                 );
         },
+        // mapping() {
+        //     // var cdn = [];
+        //     this.cdnProviderData = Object.assign([], this.cdnProvider);
+        //     this.cdnProvider.forEach((o, i) => {
+        //         this.cdnData.forEach((obj, idx) => {
+        //             if (o.id == obj.cdn_provider_id) {
+        //                 console.log(this.cdnProvider[i]);
+        //                 this.cdnProviderData.splice(i, 1);
+        //             }
+        //         });
+        //         // cdn.push(this.cdnProvider[i]);
+        //     });
+
+        //     console.log(this.cdnProviderData, "cc");
+        // },
         getCdnData() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -229,6 +247,7 @@ export default {
                 );
         },
         addItem: function() {
+            // this.mapping();
             this.$refs.editForm.reset();
             this.editedIndex = -1;
             this.dialog.editCDN = true;
