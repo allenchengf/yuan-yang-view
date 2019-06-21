@@ -1,9 +1,8 @@
 <template lang="pug">
     #datatable
-        //- slot(name="slot-content" :item="val" v-for="val in items")
         v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination"  hide-actions)
             template(slot="items" slot-scope="props")
-                slot(name="items" v-bind="props")
+                slot(name="items" :props="props" :index="rowIndex(props.index)")
                 
         v-layout.px-2(row align-center)
             v-flex.text-xs-left.py-3(xs4)
@@ -37,21 +36,35 @@ export default {
     data() {
         return {
             pagination: {
-                rowsPerPage: 20
+                rowsPerPage: this.perPage
             },
             pages: 0
         };
     },
     methods: {
+        rowIndex: function(propsIdx) {
+            return (
+                (this.pagination.page - 1) * this.pagination.rowsPerPage +
+                propsIdx +
+                1
+            );
+        },
         setPages: function() {
-            if (this.perPage == null || this.items == null) {
+            if (this.perPage == null || this.pagination.totalItems == null) {
                 this.pages = null;
             } else {
-                this.pages = Math.ceil(this.items.length / this.perPage);
+                var length =
+                    this.pagination.totalItems == 0
+                        ? this.items.length
+                        : this.pagination.totalItems;
+                this.pages = Math.ceil(length / this.pagination.rowsPerPage);
             }
         }
     },
     watch: {
+        pagination: function(value) {
+            this.setPages();
+        },
         perPage: function(value) {
             this.pagination.rowsPerPage = value;
             this.setPages();

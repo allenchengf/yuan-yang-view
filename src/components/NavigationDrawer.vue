@@ -28,18 +28,59 @@ export default {
             menu: false,
             items: [
                 { header: "General", auth: 0 },
-                {
-                    title: "Domains List",
-                    icon: "account_circle",
-                    router: "/admin/domains",
-                    auth: 0
-                },
                 // {
-                //     title: "Domain Settings",
-                //     icon: "settings",
-                //     router: "/admin/domain-settings",
+                //     title: "Dashboard",
+                //     icon: "dashboard",
+                //     router: "/dashboard",
                 //     auth: 0
                 // },
+                {
+                    title: "CDN Providers",
+                    icon: "settings_input_component",
+                    router: "/admin/cdn-providers",
+                    auth: 1
+                },
+                {
+                    title: "Domains",
+                    icon: "domain",
+                    router: "/admin/domains",
+                    auth: 1
+                },
+                {
+                    title: "Grouping",
+                    icon: "group",
+                    router: "/admin/grouping",
+                    auth: 1
+                },
+                {
+                    title: "iRouteCDN",
+                    icon: "dns",
+                    router: "/iroutecdn",
+                    auth: 0
+                },
+                {
+                    title: "Logs",
+                    icon: "description",
+                    router: "/admin/logs",
+                    auth: 1
+                },
+                {
+                    title: "Tools",
+                    icon: "build",
+                    auth: 1,
+                    children: [
+                        {
+                            title: "DNS lookup",
+                            router: "/admin/dns-lookup",
+                            auth: 1
+                        },
+                        {
+                            title: "Config Backup",
+                            router: "/admin/config-backup",
+                            auth: 1
+                        }
+                    ]
+                },
                 { header: "Administration", auth: 2 },
                 {
                     title: "Networks",
