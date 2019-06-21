@@ -30,7 +30,7 @@
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
-                                td {{ props.item.cdnArray.join(', ') }}
+                                td {{ props.item.cdnArray.join(', ')}}
                                 td {{props.item.domain_group.name}}
                                 td
                                     v-icon(small) keyboard_arrow_right
@@ -111,7 +111,8 @@ export default {
                 }
             ],
             exportData: [],
-            cdnProvider: []
+            cdnProvider: [],
+            cdnProviderMapping: {}
         };
     },
     computed: {
@@ -158,9 +159,7 @@ export default {
                 type: "binary"
             });
             var firstSheet = workbook.SheetNames[0];
-            var excelRows = XLSX.utils.sheet_to_row_object_array(
-                workbook.Sheets[firstSheet]
-            );
+            var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
             this.transformData(excelRows);
         },
         transformData(excelRows) {
@@ -184,8 +183,8 @@ export default {
                 delete o.Cloudfront;
                 delete o.Domain;
             });
-            this.batchAddDomains();
-            // console.log(this.batchData.domains);
+            // this.batchAddDomains();
+            console.log(this.batchData.domains);
         },
         batchAddDomains() {
             // console.log(this.batchData);
@@ -201,10 +200,7 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        this.$store.dispatch("global/showSnackbarError", error.message);
                     }.bind(this)
                 );
         },
@@ -241,29 +237,26 @@ export default {
             var domainWS = XLSX.utils.json_to_sheet(this.exportData);
             var wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, domainWS, "domain");
-            XLSX.writeFile(
-                wb,
-                "domains" + new Date().toLocaleDateString() + ".xlsx"
-            );
+            XLSX.writeFile(wb, "domains" + new Date().toLocaleDateString() + ".xlsx");
         },
-        getAllCdnProvider(filterData) {
-            this.$store.dispatch("global/startLoading");
-            this.$store
+        getAllCdnProvider() {
+            return this.$store
                 .dispatch("cdnProviders/getAllCdnProvider")
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
-                        this.mapping();
-                        this.$store.dispatch("global/finishLoading");
+                        this.cdnProvider.forEach(
+                            (item => {
+                                this.cdnProviderMapping[item.id] = item.name;
+                            }).bind(this)
+                        );
+                        // console.log(this.cdnProvider);
+                        return Promise.resolve();
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        return Promise.reject(error);
                     }.bind(this)
                 );
         },
@@ -271,41 +264,42 @@ export default {
             this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdns.forEach((obj, idx) => {
-                    this.cdnProvider.forEach((object, index) => {
-                        if (obj.cdn_provider_id == object.id) {
-                            obj.cdn_provider_name = object.name;
-                        }
-                    });
-                    o.cdnArray.push(obj.cdn_provider_name);
+                    o.cdnArray.push(this.cdnProviderMapping[obj.cdn_provider_id]);
                 });
             });
             this.filterData = this.rawData;
             // console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
-            this.$store.dispatch("global/startLoading");
-            this.$store
+            return this.$store
                 .dispatch("domains/getAllDomains", this.user_group_id)
                 .then(
                     function(result) {
                         this.rawData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
-                        this.getAllCdnProvider();
-                        // console.log(this.filterData, "ffff");
-                        // this.filterData.forEach((o, i) => {
-                        //     o.cdnArray = [];
-                        // });
-
-                        this.$store.dispatch("global/finishLoading");
+                        // console.log(this.rawData);
+                        return Promise.resolve();
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
+                        return Promise.reject(error);
+                    }.bind(this)
+                );
+        },
+        initialApis: function() {
+            this.$store.dispatch("global/startLoading");
+            Promise.all([this.getAllDomains(), this.getAllCdnProvider()])
+                .then(
+                    function() {
+                        this.mapping();
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                    }.bind(this)
+                )
+                .catch(
+                    function(err) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch("global/showSnackbarError", error.message);
                     }.bind(this)
                 );
         },
@@ -321,9 +315,7 @@ export default {
         },
         addNewDomain: function() {
             // console.log(this.domain, "add");
-            this.domain.user_group_id = this.$store.getters[
-                "account/accountGroupId"
-            ]();
+            this.domain.user_group_id = this.$store.getters["account/accountGroupId"]();
             this.domain.cname = this.domain.name;
             var vm = this;
             if (this.$refs.editForm.validate()) {
@@ -332,20 +324,14 @@ export default {
                     .dispatch("domains/newDomain", this.domain)
                     .then(
                         function(result) {
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Add new domain success!"
-                            );
+                            this.$store.dispatch("global/showSnackbarSuccess", "Add new domain success!");
                             this.getAllDomains();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
+                            this.$store.dispatch("global/showSnackbarError", error.message);
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     );
@@ -366,11 +352,13 @@ export default {
             });
         }
     },
-    mounted() {
+    watch: {},
+    created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
-        this.getAllDomains();
-        this.getAllCdnProvider();
-        this.mapping();
+        this.initialApis();
+        // this.getAllDomains();
+        // this.getAllCdnProvider();
+        // this.mapping();
     }
 };
 </script>
