@@ -26,14 +26,17 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                     h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
-                            tr(@click="goToNextPage(props.item)" style="cursor: pointer")
+                            tr
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
                                 td {{ props.item.cdnArray.join(', ')}}
                                 td {{props.item.domain_group.name}}
                                 td
-                                    v-icon(small) keyboard_arrow_right
+                                    v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
+                                        v-icon(small) edit
+                                    v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
+                                        v-icon(small) delete
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
@@ -44,7 +47,15 @@
                         v-card-actions  
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                            v-btn(color="primary" flat="flat" @click="updateDomain") Save
+                            v-btn(color="primary" flat="flat" @click="updateDomain('add')") Save
+                v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Delete Domain
+                        v-card-text Are you sure want to delete "{{domain.name}}" ?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="error" flat="flat" @click="updateDomain('delete')") Delete
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -60,9 +71,9 @@ export default {
             searchText: "",
             dialog: {
                 edit: false,
-                changeStatus: false
+                changeStatus: false,
+                delete: false
             },
-
             dnsPodDomain: "shiftcdn.com",
             form: [],
             batchData: {
@@ -103,7 +114,7 @@ export default {
                     value: "group"
                 },
                 {
-                    text: "",
+                    text: "Actions",
                     align: "left",
                     value: "",
                     sortable: false,
@@ -123,8 +134,11 @@ export default {
     methods: {
         pickFile() {
             this.$refs.file.click();
+            // console.log(this.batchData);
+            console.log("cchh");
         },
         handleFileUpload() {
+            // console.log(this.$refs.file, "newfile");
             var vm = this;
             var fileUpload = this.$refs.file;
             var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
@@ -159,7 +173,9 @@ export default {
                 type: "binary"
             });
             var firstSheet = workbook.SheetNames[0];
-            var excelRows = XLSX.utils.sheet_to_row_object_array(workbook.Sheets[firstSheet]);
+            var excelRows = XLSX.utils.sheet_to_row_object_array(
+                workbook.Sheets[firstSheet]
+            );
             this.transformData(excelRows);
         },
         transformData(excelRows) {
@@ -178,29 +194,36 @@ export default {
                 o.cdns.splice(0, 1);
                 o.cdns.pop();
                 o.name = o.Domain;
-                delete o.H7CDN;
-                delete o.Cloudflare;
-                delete o.Cloudfront;
+                o.cdns.forEach((obj, idx) => {
+                    delete o[obj.name];
+                });
                 delete o.Domain;
             });
-            // this.batchAddDomains();
+            this.batchAddDomains();
             console.log(this.batchData.domains);
         },
         batchAddDomains() {
-            // console.log(this.batchData);
+            console.log(this.batchData, "ccc");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
                 .then(
                     function(result) {
-                        this.getAllDomains();
+                        this.initialApis();
                         this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Batch add domains & cdns success!"
+                        );
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -237,7 +260,10 @@ export default {
             var domainWS = XLSX.utils.json_to_sheet(this.exportData);
             var wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, domainWS, "domain");
-            XLSX.writeFile(wb, "domains" + new Date().toLocaleDateString() + ".xlsx");
+            XLSX.writeFile(
+                wb,
+                "domains" + new Date().toLocaleDateString() + ".xlsx"
+            );
         },
         getAllCdnProvider() {
             return this.$store
@@ -264,7 +290,9 @@ export default {
             this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdns.forEach((obj, idx) => {
-                    o.cdnArray.push(this.cdnProviderMapping[obj.cdn_provider_id]);
+                    o.cdnArray.push(
+                        this.cdnProviderMapping[obj.cdn_provider_id]
+                    );
                 });
             });
             this.filterData = this.rawData;
@@ -297,9 +325,12 @@ export default {
                     }.bind(this)
                 )
                 .catch(
-                    function(err) {
+                    function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -308,14 +339,28 @@ export default {
             this.editedIndex = -1;
             this.dialog.edit = true;
         },
-        updateDomain: function() {
-            if (this.editedIndex == -1) {
+        editItem: function(item, type) {
+            // this.type = type;
+            if (type == "delete") {
+                console.log(item);
+                this.dialog.delete = true;
+                this.domain = Object.assign({}, item);
+            }
+            console.log(this.domain);
+        },
+        updateDomain: function(type) {
+            console.log(type);
+            if (this.editedIndex == -1 && type !== "delete") {
                 this.addNewDomain();
+            } else if (type == "delete") {
+                this.deleteDomain();
             }
         },
         addNewDomain: function() {
             // console.log(this.domain, "add");
-            this.domain.user_group_id = this.$store.getters["account/accountGroupId"]();
+            this.domain.user_group_id = this.$store.getters[
+                "account/accountGroupId"
+            ]();
             this.domain.cname = this.domain.name;
             var vm = this;
             if (this.$refs.editForm.validate()) {
@@ -324,23 +369,56 @@ export default {
                     .dispatch("domains/newDomain", this.domain)
                     .then(
                         function(result) {
-                            this.$store.dispatch("global/showSnackbarSuccess", "Add new domain success!");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Add new domain success!"
+                            );
                             this.initialApis();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
-                            this.$store.dispatch("global/showSnackbarError", error.message);
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     );
                 this.closeEditDialog();
             }
         },
+        deleteDomain() {
+            console.log(this.domain, "deleteApi");
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/deleteDomain", this.domain.id)
+                .then(
+                    function(result) {
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Delete domain success!"
+                        );
+                        this.initialApis();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                );
+            this.closeEditDialog();
+        },
         closeEditDialog: function() {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
+            this.dialog.delete = false;
         },
         goToNextPage(data) {
             this.$router.push({
@@ -352,7 +430,6 @@ export default {
             });
         }
     },
-    watch: {},
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
