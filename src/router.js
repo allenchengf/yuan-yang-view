@@ -109,7 +109,7 @@ export default new Router({
                 },
                 {
                     name: "groupInfo",
-                    path: "/admin/grouping/:group_id",
+                    path: "/admin/grouping/:groupId",
                     meta: {
                         requireAuth: true,
                         auth: 1
