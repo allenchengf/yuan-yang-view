@@ -11,6 +11,8 @@ import DomainInfo from "./views/admin/DomainInfo.vue";
 import GroupingSetting from "./views/admin/GroupingSetting.vue";
 import GroupInfo from "./views/admin/GroupInfo.vue";
 import IRouteCdnSetting from "./views/IRouteCdn.vue";
+import IRouteCdnSettingById from "./views/IRouteCdnSettingById";
+// import AllIRouteCdnSetting from "./views/AllIRouteCdnSetting";
 import Logs from "./views/admin/Logs.vue";
 import DnsLookup from "./views/admin/tools/DnsLookup.vue";
 import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
@@ -100,6 +102,7 @@ export default new Router({
                 },
 
                 {
+                    name: "grouping",
                     path: "/admin/grouping",
                     meta: {
                         requireAuth: true,
@@ -127,6 +130,15 @@ export default new Router({
                         auth: 0
                     },
                     component: IRouteCdnSetting
+                },
+                {
+                    name: "iRouteCdnSettingById",
+                    path: "iroutecdn",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: IRouteCdnSettingById
                 },
                 {
                     path: "/admin/logs",
