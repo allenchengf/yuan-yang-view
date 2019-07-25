@@ -142,7 +142,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -159,7 +162,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -173,7 +179,10 @@ export default {
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -188,7 +197,10 @@ export default {
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -205,7 +217,7 @@ export default {
             };
 
             if (item.location_network != null) {
-                console.log(item.location_network);
+                // console.log(item.location_network);
                 this.editedIndex = item.location_network.id;
                 this.editedLoaction = this.editedNetwork.location_network;
             } else {
@@ -234,7 +246,10 @@ export default {
                     .catch(
                         function(error) {
                             this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch("global/showSnackbarError", error.message);
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
                         }.bind(this)
                     );
             } else {
@@ -248,7 +263,10 @@ export default {
                     .catch(
                         function(error) {
                             this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch("global/showSnackbarError", error.message);
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
                         }.bind(this)
                     );
             }
@@ -265,7 +283,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
             this.dialog.delete = false;

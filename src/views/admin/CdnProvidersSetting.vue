@@ -131,7 +131,7 @@ export default {
     methods: {
         switchAction(item) {
             this.switchItem = item;
-            console.log(item, "switch");
+            // console.log(item, "switch");
             this.dialog.changeStatus = true;
             if (item.status == true) {
                 this.open = true;
@@ -140,7 +140,7 @@ export default {
             }
         },
         checkCdnProvider() {
-            console.log("check api");
+            // console.log("check api");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdnProviders/checkCdnProvider", this.switchItem.id)
@@ -169,7 +169,7 @@ export default {
                 );
         },
         changeStatusAction() {
-            console.log(this.switchItem);
+            // console.log(this.switchItem);
             if (this.switchItem.status == true) {
                 //要開就直接change status
                 this.updateStatus();
@@ -189,7 +189,7 @@ export default {
             } else {
                 this.switchItem.status = 0;
             }
-            console.log(this.switchItem, "status");
+            // console.log(this.switchItem, "status");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch(

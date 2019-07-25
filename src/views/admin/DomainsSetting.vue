@@ -31,7 +31,7 @@
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
                                 td {{ props.item.cdnArray.join(', ')}}
-                                td {{props.item.domain_group.name}}
+                                td {{props.item.domain_group.length !== 0 ? props.item.domain_group[0].name : ""}}
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
                                         v-icon(small) edit
@@ -135,7 +135,7 @@ export default {
         pickFile() {
             this.$refs.file.click();
             // console.log(this.batchData);
-            console.log("cchh");
+            // console.log("cchh");
         },
         handleFileUpload() {
             // console.log(this.$refs.file, "newfile");
@@ -200,10 +200,10 @@ export default {
                 delete o.Domain;
             });
             this.batchAddDomains();
-            console.log(this.batchData.domains);
+            // console.log(this.batchData.domains);
         },
         batchAddDomains() {
-            console.log(this.batchData, "ccc");
+            // console.log(this.batchData, "ccc");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
@@ -342,14 +342,14 @@ export default {
         editItem: function(item, type) {
             // this.type = type;
             if (type == "delete") {
-                console.log(item);
+                // console.log(item);
                 this.dialog.delete = true;
                 this.domain = Object.assign({}, item);
             }
-            console.log(this.domain);
+            // console.log(this.domain);
         },
         updateDomain: function(type) {
-            console.log(type);
+            // console.log(type);
             if (this.editedIndex == -1 && type !== "delete") {
                 this.addNewDomain();
             } else if (type == "delete") {
@@ -390,7 +390,7 @@ export default {
             }
         },
         deleteDomain() {
-            console.log(this.domain, "deleteApi");
+            // console.log(this.domain, "deleteApi");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/deleteDomain", this.domain.id)
