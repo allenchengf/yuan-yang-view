@@ -36,7 +36,9 @@ export default {
     data() {
         return {
             pagination: {
-                rowsPerPage: this.perPage
+                rowsPerPage: this.perPage,
+                sortBy: "time", // The field that you're sorting by
+                descending: true
             },
             pages: 0
         };

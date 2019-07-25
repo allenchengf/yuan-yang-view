@@ -17,11 +17,32 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        updateCDN: (context, data) => {
+        updateDefaultCDN: (context, data) => {
             return axios
-                .put(
-                    "yuanyang/domains/" + data.domain_id + "/cdn/" + data.id,
-                    data
+                .patch(
+                    "yuanyang/domains/" +
+                        data.domain_id +
+                        "/cdn/" +
+                        data.id +
+                        "/default",
+                    { default: data.default }
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        updateCdnCname: (context, data) => {
+            return axios
+                .patch(
+                    "yuanyang/domains/" +
+                        data.domain_id +
+                        "/cdn/" +
+                        data.id +
+                        "/cname",
+                    { cname: data.cname }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);

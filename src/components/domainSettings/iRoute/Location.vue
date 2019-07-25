@@ -257,7 +257,7 @@ export default {
         },
         editItem: function(item, type, cdn_name) {
             this.editedIndex = this.filterData.indexOf(item);
-            console.log(this.editedIndex);
+            // console.log(this.editedIndex);
             this.iRouteCDN = Object.assign({}, item);
             this.iRouteCDN.domain_id = this.domain_id;
             this.cdnData.forEach((o, i) => {

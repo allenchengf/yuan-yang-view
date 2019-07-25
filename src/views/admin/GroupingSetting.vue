@@ -57,71 +57,7 @@ export default {
     data() {
         return {
             searchText: "",
-            filterData: [
-                {
-                    id: 1,
-                    user_group_id: 1,
-                    name: "Group1",
-                    label: "This is Group1",
-                    edited_by: null,
-                    default_cdn_name: "Hiero7",
-                    domains: [
-                        {
-                            id: 1,
-                            user_group_id: 1,
-                            name: "hiero7.test1.com",
-                            cname: "hiero7.test1.com",
-                            label: null,
-                            edited_by: null,
-                            created_at: null,
-                            updated_at: null,
-                            domain_group_mapping: {
-                                domain_group_id: 1,
-                                domain_id: 1
-                            }
-                        }
-                    ]
-                },
-                {
-                    id: 2,
-                    user_group_id: 1,
-                    name: "Group2",
-                    label: "This is Group2",
-                    edited_by: null,
-                    domains: []
-                },
-                {
-                    id: 3,
-                    user_group_id: 0,
-                    name: "Group3",
-                    label: null,
-                    edited_by: null,
-                    domains: []
-                },
-                {
-                    id: 4,
-                    user_group_id: 2,
-                    name: "Group4",
-                    label: "LabelForGroup4",
-                    edited_by: "e41c63b9-7c95-469a-9271-22b75a9b3239",
-                    domains: [
-                        {
-                            id: 3,
-                            user_group_id: 2,
-                            name: "rd.test1.com",
-                            cname: "rd.test1.com",
-                            label: null,
-                            edited_by: null,
-                            created_at: null,
-                            updated_at: null,
-                            domain_group_mapping: {
-                                domain_group_id: 4,
-                                domain_id: 3
-                            }
-                        }
-                    ]
-                }
-            ],
+            filterData: [],
             headers: [
                 {
                     text: "#",
@@ -176,10 +112,29 @@ export default {
     },
     methods: {
         chooseDomain(value) {
-            console.log(value);
+            // console.log(value);
         },
         getGroupData() {
-            this.filterData = this.filterData;
+            // this.filterData = this.filterData;
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("grouping/getAllGroups")
+                .then(
+                    function(result) {
+                        this.filterData = result.data;
+                        // console.log(this.filterData, "allGroupData");
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                );
         },
         addItem: function() {
             this.$refs.editForm.reset();
@@ -190,20 +145,20 @@ export default {
         editItem: function(item, type) {
             // this.type = type;
             if (type == "delete") {
-                console.log(item);
+                // console.log(item);
                 this.dialog.delete = true;
                 this.group = Object.assign({}, item);
             }
-            console.log(this.group);
+            // console.log(this.group);
         },
         updateGroup(type) {
-            if (this.editedIndex == -1) {
+            if (type == "newGroup") {
                 this.addNewGroup();
-            } else {
+            } else if (type == "deleteGroup") {
                 //delete
                 this.deleteGroup();
             }
-            console.log(this.group, type);
+            // console.log(this.group, type);
         },
         addNewGroup() {
             if (this.$refs.editForm.validate()) {
@@ -216,6 +171,7 @@ export default {
                                 "global/showSnackbarSuccess",
                                 "Add group success!"
                             );
+                            this.getAllDomains();
                             this.getGroupData();
                             this.closeEditDialog();
                             this.$store.dispatch("global/finishLoading");
@@ -242,6 +198,8 @@ export default {
                             "global/showSnackbarSuccess",
                             "Delete group success!"
                         );
+                        this.getAllDomains();
+
                         this.getGroupData();
                         this.closeEditDialog();
                         this.$store.dispatch("global/finishLoading");
@@ -264,11 +222,11 @@ export default {
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getAllDomains", this.user_group_id)
+                .dispatch("domains/getDomainsByNullGroup")
                 .then(
                     function(result) {
                         this.domainsData = result.data.domains;
-                        console.log(this.domainsData);
+                        // console.log(this.domainsData);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -286,7 +244,7 @@ export default {
             this.$router.push({
                 name: "groupInfo",
                 params: {
-                    group_id: data.id
+                    groupId: data.id
                     // info: data
                 }
             });

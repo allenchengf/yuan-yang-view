@@ -37,59 +37,10 @@ export default {
             selectedCountry: "",
             selectedContinent: "",
             searchText: "",
-            country: [
-                {
-                    id: 1,
-                    name: "china"
-                },
-                {
-                    id: 2,
-                    name: "not china"
-                },
-                {
-                    id: 3,
-                    name: "taiwan"
-                }
-            ],
-            continent: [
-                {
-                    id: 2,
-                    name: "africa"
-                },
-                {
-                    id: 3,
-                    name: "america"
-                },
-                {
-                    id: 4,
-                    name: "asia"
-                },
-                {
-                    id: 5,
-                    name: "europe"
-                },
-                {
-                    id: 6,
-                    name: "oceania"
-                }
-            ],
+            country: [],
+            continent: [],
             isp: [],
-            cdnProvider: [
-                {
-                    id: 1,
-                    name: "aaa",
-                    status: true,
-                    user_group_id: 1,
-                    ttl: 615
-                },
-                {
-                    id: 2,
-                    name: "ab",
-                    status: true,
-                    user_group_id: 1,
-                    ttl: 600
-                }
-            ],
+            cdnProvider: [],
             cdnData: [],
             filteredItems: [],
             filterData: [],
@@ -119,7 +70,8 @@ export default {
                     sortable: true,
                     value: "CDN Provider"
                 }
-            ]
+            ],
+            groupId: ""
         };
     },
     watch: {
@@ -253,13 +205,13 @@ export default {
         getAlliRouteCDNs() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getDomainIRouteCDNs", this.domain_id)
+                .dispatch("grouping/getGroupIRouteCdn", this.groupId)
                 .then(
                     function(result) {
-                        this.filterData = result.data;
+                        this.filterData = result.data.location_network;
                         this.filteredItems = this.filterData;
                         this.isp.push(
-                            ...new Set(this.filterData.map(x => x.isp))
+                            ...new Set(this.filteredItems.map(x => x.isp))
                         );
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -281,7 +233,7 @@ export default {
         }
     },
     mounted() {
-        this.domain_id = this.$route.params.domain_id;
+        this.groupId = this.$route.params.groupId;
         this.getAlliRouteCDNs();
         this.getContinentList();
         this.getCountriesList();

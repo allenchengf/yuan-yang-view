@@ -80,9 +80,7 @@ export default {
             this.currentTab = value;
         },
         getDomainInfo() {
-            // this.domainInfo = this.domainInfo[0];
-            this.$store.dispatch("global/startLoading");
-            this.$store
+            return this.$store
                 .dispatch("domains/getDomainById", this.domain_id)
                 .then(
                     function(result) {
@@ -92,6 +90,20 @@ export default {
                         this.breadcrumbsItems[1].text = this.domainInfo.name;
                         this.breadcrumbsItems[1].to =
                             "/admin/domains/" + this.domain_id;
+                        return Promise.resolve();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        return Promise.reject(error);
+                    }.bind(this)
+                );
+        },
+        initialApis: function() {
+            this.$store.dispatch("global/startLoading");
+            Promise.all([this.getDomainInfo()])
+                .then(
+                    function() {
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -106,12 +118,9 @@ export default {
                 );
         }
     },
-    mounted() {
-        this.domain_id = this.$route.params.domain_id;
-        this.getDomainInfo();
-    },
     created() {
         this.domain_id = this.$route.params.domain_id;
+        this.initialApis();
         var query = this.$route.query;
         if (query.tab != null) {
             var idx = this.tabItems.findIndex(elem => {

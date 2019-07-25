@@ -7,9 +7,9 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getAlliRouteCDNs: (context, id) => {
+        getDomainIRouteCDNs: (context, id) => {
             return axios
-                .get("yuanyang/domains/" + id + "/iRouteCDN")
+                .get("yuanyang/domains/" + id + "/routing-rules")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -17,18 +17,53 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        updateiRouteCDN: (context, data) => {
+        getIRouteCdnList: context => {
+            return axios
+                .get("yuanyang/routing-rules/lists")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getAllIRouteCdn: context => {
+            return axios
+                .get("yuanyang/routing-rules/all")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        updateDomainIRouteCDN: (context, data) => {
             return axios
                 .put(
                     "yuanyang/domains/" +
-                        data.domain_id +
-                        "/iRouteCDN/" +
+                        data.domainId +
+                        "/routing-rules/" +
                         data.id,
                     {
-                        continent_id: data.continent_id,
-                        country_id: data.country_id,
-                        network_id: data.network_id,
-                        cdn_id: data.cdn_id
+                        cdn_provider_id: data.cdn.cdn_provider_id
+                    }
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        updateGroupIRouteCDN: (context, data) => {
+            return axios
+                .put(
+                    "yuanyang/groups/" +
+                        data.groupId +
+                        "/routing-rules/" +
+                        data.id,
+                    {
+                        cdn_provider_id: data.cdn.cdn_provider_id
                     }
                 )
                 .then(function(response) {

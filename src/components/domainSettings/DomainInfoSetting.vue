@@ -20,7 +20,7 @@
                         v-flex(sm5 md2)
                             .text.font-weight-bold Group
                         v-flex(sm5 md10)
-                            .text {{domainInfo.domain_group.name}}
+                            .text {{domainInfo.domain_group.length == 0 ? '' : domainInfo.domain_group[0].name}}
                         v-flex(sm5 md2)
                             .text.font-weight-bold Label
                         v-flex(sm5 md10)
@@ -30,8 +30,8 @@
                             v-card-title.title Edit Domain
                             v-card-text
                                 v-form(ref="editDomainForm")
-                                    v-text-field(v-model="domainInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                    v-text-field(v-model="domainInfo.label" label="Label" type="text" name="label")
+                                    v-text-field(v-model="domainEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                    v-text-field(v-model="domainEditedInfo.label" label="Label" type="text" name="label")
                             v-card-actions  
                                 v-spacer
                                 v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -41,9 +41,12 @@
                 v-card-title
                     .subheading CDN
                     v-spacer
-                    v-btn.my-0(color="primary" @click="addItem") Add CDN
+                    v-btn.my-0(color="primary" @click="addItem" :disabled="domainInfo.domain_group.length !== 0") Add CDN
                 v-divider
                 v-card-text
+                    v-layout(wrap v-if="domainInfo.domain_group.length !== 0")
+                        v-flex(xs12 sm12 md12 )
+                            v-alert(:value="true" type="warning" outline icon="priority_high") You can not change this domain's cdn setting because this domain's cdn setting depend on its group. 
                     v-layout(wrap)
                         v-flex(xs12 sm6 md4)
                             v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
@@ -54,25 +57,29 @@
                             td {{props.item.cdn_provider.name}}
                             td {{props.item.cname}}
                             td
-                                v-icon(large color="green darken-2" v-if="props.item.default == true") check
+                                v-icon(large color="green" v-if="props.item.default == true") check
                             td
-                                v-menu(offset-y left :disabled="props.item.cdn_provider.status?false:true") 
+                                v-btn.ma-0(flat icon small color="primary" slot="activator" v-if="domainInfo.domain_group.length !== 0" :disabled="domainInfo.domain_group.length !== 0")
+                                    v-icon(small) more_vert
+                                v-menu(offset-y left v-else) 
                                     v-tooltip(right slot="activator") 
                                         v-btn.ma-0(flat icon small color="primary" slot="activator" )
                                             v-icon(small) more_vert
                                         span More
                                     v-list.pa-0
-                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? false : true")
+                                        v-list-tile(@click="editItem(props.item, 'edit')" :disabled="props.item.default == false ? false : true")
+                                            v-list-tile-title Edit cname
+                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? false : true ")
                                             v-list-tile-title Change to default
-                                        v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true")
+                                        v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true ")
                                             v-list-tile-title Delete
 
             v-dialog.edit-dialog(v-model="dialog.editCDN" max-width="460" persistent)
                 v-card
-                    v-card-title.title New CDN
+                    v-card-title.title {{formTitle}}
                     v-card-text
                         v-form(ref="editForm")
-                            v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN(cdn.cdn_provider_id)" v-model="cdn.cdn_provider_id" )
+                            v-select(:items="filteredCdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN(cdn.cdn_provider_id)" v-model="cdn.cdn_provider_id" v-if="editedIndex == -1")
                             v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
                     v-card-actions  
                         v-spacer
@@ -80,7 +87,7 @@
                         v-btn(color="primary" flat="flat" @click="updateCDN('newCDN')") Save
             v-dialog.change-default-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
                 v-card
-                    v-card-title.title Change CDN Default
+                    v-card-title.title Change Default CDN Provider
                     v-card-text Are you sure want to change your CDN provider to  "{{cdn.cdn_provider.name}}" ?
                     v-card-actions  
                         v-spacer
@@ -98,6 +105,7 @@
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
+import _ from "lodash";
 
 export default {
     mixins: [textFieldRules],
@@ -144,6 +152,7 @@ export default {
             domainInfo: {
                 domain_group: []
             },
+            domainEditedInfo: {},
             cdn: {
                 cdn_provider: {
                     name: ""
@@ -157,9 +166,16 @@ export default {
                 delete: false
             },
             cdnProvider: [],
-            cdnProviderData: [],
-            type: ""
+            cdnProviderMapping: {},
+            type: "",
+            editedIndex: -1,
+            filteredCdnProvider: []
         };
+    },
+    computed: {
+        formTitle() {
+            return this.editedIndex === -1 ? "New CDN" : "Edit CDN";
+        }
     },
     methods: {
         chooseCDN(value) {
@@ -174,6 +190,7 @@ export default {
                 .then(
                     function(result) {
                         this.domainInfo = result.data.domain;
+                        // console.log(this.domainInfo, "domainInfo");
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         // console.log(result.data, "inner");
                         this.$store.dispatch("global/finishLoading");
@@ -190,49 +207,44 @@ export default {
                 );
         },
         getAllCdnProvider() {
-            this.$store.dispatch("global/startLoading");
-            this.$store
+            return this.$store
                 .dispatch("cdnProviders/getAllCdnProvider")
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
-                        // this.mapping();
-                        this.$store.dispatch("global/finishLoading");
+
+                        // console.log(this.cdnProvider);
+                        return Promise.resolve();
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        return Promise.reject(error);
                     }.bind(this)
                 );
         },
-        // mapping() {
-        //     // var cdn = [];
-        //     this.cdnProviderData = Object.assign([], this.cdnProvider);
-        //     this.cdnProvider.forEach((o, i) => {
-        //         this.cdnData.forEach((obj, idx) => {
-        //             if (o.id == obj.cdn_provider_id) {
-        //                 console.log(this.cdnProvider[i]);
-        //                 this.cdnProviderData.splice(i, 1);
-        //             }
-        //         });
-        //         // cdn.push(this.cdnProvider[i]);
-        //     });
-
-        //     console.log(this.cdnProviderData, "cc");
-        // },
         getCdnData() {
-            this.$store.dispatch("global/startLoading");
-            this.$store
+            return this.$store
                 .dispatch("cdns/getCDNsByDomainId", this.domain_id)
                 .then(
                     function(result) {
                         this.cdnData = result.data;
-                        // console.log(this.cdnData, "cdndata");
+                        // console.log(this.cdnData);
+                        return Promise.resolve();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        return Promise.reject(error);
+                    }.bind(this)
+                );
+        },
+        initialApis: function() {
+            this.$store.dispatch("global/startLoading");
+            Promise.all([this.getCdnData(), this.getAllCdnProvider()])
+                .then(
+                    function() {
+                        this.mapping();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -246,8 +258,18 @@ export default {
                     }.bind(this)
                 );
         },
+        mapping() {
+            this.cdnProvider.forEach((o, i) => {
+                this.cdnData.forEach((obj, idx) => {
+                    if (o.id == obj.cdn_provider_id) {
+                        // console.log(i);
+                        delete this.cdnProvider[i];
+                    }
+                });
+            });
+            this.filteredCdnProvider = _.compact(this.cdnProvider);
+        },
         addItem: function() {
-            // this.mapping();
             this.$refs.editForm.reset();
             this.editedIndex = -1;
             this.dialog.editCDN = true;
@@ -257,13 +279,17 @@ export default {
             this.type = type;
             if (type == "domainInfo") {
                 // console.log(item);
-
                 this.editedIndex = this.filterData.indexOf(item);
                 this.dialog.edit = true;
-                this.domainInfo = Object.assign({}, item);
+                this.domainEditedInfo = Object.assign({}, item);
             } else if (type == "changeDefault") {
                 //changeDefault
                 this.dialog.changeDefault = true;
+                this.cdn = Object.assign({}, item);
+            } else if (type == "edit") {
+                // edit cname
+                this.editedIndex = this.cdnData.indexOf(item);
+                this.dialog.editCDN = true;
                 this.cdn = Object.assign({}, item);
             } else {
                 //delete
@@ -276,7 +302,7 @@ export default {
             if (this.$refs.editDomainForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
-                    .dispatch("domains/updateDomain", this.domainInfo)
+                    .dispatch("domains/updateDomain", this.domainEditedInfo)
                     .then(
                         function(result) {
                             this.$store.dispatch("global/finishLoading");
@@ -304,8 +330,10 @@ export default {
             // console.log(type);
             // console.log(this.cdn, type);
             this.cdn.domain_id = this.domain_id;
-            if (type == "newCDN") {
+            if (type == "newCDN" && this.type == "NewCdn") {
                 this.addNewCdn();
+            } else if (type == "newCDN" && this.type == "edit") {
+                this.changeCdnCname();
             } else if (type == "changeDefault") {
                 this.changeDefaultCdnProvider();
             } else {
@@ -324,7 +352,7 @@ export default {
                                 "global/showSnackbarSuccess",
                                 "Add CDN success!"
                             );
-                            this.getCdnData();
+                            this.initialApis();
                             this.closeEditDialog();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
@@ -340,13 +368,38 @@ export default {
                     );
             }
         },
+        changeCdnCname() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/updateCdnCname", this.cdn)
+                .then(
+                    function(result) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Change CDN cname success!"
+                        );
+                        this.initialApis();
+                        this.closeEditDialog();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         changeDefaultCdnProvider() {
             this.cdn.default = !this.cdn.default;
             // console.log(this.cdn);
 
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdns/updateCDN", this.cdn)
+                .dispatch("cdns/updateDefaultCDN", this.cdn)
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
@@ -354,7 +407,8 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change default CDN provider success!"
                         );
-                        this.getCdnData();
+                        this.initialApis();
+
                         this.closeEditDialog();
                     }.bind(this)
                 )
@@ -380,7 +434,7 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change default CDN provider success!"
                         );
-                        this.getCdnData();
+                        this.initialApis();
                         this.closeEditDialog();
                     }.bind(this)
                 )
@@ -414,8 +468,7 @@ export default {
     },
     mounted() {
         this.getDomainInfo();
-        this.getAllCdnProvider();
-        this.getCdnData();
+        this.initialApis();
     }
 };
 </script>

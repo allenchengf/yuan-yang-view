@@ -69,11 +69,11 @@ export default {
                     icon: "build",
                     auth: 1,
                     children: [
-                        {
-                            title: "DNS lookup",
-                            router: "/admin/dns-lookup",
-                            auth: 1
-                        },
+                        // {
+                        //     title: "DNS lookup",
+                        //     router: "/admin/dns-lookup",
+                        //     auth: 1
+                        // },
                         {
                             title: "Config Backup",
                             router: "/admin/config-backup",
@@ -94,6 +94,7 @@ export default {
     },
     created() {
         this.authLevel = this.$store.getters["account/accountAuth"]();
+        // console.log(this.authLevel);
     }
 };
 </script>
