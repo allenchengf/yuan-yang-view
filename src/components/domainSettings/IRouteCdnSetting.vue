@@ -253,7 +253,7 @@ export default {
         getAlliRouteCDNs() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getAlliRouteCDNs", this.domain_id)
+                .dispatch("iRouteCdn/getDomainIRouteCDNs", this.domain_id)
                 .then(
                     function(result) {
                         this.filterData = result.data;
