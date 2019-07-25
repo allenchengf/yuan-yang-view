@@ -55,7 +55,8 @@ export default {
             groupId: "",
             groupInfo: {},
             currentTab: "",
-            reloadPage: ""
+            reloadPage: "",
+            route: ""
         };
     },
     watch: {
@@ -75,6 +76,7 @@ export default {
         nowTab(value) {
             // console.log(value);
             this.currentTab = value;
+            this.getGroupInfo();
         },
         getGroupInfo() {
             return this.$store
@@ -116,7 +118,9 @@ export default {
     },
     created() {
         this.groupId = this.$route.params.groupId;
-        this.initialApis();
+        this.route = this.$route.path;
+        // console.log(this.route);
+        this.getGroupInfo();
         var query = this.$route.query;
         if (query.tab != null) {
             var idx = this.tabItems.findIndex(elem => {

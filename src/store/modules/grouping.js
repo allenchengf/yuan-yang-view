@@ -24,12 +24,12 @@ export default {
                     return Promise.resolve(response.data);
                 })
                 .catch(function(error) {
-                    return Promise.reject(error.response.data);
+                    return Promise.reject(error.request.status);
                 });
         },
         getGroupIRouteCdn: (context, id) => {
             return axios
-                .get("yuanyang/groups/" + id + "/iRoute")
+                .get("yuanyang/groups/" + id + "/routing-rules")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -74,6 +74,16 @@ export default {
                 .post("yuanyang/groups/" + data.groupId, {
                     domain_id: data.domainId
                 })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        batchNewDomainByGroupId: (context, data) => {
+            return axios
+                .post("yuanyang/groups/" + data.groupId + "/batch", data.data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

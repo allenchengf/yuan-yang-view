@@ -27,15 +27,15 @@
                         v-flex(sm5 md2)
                             .text.font-weight-bold Default CDN Provider
                         v-flex(sm5 md2)    
-                            v-select(:items="groupCdnProvider" item-text="name" item-value="name" @change="chooseCdnProvider(defaultCdnProvider)" v-model="defaultCdnProvider")
+                            v-select(:items="groupCdnProvider" item-text="name" item-value="name" @change="chooseCdnProvider(defaultCdnProvider)" v-model="defaultCdnProvider" :item-disabled="['disable', 'status']")
                             
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                         v-card
                             v-card-title.title Edit Group
                             v-card-text
                                 v-form(ref="editGroupForm")
-                                    v-text-field(v-model="groupInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                    v-text-field(v-model="groupInfo.label" label="Label" type="text" name="label")
+                                    v-text-field(v-model="groupEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                    v-text-field(v-model="groupEditedInfo.label" label="Label" type="text" name="label")
                             v-card-actions  
                                 v-spacer
                                 v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -108,6 +108,22 @@ export default {
     mixins: [textFieldRules],
     data() {
         return {
+            items: [
+                {
+                    text: "a",
+                    disabled: false,
+                    a: {
+                        b: false
+                    }
+                },
+                {
+                    text: "b",
+                    disabled: false,
+                    a: {
+                        b: true
+                    }
+                }
+            ],
             groupId: "",
             searchText: "",
             headers: [
@@ -160,7 +176,8 @@ export default {
             batchData: {
                 domains: []
             },
-            defaultCdnProvider: ""
+            defaultCdnProvider: "",
+            groupEditedInfo: {}
         };
     },
     methods: {
@@ -181,6 +198,7 @@ export default {
             // console.log(this.$refs.file, "newfile");
             var vm = this;
             var fileUpload = this.$refs.file;
+            // console.log(fileUpload)
             var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
             if (regex.test(fileUpload.value.toLowerCase())) {
                 if (typeof FileReader != "undefined") {
@@ -231,29 +249,31 @@ export default {
             // console.log(this.batchData);
         },
         batchAddDomains() {
-            // console.log(this.batchData, "ccc");
-            // this.$store.dispatch("global/startLoading");
-            // this.$store
-            //     .dispatch("grouping/batchNewDomainsToGroup", this.batchData)
-            //     .then(
-            //         function(result) {
-            //             this.initialApis();
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarSuccess",
-            //                 "Batch add domains to this group success!"
-            //             );
-            //         }.bind(this)
-            //     )
-            //     .catch(
-            //         function(error) {
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarError",
-            //                 error.message
-            //             );
-            //         }.bind(this)
-            //     );
+            var batchData = [];
+            batchData.groupId = this.groupId;
+            batchData.data = this.batchData;
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("grouping/batchNewDomainByGroupId", batchData)
+                .then(
+                    function(result) {
+                        this.initialApis();
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Batch add domains to this group success!"
+                        );
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         exportFile() {
             this.exportData = [];
@@ -263,6 +283,7 @@ export default {
                 this.exportData.push(exportData);
             });
             // console.log(this.exportData, "export");
+
             var domainWS = XLSX.utils.json_to_sheet(this.exportData);
             var wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, domainWS, "domain");
@@ -279,15 +300,27 @@ export default {
                         this.groupInfo = result.data;
                         this.filterData = this.groupInfo.domains;
                         this.groupCdnProvider = this.groupInfo.domains[0].cdn_provider;
+                        this.groupCdnProvider.forEach((o, i) => {
+                            o.disable = {};
+                            o.disable.status = !o.status;
+                        });
                         this.defaultCdnProvider = this.groupInfo.default_cdn_name;
                         return Promise.resolve();
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        return Promise.reject(error);
+                        // if (error == 404) {
+                        //     this.goBackPage();
+                        // }
+                        // return Promise.reject(error);
                     }.bind(this)
                 );
+        },
+        goBackPage() {
+            this.$router.push({
+                name: "grouping"
+            });
         },
         getAllDomains: function() {
             return this.$store
@@ -401,7 +434,7 @@ export default {
 
                 this.editedIndex = this.filterData.indexOf(item);
                 this.dialog.edit = true;
-                this.groupInfo = Object.assign({}, item);
+                this.groupEditedInfo = Object.assign({}, item);
             } else {
                 //delete
                 this.dialog.delete = true;
@@ -414,7 +447,7 @@ export default {
             if (this.$refs.editGroupForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
-                    .dispatch("grouping/updateGroup", this.groupInfo)
+                    .dispatch("grouping/updateGroup", this.groupEditedInfo)
                     .then(
                         function(result) {
                             this.$store.dispatch("global/finishLoading");
@@ -467,7 +500,6 @@ export default {
                         );
                     }.bind(this)
                 );
-            this.closeEditDialog();
         },
         updateDomain: function(type) {
             // console.log(type);

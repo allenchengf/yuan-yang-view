@@ -208,12 +208,10 @@ export default {
                 .dispatch("grouping/getGroupIRouteCdn", this.groupId)
                 .then(
                     function(result) {
-                        this.filterData = result.data;
-                        this.filteredItems = this.filterData.location_network;
+                        this.filterData = result.data.location_network;
+                        this.filteredItems = this.filterData;
                         this.isp.push(
-                            ...new Set(
-                                this.filterData.location_network.map(x => x.isp)
-                            )
+                            ...new Set(this.filteredItems.map(x => x.isp))
                         );
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
