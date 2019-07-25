@@ -10,6 +10,8 @@ import cdnProviders from "./modules/cdnProviders";
 import iRouteCdn from "./modules/iRouteCdn";
 import locationInfo from "./modules/locationInfo";
 import grouping from "./modules/grouping";
+import config from "./modules/config";
+import logs from "./modules/logs";
 
 Vue.use(Vuex);
 
@@ -23,6 +25,8 @@ export default new Vuex.Store({
         cdnProviders,
         iRouteCdn,
         locationInfo,
-        grouping
+        grouping,
+        config,
+        logs
     }
 });
