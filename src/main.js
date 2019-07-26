@@ -10,7 +10,7 @@ Vue.config.productionTip = false;
 
 //component
 import datatable from "./components/DataTable";
-Vue.component('h7-data-table', datatable);
+Vue.component("h7-data-table", datatable);
 
 Vue.prototype.$axios = axios;
 Vue.prototype.$errorHandler = errorHandler;
@@ -18,12 +18,20 @@ router.beforeEach((to, from, next) => {
     var token = localStorage.getItem("token");
     if (to.meta.requireAuth) {
         if (token && varifyToken()) {
-            next();
+            if (store.getters["account/accountAuth"]() >= to.meta.auth) next();
+            else next({ path: "/admin" });
         } else {
             next({ path: "/login" });
         }
     } else {
-        next();
+        if (token && varifyToken() && to.path == "/login") {
+            var redirect = to.query.redirect;
+            if (redirect != null) {
+                location.replace(redirect + "?token=" + token);
+            } else {
+                next({ path: "/admin" });
+            }
+        } else next();
     }
 });
 

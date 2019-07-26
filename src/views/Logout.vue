@@ -5,7 +5,7 @@
 <script>
 export default {
     created() {
-        window.location = process.env.VUE_APP_URL_PORTAL + "/logout";
+        this.$store.dispatch("account/logout");
     }
 };
 </script>

@@ -17,8 +17,8 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    v-list-tile(@click="gotoSettings")
-                        v-list-tile-title Settings
+                    //- v-list-tile(@click="gotoSettings")
+                    //-     v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
@@ -64,6 +64,10 @@ export default {
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Sign out success!"
+                        );
                     }.bind(this)
                 )
                 .catch(
