@@ -2,6 +2,8 @@ import Vue from "vue";
 import Router from "vue-router";
 import AdminLayout from "./views/Layout.vue";
 import Logout from "./views/Logout.vue";
+import Login from "./views/Login.vue";
+import Forgot from "./views/ForgotPassword.vue";
 import Authentication from "./views/Authentication.vue";
 
 import Dashboard from "./views/Dashboard.vue";
@@ -24,6 +26,22 @@ export default new Router({
     mode: "history",
     base: process.env.BASE_URL,
     routes: [
+        {
+            path: "/login",
+            meta: {
+                requireAuth: false,
+                auth: 0
+            },
+            component: Login
+        },
+        {
+            path: "forgot",
+            name: "forgot",
+            meta: {
+                requireAuth: false
+            },
+            component: Forgot
+        },
         {
             path: "/auth",
             meta: {

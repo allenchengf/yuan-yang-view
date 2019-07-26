@@ -57,9 +57,36 @@ export default {
         updateAccountToken: (state, token) => {
             localStorage.setItem("token", token);
         }
+        // updateAccountAuth: (state, auth) => {
+        //     Vue.set(state, "auth", auth);
+        //     localStorage.setItem("auth", JSON.stringify(auth));
+        // }
     },
     // -----------------------------------------------------------------
     actions: {
+        login: (context, account) => {
+            return axios
+                .post("user_module/login", account)
+                .then(function(response) {
+                    if (!response.data.data.google2fa) {
+                        // console.log(response.data.data.user)
+                        response.data.data.user.user_group_mapping.name =
+                            response.data.data.user.name;
+                        context.commit(
+                            "updateAccountInfo",
+                            response.data.data.user.user_group_mapping
+                        );
+                        context.commit(
+                            "updateAccountToken",
+                            response.data.data.token
+                        );
+                    }
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         getProfile: context => {
             return axios
                 .get("user_module/users/self")
@@ -80,20 +107,8 @@ export default {
             localStorage.removeItem("user");
             // router push to login page
             router.push(
-                "/logout?message=" + "sign out success." + "&type=success"
+                "/login?message=" + "sign in success." + "&type=success"
             );
-
-            // return axios
-            //     .get("user_module/logout")
-            //     .then(function(response) {
-            //         context.commit("updateAccountInfo", null);
-            //         localStorage.removeItem("token");
-            //         localStorage.removeItem("user");
-            //         return Promise.resolve(response.data);
-            //     })
-            //     .catch(function(error) {
-            //         return Promise.reject(error.response.data);
-            //     });
         }
     }
 };
