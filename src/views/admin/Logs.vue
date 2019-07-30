@@ -26,7 +26,7 @@ export default {
         return {
             searchText: "",
             category: "all",
-            categoryList: ["all", "user", "domain", "cdn", "iroutecdn"],
+            categoryList: ["all", "user", "domain", "cdn", "iroute"],
             filterData: [],
             rawData: [],
             headers: [
