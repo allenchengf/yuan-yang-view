@@ -227,6 +227,7 @@ export default {
                     );
                 });
             }
+            this.setPages();
         },
         countryFilter: function() {
             if (this.countryFilter == "All") {
@@ -241,32 +242,40 @@ export default {
                     );
                 });
             }
+            this.setPages();
         },
         ispFilter: function() {
             this.filteredItems = this.filterData.filter(i => {
                 return !this.ispFilter || i.isp === this.ispFilter;
             });
+            this.setPages();
         },
         cdnProviderFilter: function() {
             if (this.cdnProviderFilter == "All") {
                 this.filteredItems = this.filterData.filter(i => {
-                    return i.cdn.cdn_provider.name !== this.countryFilter;
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.cdn.cdn_provider.name !== this.cdnProviderFilter
+                        );
+                    }
                 });
             } else {
                 this.filteredItems = this.filterData.filter(i => {
-                    return (
-                        !this.cdnProviderFilter ||
-                        i.cdn.cdn_provider.name === this.cdnProviderFilter
-                    );
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            !this.cdnProviderFilter ||
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
                 });
             }
+            this.setPages();
         },
         perPage: function(value) {
             this.pagination.rowsPerPage = value;
             this.setPages();
         },
         searchText: function(val) {
-            // console.log(val);
             this.alert = false;
             this.domainInGroupMsg = "";
             this.domainList.forEach((o, i) => {
@@ -581,8 +590,10 @@ export default {
                         this.filterData.forEach((o, i) => {
                             o.index = i + 1;
                         });
+                        this.getAllIRouteIsp();
+                        this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems, "filterItems");
+                        // console.log(this.filteredItems);
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                         return Promise.resolve();
@@ -593,6 +604,37 @@ export default {
                         return Promise.reject(error);
                     }.bind(this)
                 );
+        },
+        getAllIRouteIsp() {
+            var isp = [];
+            this.filterData.forEach((o, i) => {
+                isp.push(o.isp);
+            });
+            var result = new Set();
+            var repeat = new Set();
+            isp.forEach(item => {
+                result.has(item) ? repeat.add(item) : result.add(item);
+            });
+            this.isp = [...repeat];
+        },
+        getAllIRouteCdnProvider() {
+            var cdnProvider = [];
+
+            this.filterData.forEach((o, i) => {
+                if (o.cdn.cdn_provider !== undefined) {
+                    cdnProvider.push(o.cdn.cdn_provider.name);
+                }
+            });
+            var result = new Set();
+            var repeat = new Set();
+            cdnProvider.forEach(item => {
+                result.has(item) ? repeat.add(item) : result.add(item);
+            });
+            var cdnProviderItem = [...repeat];
+            this.cdnProviderItems[0] = "All";
+            cdnProviderItem.forEach((o, i) => {
+                this.cdnProviderItems.push(o);
+            });
         },
         getContinentList() {
             // this.$store.dispatch("global/startLoading");
@@ -820,7 +862,6 @@ export default {
             this.dialog.edit = false;
         }
     },
-    mounted() {},
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
 
