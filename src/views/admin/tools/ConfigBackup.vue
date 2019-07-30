@@ -15,8 +15,10 @@
 </template>
 <script>
 import saveAs from "file-saver";
+import timeUtils from "../../../utils/timeUtils.js";
 
 export default {
+    mixins: [timeUtils],
     data() {
         return {
             importJsonData: [],
@@ -159,7 +161,11 @@ export default {
         },
         exportData() {
             var fileName =
-                "configData" + new Date().toLocaleDateString() + ".json";
+                "configData" +
+                timeUtils.methods.timestampToString(
+                    new Date().getTime() / 1000
+                ) +
+                ".json";
             var fileToSave = new Blob([JSON.stringify(this.rawData)], {
                 type: "application/json",
                 name: fileName
@@ -232,6 +238,12 @@ export default {
                 );
         }
     },
-    mounted() {}
+    mounted() {
+        var timeStamp = new Date();
+        console.log(timeStamp.getTime());
+        console.log(
+            timeUtils.methods.timestampToString(timeStamp.getTime() / 1000)
+        );
+    }
 };
 </script>
