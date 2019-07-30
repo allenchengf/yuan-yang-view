@@ -23,10 +23,12 @@
                                 v-select(:items="isp" label="Select ISP" v-model="ispFilter")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="cdnProviderItems" label="Select CDN Provider" item-text="name" item-value="name" v-model="cdnProviderFilter")
+                            
                         v-layout(wrap v-if="breadcrumbsItems[1].text == 'All'")
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
-
+                            v-flex(xs12 sm12 md12)
+                                v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
                     v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all hide-actions :search="searchText" :pagination.sync="pagination" :item-key="'index'")
                         template(v-slot:items="props" )
                             td 
@@ -70,6 +72,7 @@ import _ from "lodash";
 export default {
     data() {
         return {
+            alert: false,
             selectCDN: "",
             selected: [],
             country: [],
@@ -190,7 +193,10 @@ export default {
             rawData: {},
             domainList: [],
             groupCdnProvider: [],
-            allListMapping: {}
+            allListMapping: {},
+            user_group_id: "",
+            domainList: [],
+            domainInGroupMsg: ""
         };
     },
     computed: {
@@ -258,6 +264,23 @@ export default {
         perPage: function(value) {
             this.pagination.rowsPerPage = value;
             this.setPages();
+        },
+        searchText: function(val) {
+            // console.log(val);
+            this.alert = false;
+            this.domainInGroupMsg = "";
+            this.domainList.forEach((o, i) => {
+                if (
+                    o.domain_group.length !== 0 &&
+                    o.name === val.toLowerCase()
+                ) {
+                    this.alert = true;
+                    this.domainInGroupMsg = o.domain_group[0].name;
+                    // console.log(this.domainInGroupMsg);
+                } else if (o.name !== val.toLowerCase()) {
+                    this.filterDataAction();
+                }
+            });
         }
     },
     methods: {
@@ -266,6 +289,21 @@ export default {
             this.continentFilter = "";
             this.ispFilter = "";
             this.cdnProviderFilter = "";
+        },
+        filterDataAction: function() {
+            if (this.searchText != "") {
+                this.filteredItems = this.filterData.filter(row => {
+                    return (
+                        !this.searchText ||
+                        row.name
+                            .toLowerCase()
+                            .indexOf(this.searchText.toLowerCase()) > -1
+                    );
+                });
+            } else {
+                this.filteredItems = this.filterData;
+            }
+            this.setPages();
         },
         setPages: function() {
             if (this.perPage == null || this.filteredItems == null) {
@@ -297,7 +335,22 @@ export default {
             }
             // console.log(this.selected, "selected");
         },
-
+        getDomainList() {
+            this.$store
+                .dispatch("domains/getAllDomains", this.user_group_id)
+                .then(
+                    function(result) {
+                        this.domainList = result.data.domains;
+                        // console.log(this.domainList);
+                        return Promise.resolve();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        return Promise.reject(error);
+                    }.bind(this)
+                );
+        },
         getDomainInfo() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -769,6 +822,8 @@ export default {
     },
     mounted() {},
     created() {
+        this.user_group_id = this.$store.getters["account/accountGroupId"]();
+
         this.getAllCdnProvider();
         if (this.$route.query.group_id !== undefined) {
             this.headers = this.groupsDomainsHeaders;
@@ -789,6 +844,7 @@ export default {
         }
         this.getContinentList();
         this.getCountriesList();
+        this.getDomainList();
     }
 };
 </script>
