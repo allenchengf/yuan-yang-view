@@ -21,10 +21,19 @@
                             v-text-field(v-model="otpCode" label="6-digit security code" mask="######" type="text" name="otpcode" :rules="[rules.required, rules.otp]" @keyup.native.enter="checkOTPCode")
                             v-alert.text-md-left(:value="otpError" color="error" icon="warning" outline transition="scale-transition") Invalid code
                             v-btn.mt-3(color="primary" block @click="checkOTPCode") Enter
+
+        v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
+            v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
+
 </template>
 
 <script>
+import Loading from "../components/Loading";
+
 export default {
+    components: {
+        Loading
+    },
     data() {
         return {
             passwordShow: false,
@@ -35,9 +44,7 @@ export default {
                     const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                     return pattern.test(value) || "Invalid e-mail.";
                 },
-                otp: value =>
-                    (value != null && value.length == 6) ||
-                    "Please enter 6-digit code."
+                otp: value => (value != null && value.length == 6) || "Please enter 6-digit code."
             },
             otpCode: "",
             otpToken: "",
@@ -97,14 +104,13 @@ export default {
             }
         },
         loginSuccess: function() {
-            var redirect = this.$route.query.redirect;
-            if (redirect != null) {
-                location.replace(
-                    redirect + "?token=" + localStorage.getItem("token")
-                );
-            } else {
-                this.$router.push("/admin/cdn-providers");
-            }
+            this.$router.push("/admin/");
+            // var redirect = this.$route.query.redirect;
+            // if (redirect != null) {
+            //     location.replace(redirect + "?token=" + localStorage.getItem("token"));
+            // } else {
+            //     this.$router.push("/admin/cdn-providers");
+            // }
         }
     },
     mounted() {

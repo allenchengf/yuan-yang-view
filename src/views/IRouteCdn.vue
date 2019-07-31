@@ -155,10 +155,7 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        this.$store.dispatch("global/showSnackbarError", error.message);
                     }.bind(this)
                 );
         },
@@ -195,7 +192,7 @@ export default {
     },
     created() {
         if (this.$route.query !== "") {
-            this.$router.push("/iroutecdn");
+            this.$router.push("/admin/iroutecdn");
         }
     }
 };
