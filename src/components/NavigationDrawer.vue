@@ -55,7 +55,7 @@ export default {
                 {
                     title: "iRouteCDN",
                     icon: "dns",
-                    router: "/iroutecdn",
+                    router: "/admin/iroutecdn",
                     auth: 0
                 },
                 {

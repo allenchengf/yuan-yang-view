@@ -58,9 +58,9 @@ export default new Router({
             },
             component: Logout
         },
-        { path: "*", redirect: "/" },
+        { path: "*", redirect: "/admin" },
         {
-            path: "/",
+            path: "/admin",
             meta: {
                 requireAuth: true
             },
@@ -68,7 +68,7 @@ export default new Router({
             children: [
                 {
                     path: "",
-                    redirect: "/admin/cdn-providers",
+                    redirect: "cdn-providers",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -91,7 +91,7 @@ export default new Router({
                     component: Dashboard
                 },
                 {
-                    path: "/admin/cdn-providers",
+                    path: "cdn-providers",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -99,7 +99,7 @@ export default new Router({
                     component: CdnProvidersSetting
                 },
                 {
-                    path: "/admin/domains",
+                    path: "domains",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -108,7 +108,7 @@ export default new Router({
                 },
                 {
                     name: "domainInfo",
-                    path: "/admin/domains/:domain_id",
+                    path: "domains/:domain_id",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -121,7 +121,7 @@ export default new Router({
 
                 {
                     name: "grouping",
-                    path: "/admin/grouping",
+                    path: "grouping",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -130,7 +130,7 @@ export default new Router({
                 },
                 {
                     name: "groupInfo",
-                    path: "/admin/grouping/:groupId",
+                    path: "grouping/:groupId",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -159,7 +159,7 @@ export default new Router({
                     component: IRouteCdnSettingById
                 },
                 {
-                    path: "/admin/logs",
+                    path: "logs",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -167,7 +167,7 @@ export default new Router({
                     component: Logs
                 },
                 {
-                    path: "/admin/dns-lookup",
+                    path: "dns-lookup",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -175,7 +175,7 @@ export default new Router({
                     component: DnsLookup
                 },
                 {
-                    path: "/admin/config-backup",
+                    path: "config-backup",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -183,7 +183,7 @@ export default new Router({
                     component: ConfigBackup
                 },
                 {
-                    path: "/admin/networks",
+                    path: "networks",
                     name: "networks",
                     meta: {
                         requireAuth: true,
