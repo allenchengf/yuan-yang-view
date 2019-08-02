@@ -5,19 +5,18 @@
                 v-card-title
                     .subheading IRouteCDN
                     v-spacer
+                    v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                     v-btn.my-0(color="primary" @click="goToIRoutePage") Route CDN
                 v-divider
                 v-card-text
                     v-layout(wrap)
-                        v-flex(xs12 sm6 md4)
-                            v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                        v-flex(xs12 sm6 md2)
+                        v-flex(xs12 sm6 md3)
                             v-select(:items="continent" label="Select Continent" item-text="name" item-value="name" @change="chooseContinent(selectedContinent)" v-model="selectedContinent")
-                        v-flex(xs12 sm6 md2)
+                        v-flex(xs12 sm6 md3)
                             v-select(:items="country" label="Select Country" item-text="name" item-value="name" @change="chooseCountry(selectedCountry)" v-model="selectedCountry")
-                        v-flex(xs12 sm6 md2)
+                        v-flex(xs12 sm6 md3)
                             v-select(:items="isp" label="Select ISP" @change="chooseISP(selectedISP)" v-model="selectedISP")
-                        v-flex(xs12 sm6 md2)
+                        v-flex(xs12 sm6 md3)
                             v-select(:items="cdnProvider" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnProvider(selectedCdnProvider)" v-model="selectedCdnProvider")
                         
                 h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
@@ -32,10 +31,12 @@ export default {
     props: ["currentTab"],
     data() {
         return {
-            selectedCdnProvider: "",
-            selectedISP: "",
-            selectedCountry: "",
-            selectedContinent: "",
+            domainInfo: {},
+            group_id: "",
+            selectedCdnProvider: "All",
+            selectedISP: "All",
+            selectedCountry: "All",
+            selectedContinent: "All",
             searchText: "",
             country: [
                 {
@@ -104,19 +105,19 @@ export default {
                 {
                     text: "Continent / Country / Region",
                     align: "left",
-                    sortable: true,
+                    sortable: false,
                     value: "Location"
                 },
                 {
                     text: "ISP",
                     align: "left",
-                    sortable: true,
-                    value: "Network"
+                    sortable: false,
+                    value: "isp"
                 },
                 {
                     text: "CDN Provider",
                     align: "left",
-                    sortable: true,
+                    sortable: false,
                     value: "CDN Provider"
                 }
             ]
@@ -127,48 +128,244 @@ export default {
             this.getAlliRouteCDNs();
         },
         selectedContinent: function() {
-            if (this.selectedContinent == "All") {
-                this.filteredItems = this.filterData.filter(i => {
-                    return i.continent.name !== this.selectedContinent;
-                });
-            } else {
-                this.filteredItems = this.filterData.filter(i => {
-                    return (
-                        !this.selectedContinent ||
-                        i.continent.name === this.selectedContinent
-                    );
-                });
-            }
+            this.filterAction();
+            // console.log(this.selectedContinent);
+            // console.log(this.filteredItems);
+            // if (this.selectedContinent == "All") {
+            //     this.filteredItems = this.filterData.filter(i => {
+            //         return i.continent.name !== this.selectedContinent;
+            //     });
+            // } else {
+            //     this.filteredItems = this.filterData.filter(i => {
+            //         return (
+            //             !this.selectedContinent ||
+            //             i.continent.name === this.selectedContinent
+            //         );
+            //     });
+            // }
         },
         selectedCountry: function() {
-            if (this.selectedCountry == "All") {
+            this.filterAction();
+
+            // if (this.selectedCountry == "All") {
+            //     this.filteredItems = this.filterData.filter(i => {
+            //         return i.country.name !== this.selectedCountry;
+            //     });
+            // } else {
+            //     this.filteredItems = this.filterData.filter(i => {
+            //         return (
+            //             !this.selectedCountry ||
+            //             i.country.name === this.selectedCountry
+            //         );
+            //     });
+            // }
+        },
+        selectedISP: function() {
+            this.filterAction();
+
+            // this.filteredItems = this.filterData.filter(i => {
+            //     return !this.selectedISP || i.isp === this.selectedISP;
+            // });
+        },
+        selectedCdnProvider: function() {
+            this.filterAction();
+
+            // if (this.selectedCdnProvider !== "All") {
+            //     this.filteredItems = this.filterData.filter(i => {
+            //         return (
+            //             !this.selectedCdnProvider ||
+            //             i.cdn.cdn_provider.name === this.selectedCdnProvider
+            //         );
+            //     });
+            // }
+            // if (this.selectedCdnProvider == "All") {
+            //     this.filteredItems = this.filterData;
+            // }
+        }
+    },
+    methods: {
+        filterAction() {
+            if (this.selectedContinent !== "All") {
                 this.filteredItems = this.filterData.filter(i => {
-                    return i.country.name !== this.selectedCountry;
+                    return i.continent.name === this.selectedContinent;
                 });
-            } else {
+            }
+            if (this.selectedCountry !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.country.name === this.selectedCountry;
+                });
+            }
+            if (this.selectedISP !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.isp === this.selectedISP;
+                });
+            }
+            if (this.selectedCdnProvider !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP == "All" &&
+                this.selectedCdnProvider == "All"
+            ) {
                 this.filteredItems = this.filterData.filter(i => {
                     return (
-                        !this.selectedCountry ||
+                        i.continent.name === this.selectedContinent &&
                         i.country.name === this.selectedCountry
                     );
                 });
             }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry == "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.continent.name === this.selectedContinent &&
+                        i.isp === this.selectedISP
+                    );
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry == "All" &&
+                this.selectedISP == "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.selectedContinent &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent == "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.country.name === this.selectedCountry &&
+                        i.isp === this.selectedISP
+                    );
+                });
+            }
+            if (
+                this.selectedContinent == "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP == "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.country.name === this.selectedCountry &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.continent.name === this.selectedContinent &&
+                        i.country.name === this.selectedCountry &&
+                        i.isp === this.selectedISP
+                    );
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry == "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.selectedContinent &&
+                            i.isp === this.selectedISP &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent == "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.country.name === this.selectedCountry &&
+                            i.isp === this.selectedISP &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP == "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.selectedContinent &&
+                            i.country.name === this.selectedCountry &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent !== "All" &&
+                this.selectedCountry !== "All" &&
+                this.selectedISP !== "All" &&
+                this.selectedCdnProvider !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.selectedContinent &&
+                            i.country.name === this.selectedCountry &&
+                            i.isp === this.selectedISP &&
+                            i.cdn.cdn_provider.name === this.selectedCdnProvider
+                        );
+                    }
+                });
+            }
+            if (
+                this.selectedContinent === "All" &&
+                this.selectedCountry === "All" &&
+                this.selectedISP === "All" &&
+                this.selectedCdnProvider === "All"
+            ) {
+                this.filteredItems = this.filterData;
+            }
         },
-        selectedISP: function() {
-            this.filteredItems = this.filterData.filter(i => {
-                return !this.selectedISP || i.isp === this.selectedISP;
-            });
-        },
-        selectedCdnProvider: function() {
-            this.filteredItems = this.filterData.filter(i => {
-                return (
-                    !this.selectedCdnProvider ||
-                    i.cdn.cdn_provider.name === this.selectedCdnProvider
-                );
-            });
-        }
-    },
-    methods: {
         chooseContinent(name) {
             // console.log(name, "continent");
         },
@@ -236,6 +433,7 @@ export default {
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
+                        this.cdnProvider.unshift("All");
 
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -274,10 +472,53 @@ export default {
                     }.bind(this)
                 );
         },
+        getDomainInfo() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("domains/getDomainById", this.domain_id)
+                .then(
+                    function(result) {
+                        this.domainInfo = result.data.domain;
+                        // console.log(this.domainInfo);
+                        if (this.domainInfo.domain_group.length !== 0) {
+                            this.group_id = this.domainInfo.domain_group[0].id;
+                        }
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        clearBtn() {
+            this.selectedCdnProvider = "All";
+            this.selectedISP = "All";
+            this.selectedCountry = "All";
+            this.selectedContinent = "All";
+            this.filteredItems = this.filterData;
+        },
         goToIRoutePage() {
-            this.$router.push({
-                name: "iRouteCDN"
-            });
+            if (this.domainInfo.domain_group.length == 0) {
+                this.$router.push({
+                    name: "iRouteCdnSettingById",
+                    query: {
+                        domain_id: this.domain_id
+                    }
+                });
+            } else {
+                this.$router.push({
+                    name: "iRouteCdnSettingById",
+                    query: {
+                        group_id: this.group_id
+                    }
+                });
+            }
         }
     },
     mounted() {
@@ -286,6 +527,7 @@ export default {
         this.getContinentList();
         this.getCountriesList();
         this.getAllCdnProvider();
+        this.getDomainInfo();
     }
 };
 </script>
