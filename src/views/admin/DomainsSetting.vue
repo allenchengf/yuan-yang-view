@@ -59,10 +59,12 @@
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
+import timeUtils from "../../utils/timeUtils.js";
 import XLSX from "xlsx";
 
 export default {
-    mixins: [textFieldRules],
+    mixins: [textFieldRules, timeUtils],
+
     data() {
         return {
             user_group_id: "",
@@ -262,7 +264,11 @@ export default {
             XLSX.utils.book_append_sheet(wb, domainWS, "domain");
             XLSX.writeFile(
                 wb,
-                "domains" + new Date().toLocaleDateString() + ".xlsx"
+                "domains" +
+                    timeUtils.methods.timestampToString(
+                        new Date().getTime() / 1000
+                    ) +
+                    ".xlsx"
             );
         },
         getAllCdnProvider() {

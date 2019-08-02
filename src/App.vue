@@ -1,9 +1,9 @@
 <template  lang="pug">
-  v-app#app.has-text-left
-    router-view.mb-5
-    .ma-4.version.text-xs-right.grey--text(v-if="env!='production'") 
-        span v {{version}}
-        span.ml-1 ({{env}})
+    v-app#app.has-text-left
+        router-view.mb-5
+        .ma-4.version.text-xs-right.grey--text
+            span v{{version}}
+            span.ml-1(v-if="env!='production'")  ({{env}})
 </template>
 
 <script>

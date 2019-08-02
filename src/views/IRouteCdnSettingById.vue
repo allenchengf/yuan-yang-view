@@ -80,10 +80,10 @@ export default {
             isp: [],
             cdnProvider: [],
             cdnProviderItems: [],
-            continentFilter: "",
-            countryFilter: "",
-            ispFilter: "",
-            cdnProviderFilter: "",
+            continentFilter: "All",
+            countryFilter: "All",
+            ispFilter: "All",
+            cdnProviderFilter: "All",
             dialog: {
                 edit: false
             },
@@ -119,12 +119,12 @@ export default {
                     text: "ISP",
                     align: "left",
                     sortable: true,
-                    value: ""
+                    value: "isp"
                 },
                 {
                     text: "CDN Provider",
                     align: "left",
-                    sortable: true,
+                    sortable: false,
                     value: ""
                 }
             ],
@@ -151,8 +151,8 @@ export default {
                 {
                     text: "CDN Provider",
                     align: "left",
-                    sortable: true,
-                    value: "cdn_provider"
+                    sortable: false,
+                    value: ""
                 }
             ],
             data: {},
@@ -164,7 +164,7 @@ export default {
                     text: "iRouteCDN",
                     disabled: false,
                     exact: true,
-                    to: "/iroutecdn"
+                    to: "/admin/iroutecdn"
                 },
                 {
                     text: "",
@@ -215,60 +215,19 @@ export default {
     },
     watch: {
         continentFilter: function() {
-            if (this.continentFilter == "All") {
-                this.filteredItems = this.filterData.filter(i => {
-                    return i.continent.name !== this.continentFilter;
-                });
-            } else {
-                this.filteredItems = this.filterData.filter(i => {
-                    return (
-                        !this.continentFilter ||
-                        i.continent.name === this.continentFilter
-                    );
-                });
-            }
+            this.filterAction();
             this.setPages();
         },
         countryFilter: function() {
-            if (this.countryFilter == "All") {
-                this.filteredItems = this.filterData.filter(i => {
-                    return i.country.name !== this.countryFilter;
-                });
-            } else {
-                this.filteredItems = this.filterData.filter(i => {
-                    return (
-                        !this.countryFilter ||
-                        i.country.name === this.countryFilter
-                    );
-                });
-            }
+            this.filterAction();
             this.setPages();
         },
         ispFilter: function() {
-            this.filteredItems = this.filterData.filter(i => {
-                return !this.ispFilter || i.isp === this.ispFilter;
-            });
+            this.filterAction();
             this.setPages();
         },
         cdnProviderFilter: function() {
-            if (this.cdnProviderFilter == "All") {
-                this.filteredItems = this.filterData.filter(i => {
-                    if (i.cdn.cdn_provider !== undefined) {
-                        return (
-                            i.cdn.cdn_provider.name !== this.cdnProviderFilter
-                        );
-                    }
-                });
-            } else {
-                this.filteredItems = this.filterData.filter(i => {
-                    if (i.cdn.cdn_provider !== undefined) {
-                        return (
-                            !this.cdnProviderFilter ||
-                            i.cdn.cdn_provider.name === this.cdnProviderFilter
-                        );
-                    }
-                });
-            }
+            this.filterAction();
             this.setPages();
         },
         perPage: function(value) {
@@ -293,11 +252,194 @@ export default {
         }
     },
     methods: {
+        filterAction() {
+            if (this.continentFilter !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.continent.name === this.continentFilter;
+                });
+            }
+            if (this.countryFilter !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.country.name === this.countryFilter;
+                });
+            }
+            if (this.ispFilter !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    return i.isp === this.ispFilter;
+                });
+            }
+            if (this.cdnProviderFilter !== "All") {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter == "All" &&
+                this.cdnProviderFilter == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.continent.name === this.continentFilter &&
+                        i.country.name === this.countryFilter
+                    );
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter == "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.continent.name === this.continentFilter &&
+                        i.isp === this.ispFilter
+                    );
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter == "All" &&
+                this.ispFilter == "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.continentFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter == "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.country.name === this.countryFilter &&
+                        i.isp === this.ispFilter
+                    );
+                });
+            }
+            if (
+                this.continentFilter == "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter == "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.country.name === this.countryFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter == "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    return (
+                        i.continent.name === this.continentFilter &&
+                        i.country.name === this.countryFilter &&
+                        i.isp === this.ispFilter
+                    );
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter == "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.continentFilter &&
+                            i.isp === this.ispFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter == "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.country.name === this.countryFilter &&
+                            i.isp === this.ispFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter == "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.continentFilter &&
+                            i.country.name === this.countryFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter !== "All" &&
+                this.countryFilter !== "All" &&
+                this.ispFilter !== "All" &&
+                this.cdnProviderFilter !== "All"
+            ) {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.cdn.cdn_provider !== undefined) {
+                        return (
+                            i.continent.name === this.continentFilter &&
+                            i.country.name === this.countryFilter &&
+                            i.isp === this.ispFilter &&
+                            i.cdn.cdn_provider.name === this.cdnProviderFilter
+                        );
+                    }
+                });
+            }
+            if (
+                this.continentFilter == "All" &&
+                this.countryFilter == "All" &&
+                this.ispFilter == "All" &&
+                this.cdnProviderFilter == "All"
+            ) {
+                this.filteredItems = this.filterData;
+            }
+        },
         clearBtn() {
-            this.countryFilter = "";
-            this.continentFilter = "";
-            this.ispFilter = "";
-            this.cdnProviderFilter = "";
+            this.countryFilter = "All";
+            this.continentFilter = "All";
+            this.ispFilter = "All";
+            this.cdnProviderFilter = "All";
+            this.filteredItems = this.filterData;
         },
         filterDataAction: function() {
             if (this.searchText != "") {
