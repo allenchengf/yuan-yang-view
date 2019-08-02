@@ -27,18 +27,66 @@ export default {
             mini: false,
             menu: false,
             items: [
-                { header: "Administration", auth: 2 },
+                { header: "General", auth: 0 },
+                // {
+                //     title: "Dashboard",
+                //     icon: "dashboard",
+                //     router: "/dashboard",
+                //     auth: 0
+                // },
                 {
-                    title: "Domains List",
-                    icon: "account_circle",
+                    title: "CDN Providers",
+                    icon: "settings_input_component",
+                    router: "/admin/cdn-providers",
+                    auth: 1
+                },
+                {
+                    title: "Domains",
+                    icon: "domain",
                     router: "/admin/domains",
+                    auth: 1
+                },
+                {
+                    title: "Grouping",
+                    icon: "group",
+                    router: "/admin/grouping",
+                    auth: 1
+                },
+                {
+                    title: "iRouteCDN",
+                    icon: "dns",
+                    router: "/admin/iroutecdn",
                     auth: 0
                 },
                 {
-                    title: "Domain Settings",
+                    title: "Logs",
+                    icon: "description",
+                    router: "/admin/logs",
+                    auth: 1
+                },
+                {
+                    title: "Tools",
+                    icon: "build",
+                    auth: 1,
+                    children: [
+                        // {
+                        //     title: "DNS lookup",
+                        //     router: "/admin/dns-lookup",
+                        //     auth: 1
+                        // },
+                        {
+                            title: "Config Backup",
+                            router: "/admin/config-backup",
+                            auth: 1
+                        }
+                    ]
+                },
+                { header: "Administration", auth: 2 },
+                {
+                    title: "Networks",
                     icon: "settings",
-                    router: "/admin/setting",
-                    auth: 0
+                    router: "/admin/networks",
+                    auth: 2
                 }
             ],
             right: null
@@ -46,6 +94,7 @@ export default {
     },
     created() {
         this.authLevel = this.$store.getters["account/accountAuth"]();
+        // console.log(this.authLevel);
     }
 };
 </script>

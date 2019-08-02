@@ -1,5 +1,6 @@
 import axios from "axios";
 import store from "../store";
+import router from "../router";
 import errorHandler from "./errorHandler";
 
 axios.defaults.timeout = process.env.VUE_APP_API_TIMEOUT;
@@ -25,9 +26,14 @@ axios.interceptors.response.use(
         return response;
     },
     error => {
+        // console.log(error.response.status);
+
         switch (error.response.status) {
-            case 403:
+            case 401:
                 store.dispatch("account/logout");
+                break;
+            case 404:
+                router.push({ path: "/" });
                 break;
         }
 

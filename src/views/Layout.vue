@@ -17,14 +17,14 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    v-list-tile(@click="gotoSettings")
-                        v-list-tile-title Settings
+                    //- v-list-tile(@click="gotoSettings")
+                    //-     v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
         //- Snackbar
-        //- v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
-        //-     v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
+        v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
+            v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
 
         v-content
             router-view
@@ -64,6 +64,10 @@ export default {
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Sign out success!"
+                        );
                     }.bind(this)
                 )
                 .catch(
