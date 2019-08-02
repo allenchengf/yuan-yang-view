@@ -69,7 +69,7 @@
                                     v-list.pa-0
                                         v-list-tile(@click="editItem(props.item, 'edit')" :disabled="props.item.default == false ? false : true")
                                             v-list-tile-title Edit cname
-                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? false : true ")
+                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? true : false ")
                                             v-list-tile-title Change to default
                                         v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true ")
                                             v-list-tile-title Delete

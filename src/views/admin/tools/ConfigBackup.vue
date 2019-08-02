@@ -206,7 +206,7 @@ export default {
                     alert("This browser does not support HTML5.");
                 }
             } else {
-                alert("Please upload a valid Excel file.");
+                alert("Please upload a valid json file.");
             }
         },
         uploadData(data) {
@@ -238,12 +238,6 @@ export default {
                 );
         }
     },
-    mounted() {
-        var timeStamp = new Date();
-        console.log(timeStamp.getTime());
-        console.log(
-            timeUtils.methods.timestampToString(timeStamp.getTime() / 1000)
-        );
-    }
+    mounted() {}
 };
 </script>

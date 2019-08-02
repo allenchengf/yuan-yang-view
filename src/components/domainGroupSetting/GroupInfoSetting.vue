@@ -34,7 +34,7 @@
                             v-card-title.title Edit Group
                             v-card-text
                                 v-form(ref="editGroupForm")
-                                    v-text-field(v-model="groupEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                    v-text-field(v-model="groupEditedInfo.name" label="Group" type="text" name="name" :rules="[rules.required]")
                                     v-text-field(v-model="groupEditedInfo.label" label="Label" type="text" name="label")
                             v-card-actions  
                                 v-spacer
@@ -103,9 +103,10 @@
 import textFieldRules from "../../utils/textFieldRules.js";
 import _ from "lodash";
 import XLSX from "xlsx";
+import timeUtils from "../../utils/timeUtils.js";
 
 export default {
-    mixins: [textFieldRules],
+    mixins: [textFieldRules, timeUtils],
     data() {
         return {
             items: [
@@ -289,7 +290,11 @@ export default {
             XLSX.utils.book_append_sheet(wb, domainWS, "domain");
             XLSX.writeFile(
                 wb,
-                "domains" + new Date().toLocaleDateString() + ".xlsx"
+                this.groupInfo.name +
+                    timeUtils.methods.timestampToString(
+                        new Date().getTime() / 1000
+                    ) +
+                    ".xlsx"
             );
         },
         getGroupInfo() {
