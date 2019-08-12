@@ -2,7 +2,7 @@
     v-container#iroutecdn
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 iRouteCDN Rules
+                .title.text-xs-left.mb-4 iRouteCDN
             v-flex(xs12)
                 v-card
                     v-card-title
@@ -155,7 +155,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch("global/showSnackbarError", error.message);
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },

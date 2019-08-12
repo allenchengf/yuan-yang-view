@@ -8,6 +8,7 @@
                     v-card-title
                         .subheading Domains
                         v-spacer
+                        v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
@@ -24,13 +25,19 @@
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                            v-flex(xs12 sm6 md3)
+                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
+                            v-flex(xs12 sm6 md3)
+                                v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
+                    h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
-                                td {{ props.item.cdnArray.join(', ')}}
+                                td
+                                    span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
+                                    span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
                                 td {{props.item.domain_group.length !== 0 ? props.item.domain_group[0].name : ""}}
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
@@ -43,7 +50,9 @@
                         v-card-text
                             v-form(ref="editForm")
                                 v-text-field(v-model="domain.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                v-text-field(v-model="domain.label" label="Label" type="text" name="label")
+                                v-text-field(v-model="domain.label" label="Note" type="text" name="label")
+                                v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider_id" :rules="[rules.required]")
+                                v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
                         v-card-actions  
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -67,6 +76,11 @@ export default {
 
     data() {
         return {
+            cdnArray: [],
+            groupArray: [],
+            selectedCDN: [],
+            selectedGroup: "",
+            cdn: {},
             user_group_id: "",
             editedIndex: -1,
             domain: {},
@@ -81,6 +95,7 @@ export default {
             batchData: {
                 domains: []
             },
+            filteredItems: [],
             filterData: [],
             rawData: [],
             headers: [
@@ -98,22 +113,22 @@ export default {
                     value: "name"
                 },
                 {
-                    text: "CName",
+                    text: "CNAME",
                     align: "left",
                     sortable: true,
-                    value: ""
+                    value: "cname"
                 },
                 {
                     text: "CDNs",
                     align: "left",
                     sortable: false,
-                    value: "cdns"
+                    value: ""
                 },
                 {
                     text: "Group",
                     align: "left",
                     sortable: false,
-                    value: "group"
+                    value: "domain_group[0].name"
                 },
                 {
                     text: "Actions",
@@ -134,6 +149,46 @@ export default {
         }
     },
     methods: {
+        chooseCdnFilter() {
+            this.filterAction();
+        },
+        chooseGroupFilter() {
+            this.filterAction();
+        },
+        chooseCDN() {
+            // console.log(this.cdn.cdn_provider_id);
+        },
+        filterAction() {
+            if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
+                this.selectedCDN.forEach((o, i) => {
+                    this.filteredItems = this.filterData.filter(item => {
+                        return item.cdnArrayName.indexOf(o) > -1;
+                    });
+                });
+            } else {
+                this.filteredItems = this.filterData;
+            }
+            if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
+                this.selectedCDN.forEach((o, i) => {
+                    this.filteredItems = this.filterData.filter(item => {
+                        if (item.domain_group.length !== 0) {
+                            return (
+                                item.domain_group[0].name ==
+                                    this.selectedGroup &&
+                                item.cdnArrayName.indexOf(o) > -1
+                            );
+                        }
+                    });
+                });
+            }
+            if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
+                this.filteredItems = this.filterData.filter(i => {
+                    if (i.domain_group.length !== 0) {
+                        return i.domain_group[0].name == this.selectedGroup;
+                    }
+                });
+            }
+        },
         pickFile() {
             this.$refs.file.click();
             // console.log(this.batchData);
@@ -295,14 +350,30 @@ export default {
         mapping() {
             this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
+                o.cdnArrayName = [];
+
                 o.cdns.forEach((obj, idx) => {
-                    o.cdnArray.push(
+                    o.cdnArrayName.push(
                         this.cdnProviderMapping[obj.cdn_provider_id]
                     );
+                    var cdn = {};
+                    cdn.default = obj.default;
+                    cdn.name = this.cdnProviderMapping[obj.cdn_provider_id];
+                    o.cdnArray.push(cdn);
                 });
             });
             this.filterData = this.rawData;
-            // console.log(this.filterData, "mm");
+            this.filteredItems = this.filterData;
+            this.filterData.forEach((o, i) => {
+                if (o.domain_group.length !== 0) {
+                    this.groupArray.push(o.domain_group[0].name);
+                }
+                o.cdnArray.forEach((obj, idx) => {
+                    this.cdnArray.push(obj.name);
+                });
+            });
+            console.log(this.cdnArray);
+            console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
             return this.$store
@@ -379,6 +450,7 @@ export default {
                                 "global/showSnackbarSuccess",
                                 "Add new domain success!"
                             );
+                            this.addNewCdn(result.data.id);
                             this.initialApis();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
@@ -394,6 +466,26 @@ export default {
                     );
                 this.closeEditDialog();
             }
+        },
+        addNewCdn(domain_id) {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/newCDN", this.cdn)
+                .then(
+                    function(result) {
+                        this.initialApis();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                );
         },
         deleteDomain() {
             // console.log(this.domain, "deleteApi");
@@ -425,6 +517,11 @@ export default {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
             this.dialog.delete = false;
+        },
+        clearBtn() {
+            this.selectedCDN = [];
+            this.selectedGroup = "";
+            this.filteredItems = this.filterData;
         },
         goToNextPage(data) {
             this.$router.push({

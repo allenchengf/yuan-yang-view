@@ -129,58 +129,15 @@ export default {
         },
         selectedContinent: function() {
             this.filterAction();
-            // console.log(this.selectedContinent);
-            // console.log(this.filteredItems);
-            // if (this.selectedContinent == "All") {
-            //     this.filteredItems = this.filterData.filter(i => {
-            //         return i.continent.name !== this.selectedContinent;
-            //     });
-            // } else {
-            //     this.filteredItems = this.filterData.filter(i => {
-            //         return (
-            //             !this.selectedContinent ||
-            //             i.continent.name === this.selectedContinent
-            //         );
-            //     });
-            // }
         },
         selectedCountry: function() {
             this.filterAction();
-
-            // if (this.selectedCountry == "All") {
-            //     this.filteredItems = this.filterData.filter(i => {
-            //         return i.country.name !== this.selectedCountry;
-            //     });
-            // } else {
-            //     this.filteredItems = this.filterData.filter(i => {
-            //         return (
-            //             !this.selectedCountry ||
-            //             i.country.name === this.selectedCountry
-            //         );
-            //     });
-            // }
         },
         selectedISP: function() {
             this.filterAction();
-
-            // this.filteredItems = this.filterData.filter(i => {
-            //     return !this.selectedISP || i.isp === this.selectedISP;
-            // });
         },
         selectedCdnProvider: function() {
             this.filterAction();
-
-            // if (this.selectedCdnProvider !== "All") {
-            //     this.filteredItems = this.filterData.filter(i => {
-            //         return (
-            //             !this.selectedCdnProvider ||
-            //             i.cdn.cdn_provider.name === this.selectedCdnProvider
-            //         );
-            //     });
-            // }
-            // if (this.selectedCdnProvider == "All") {
-            //     this.filteredItems = this.filterData;
-            // }
         }
     },
     methods: {

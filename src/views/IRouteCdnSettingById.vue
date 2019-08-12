@@ -11,7 +11,7 @@
                         .subheading CDN Rules
                         v-spacer
                         v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
-                        v-btn.my-0(color="primary" @click="batchOverride(-1)") Batch Override
+                        v-btn.my-0(color="primary" @click="batchOverride(-1)") Batch select CDN provider
                     v-divider
                     v-card-text
                         v-layout(wrap)
@@ -29,7 +29,7 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
                             v-flex(xs12 sm12 md12)
                                 v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
-                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all hide-actions :search="searchText" :pagination.sync="pagination" :item-key="'index'")
+                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'")
                         template(v-slot:items="props" )
                             td 
                                 v-checkbox(v-model="props.selected" primary hide-details)
@@ -46,6 +46,13 @@
                         v-flex.text-xs-right.py-3(xs8)
                             v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
                 //- Dialogs
+                v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
+                    v-card 
+                        v-card-title.title Batch select CDN provider 
+                        v-card-text Please at least choose one domain or group to batch change CDN provider.
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
                 v-dialog.edit-dialog(v-model="dialog.edit" width="600")
                     v-card
                         v-card-title.title {{formTitle}}
@@ -85,7 +92,8 @@ export default {
             ispFilter: "All",
             cdnProviderFilter: "All",
             dialog: {
-                edit: false
+                edit: false,
+                alert: false
             },
             iRouteCDN: {
                 cdn: {
@@ -564,6 +572,7 @@ export default {
                                 this.cdnProvider.push(o.cdns);
                             }
                         );
+                        // console.log(this.cdnProvider, "cdnProvider");
                         this.cdnProvider.forEach((o, i) => {
                             o.name = this.cdnProviderIdMapping[
                                 o.cdn_provider_id
@@ -649,6 +658,7 @@ export default {
                 });
                 this.cdnProvider = this.infoData.cdns;
             }
+
             this.cdnProviderItems = this.cdnProvider;
             this.cdnProviderItems.unshift("All");
         },
@@ -659,6 +669,7 @@ export default {
                 .then(
                     function(result) {
                         var data = result.data;
+                        console.log(data,"getIRouteCdnList")
                         var allList = [];
                         data.domainGroup.forEach((o, i) => {
                             allList.push(o);
@@ -724,9 +735,19 @@ export default {
                         });
                         this.filterData.forEach((o, i) => {
                             o.cdn_provider.forEach((obj, idx) => {
+                                // console.log(
+                                //     o.cdn_provider[idx].cdn_provider_id
+                                // );
+                                // console.log(
+                                //     this.cdnProviderIdMapping[
+                                //         o.cdn_provider[idx].cdn_provider_id
+                                //     ]
+                                // );
+                                obj.name = "mm";
                                 obj.name = this.cdnProviderIdMapping[
-                                    obj.cdn_provider_id
+                                    o.cdn_provider[idx].cdn_provider_id
                                 ];
+                                // console.log(obj);
                             });
                         });
                         this.filterData.forEach((o, i) => {
@@ -735,7 +756,7 @@ export default {
                         this.getAllIRouteIsp();
                         this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems);
+                        console.log(this.filteredItems);
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                         return Promise.resolve();
@@ -843,17 +864,24 @@ export default {
             this.dialog.edit = true;
         },
         batchOverride(type) {
-            this.editedIndex = type;
-            this.dialog.edit = true;
-            if (this.$route.query.id !== undefined) {
-                // console.log(this.selected, "allBatch");
-                var arr1 = this.selected[0].cdn_provider;
-                for (var i = 1; i < this.selected.length; i++) {
-                    arr1 = this.compare(arr1, this.selected[i].cdn_provider);
-                }
-                this.cdnProvider = arr1;
+            if (this.selected.length == 0) {
+                this.dialog.alert = true;
             } else {
-                this.cdnProvider = this.cdnProviderItems.slice(1);
+                this.editedIndex = type;
+                this.dialog.edit = true;
+                if (this.$route.query.id !== undefined) {
+                    // console.log(this.selected, "allBatch");
+                    var arr1 = this.selected[0].cdn_provider;
+                    for (var i = 1; i < this.selected.length; i++) {
+                        arr1 = this.compare(
+                            arr1,
+                            this.selected[i].cdn_provider
+                        );
+                    }
+                    this.cdnProvider = arr1;
+                } else {
+                    this.cdnProvider = this.cdnProviderItems.slice(1);
+                }
             }
         },
         compare(arr1, arr2) {
@@ -1002,6 +1030,9 @@ export default {
         },
         closeEditDialog() {
             this.dialog.edit = false;
+        },
+        closeAlertDialog() {
+            this.dialog.alert = false;
         }
     },
     created() {

@@ -1,6 +1,6 @@
 <template lang="pug">
     #datatable
-        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination"  hide-actions)
+        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination")
             template(slot="items" slot-scope="props")
                 slot(name="items" :props="props" :index="rowIndex(props.index)")
                 
