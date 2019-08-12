@@ -16,7 +16,7 @@ import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import IRouteCdnSettingById from "./views/IRouteCdnSettingById";
 // import AllIRouteCdnSetting from "./views/AllIRouteCdnSetting";
 import Logs from "./views/admin/Logs.vue";
-import DnsLookup from "./views/admin/tools/DnsLookup.vue";
+import AutoScan from "./views/admin/tools/AutoScan.vue";
 import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
 import NetworkSetting from "./views/h7admin/NetworkSetting.vue";
 
@@ -151,7 +151,7 @@ export default new Router({
                 },
                 {
                     name: "iRouteCdnSettingById",
-                    path: "iroutecdn",
+                    path: "iroutecdn-rules",
                     meta: {
                         requireAuth: true,
                         auth: 0
@@ -167,18 +167,18 @@ export default new Router({
                     component: Logs
                 },
                 {
-                    path: "dns-lookup",
+                    path: "auto-scan",
                     meta: {
                         requireAuth: true,
                         auth: 1
                     },
-                    component: DnsLookup
+                    component: AutoScan
                 },
                 {
                     path: "config-backup",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 0
                     },
                     component: ConfigBackup
                 },
