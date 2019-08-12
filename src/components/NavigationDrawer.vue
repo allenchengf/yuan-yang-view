@@ -67,17 +67,17 @@ export default {
                 {
                     title: "Tools",
                     icon: "build",
-                    auth: 1,
+                    auth: 0,
                     children: [
-                        // {
-                        //     title: "DNS lookup",
-                        //     router: "/admin/dns-lookup",
-                        //     auth: 1
-                        // },
+                        {
+                            title: "Auto Scan",
+                            router: "/admin/auto-scan",
+                            auth: 1
+                        },
                         {
                             title: "Config Backup",
                             router: "/admin/config-backup",
-                            auth: 1
+                            auth: 0
                         }
                     ]
                 },
