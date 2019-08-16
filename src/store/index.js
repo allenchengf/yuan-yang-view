@@ -12,6 +12,7 @@ import locationInfo from "./modules/locationInfo";
 import grouping from "./modules/grouping";
 import config from "./modules/config";
 import logs from "./modules/logs";
+import crawlers from "./modules/crawlers";
 
 Vue.use(Vuex);
 
@@ -27,6 +28,7 @@ export default new Vuex.Store({
         locationInfo,
         grouping,
         config,
-        logs
+        logs,
+        crawlers
     }
 });
