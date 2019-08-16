@@ -15,6 +15,7 @@
                                 td.text-xs-left {{ index}}
                                 td.text-xs-left {{ props.item.name }}
                                 td.text-xs-left {{ props.item.location_text }}
+                                td.text-xs-left {{ props.item.crawler_mapping_value }}
                                 td.text-xs-left
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)" title="edit")
                                         v-icon(small) edit
@@ -91,6 +92,16 @@ export default {
                     value: "location_text"
                 },
                 {
+                    key: "crawler",
+                    text: "Crawler Mapping",
+                    align: "left",
+                    sortable: true,
+                    auth: 0,
+                    control: true,
+                    searchable: true,
+                    value: "crawler_mapping_value"
+                },
+                {
                     key: "action",
                     text: "Action",
                     align: "left",
@@ -134,8 +145,13 @@ export default {
                                       " / " +
                                       item.location_network.isp
                                     : "Not Set";
+                            item.crawler_mapping_value =
+                                item.location_network != null
+                                    ? item.location_network.mapping_value
+                                    : "";
                         });
                         this.items = result.data;
+                        // console.log(this.items);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
