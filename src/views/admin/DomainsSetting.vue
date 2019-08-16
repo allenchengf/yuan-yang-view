@@ -49,7 +49,7 @@
                         v-card-title.title {{formTitle}}
                         v-card-text
                             v-form(ref="editForm")
-                                v-text-field(v-model="domain.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                v-text-field(v-model="domain.name" label="Domain" type="text" name="name" :rules="[rules.domain]")
                                 v-text-field(v-model="domain.label" label="Note" type="text" name="label")
                                 v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider_id" :rules="[rules.required]")
                                 v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
@@ -372,8 +372,8 @@ export default {
                     this.cdnArray.push(obj.name);
                 });
             });
-            console.log(this.cdnArray);
-            console.log(this.filterData, "mm");
+            // console.log(this.cdnArray);
+            // console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
             return this.$store
@@ -468,6 +468,7 @@ export default {
             }
         },
         addNewCdn(domain_id) {
+            this.cdn.domain_id = domain_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/newCDN", this.cdn)
