@@ -131,7 +131,7 @@ export default {
     },
     mounted() {
         this.authLevel = this.$store.getters["account/accountAuth"]();
-        console.log(this.authLevel);
+        // console.log(this.authLevel);
     }
 };
 </script>
