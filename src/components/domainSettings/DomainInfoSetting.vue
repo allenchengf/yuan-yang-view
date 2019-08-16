@@ -259,8 +259,8 @@ export default {
                 );
         },
         mapping() {
-            console.log(this.cdnProvider);
-            console.log(this.cdnData);
+            // console.log(this.cdnProvider);
+            // console.log(this.cdnData);
             this.cdnProvider.forEach((o, i) => {
                 this.cdnData.forEach((obj, idx) => {
                     if (o.id == obj.cdn_provider_id) {

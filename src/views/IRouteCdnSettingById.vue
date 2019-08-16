@@ -669,7 +669,7 @@ export default {
                 .then(
                     function(result) {
                         var data = result.data;
-                        console.log(data,"getIRouteCdnList")
+                        // console.log(data,"getIRouteCdnList")
                         var allList = [];
                         data.domainGroup.forEach((o, i) => {
                             allList.push(o);
@@ -756,7 +756,7 @@ export default {
                         this.getAllIRouteIsp();
                         this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        console.log(this.filteredItems);
+                        // console.log(this.filteredItems);
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                         return Promise.resolve();

@@ -404,8 +404,8 @@ export default {
             this.allDomainsData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdns.forEach((obj, idx) => {
-                    console.log(this.cdnProviderIdMapping);
-                    console.log(this.cdnProviderIdMapping[obj.cdn_provider_id]);
+                    // console.log(this.cdnProviderIdMapping);
+                    // console.log(this.cdnProviderIdMapping[obj.cdn_provider_id]);
                     o.cdnArray.push(
                         this.cdnProviderIdMapping[obj.cdn_provider_id]
                     );
