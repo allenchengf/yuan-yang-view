@@ -72,7 +72,7 @@ export default {
                         {
                             title: "Auto Scan",
                             router: "/admin/auto-scan",
-                            auth: 1
+                            auth: 0
                         },
                         {
                             title: "Config Backup",
