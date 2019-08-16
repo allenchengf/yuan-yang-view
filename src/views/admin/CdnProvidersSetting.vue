@@ -20,6 +20,7 @@
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.ttl }}
+                                td {{ props.item.url }}
                                 td
                                     v-switch(color="primary" v-model="props.item.status" @change="switchAction(props.item)" hide-details)
                                 td
@@ -32,6 +33,7 @@
                             v-form(ref="editForm")
                                 v-text-field(v-model="cdn.name" label="CDN Provider Name" type="text" name="name" :rules="[rules.required]")
                                 v-text-field(v-model="cdn.ttl" label="TTL" type="number" name="ttl" :rules="[rules.ttl]")
+                                v-text-field(v-model="cdn.url" label="Url" type="text" name="url")
                         v-card-actions  
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -92,6 +94,12 @@ export default {
                     align: "left",
                     sortable: true,
                     value: "ttl"
+                },
+                {
+                    text: "Url",
+                    align: "left",
+                    sortable: true,
+                    value: "url"
                 },
                 {
                     text: "Status",
