@@ -14,7 +14,7 @@
                         v-flex(sm5 md10)
                             .text {{domainInfo.name}}
                         v-flex(sm5 md2)
-                            .text.font-weight-bold Cname
+                            .text.font-weight-bold CNAME
                         v-flex(sm5 md10)
                             .text {{domainInfo.cname}}.{{dnsPodDomain}}
                         v-flex(sm5 md2)
@@ -22,7 +22,7 @@
                         v-flex(sm5 md10)
                             .text {{domainInfo.domain_group.length == 0 ? '' : domainInfo.domain_group[0].name}}
                         v-flex(sm5 md2)
-                            .text.font-weight-bold Label
+                            .text.font-weight-bold Note
                         v-flex(sm5 md10)
                             .text {{domainInfo.label}}
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
@@ -31,7 +31,7 @@
                             v-card-text
                                 v-form(ref="editDomainForm")
                                     v-text-field(v-model="domainEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
-                                    v-text-field(v-model="domainEditedInfo.label" label="Label" type="text" name="label")
+                                    v-text-field(v-model="domainEditedInfo.label" label="Note" type="text" name="label")
                             v-card-actions  
                                 v-spacer
                                 v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -68,8 +68,8 @@
                                         span More
                                     v-list.pa-0
                                         v-list-tile(@click="editItem(props.item, 'edit')" :disabled="props.item.default == false ? false : true")
-                                            v-list-tile-title Edit cname
-                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? true : false ")
+                                            v-list-tile-title Edit CNAME
+                                        v-list-tile(@click="editItem(props.item, 'changeDefault')" :disabled="props.item.default == false ? false : true ")
                                             v-list-tile-title Change to default
                                         v-list-tile(@click="editItem(props.item, 'delete')" :disabled="props.item.default == false ? false : true ")
                                             v-list-tile-title Delete
@@ -80,7 +80,7 @@
                     v-card-text
                         v-form(ref="editForm")
                             v-select(:items="filteredCdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN(cdn.cdn_provider_id)" v-model="cdn.cdn_provider_id" v-if="editedIndex == -1")
-                            v-text-field(v-model="cdn.cname" label="CDN CName" type="text" name="cname" :rules="[rules.domain]")
+                            v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
                     v-card-actions  
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -129,7 +129,7 @@ export default {
                     value: "name"
                 },
                 {
-                    text: "CDN CName",
+                    text: "CDN CNAME",
                     align: "left",
                     sortable: true,
                     value: "cname"
@@ -259,14 +259,16 @@ export default {
                 );
         },
         mapping() {
+            // console.log(this.cdnProvider);
+            // console.log(this.cdnData);
             this.cdnProvider.forEach((o, i) => {
                 this.cdnData.forEach((obj, idx) => {
                     if (o.id == obj.cdn_provider_id) {
-                        // console.log(i);
                         delete this.cdnProvider[i];
                     }
                 });
             });
+
             this.filteredCdnProvider = _.compact(this.cdnProvider);
         },
         addItem: function() {
