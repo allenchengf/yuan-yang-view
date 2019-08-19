@@ -14,7 +14,7 @@
                         v-flex(sm5 md10)
                             .text {{groupInfo.name}}
                         v-flex(sm5 md2)
-                            .text.font-weight-bold Label
+                            .text.font-weight-bold Note
                         v-flex(sm5 md10)
                             .text {{groupInfo.label}}
                         v-flex(sm5 md2)
@@ -404,6 +404,8 @@ export default {
             this.allDomainsData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdns.forEach((obj, idx) => {
+                    // console.log(this.cdnProviderIdMapping);
+                    // console.log(this.cdnProviderIdMapping[obj.cdn_provider_id]);
                     o.cdnArray.push(
                         this.cdnProviderIdMapping[obj.cdn_provider_id]
                     );

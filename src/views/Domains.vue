@@ -80,7 +80,7 @@ export default {
                     value: "name"
                 },
                 {
-                    text: "CName",
+                    text: "CNAME",
                     align: "left",
                     sortable: true,
                     value: "cname"
@@ -113,32 +113,7 @@ export default {
             dnsPodDomain: "",
             form: [],
             batchData: {
-                domains: [
-                    {
-                        Cloudflare: "www.hiero9.com.cloudflare.com",
-                        Cloudfront: "efsfijdd.cloudfront.com",
-                        Domain: "www.hiero9.com",
-                        H7CDN: "wwefdsf.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero10.com.cloudflare.com",
-                        Cloudfront: "esfijfodd.cloudfront.com",
-                        Domain: "www.hiero10.com",
-                        H7CDN: "2wdsf.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero11.com.cloudflare.com",
-                        Cloudfront: "efsjfodd.cloudfront.com",
-                        Domain: "www.hiero11.com",
-                        H7CDN: "2weff.speedxxx.com"
-                    },
-                    {
-                        Cloudflare: "www.hiero12.com.cloudflare.com",
-                        Cloudfront: "efsodd.cloudfront.com",
-                        Domain: "www.hiero12.com",
-                        H7CDN: "2efdsf.speedxxx.com"
-                    }
-                ]
+                domains: []
             },
             domains: []
         };

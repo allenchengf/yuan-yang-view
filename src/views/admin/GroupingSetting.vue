@@ -33,7 +33,7 @@
                         v-form(ref="editForm")
                             v-text-field(v-model="group.name" label="Group Name" type="text" name="name" :rules="[rules.required]")
                             v-select(:items="domainsData" label="Inherited settings by domain" item-text="name" item-value="id" @change="chooseDomain(group.domain_id)" v-model="group.domain_id" )
-                            v-text-field(v-model="group.label" label="Label" type="text" name="label")
+                            v-text-field(v-model="group.label" label="Note" type="text" name="label")
 
                     v-card-actions  
                         v-spacer
@@ -85,7 +85,7 @@ export default {
                     value: "default_cdn_name"
                 },
                 {
-                    text: "label",
+                    text: "Note",
                     align: "left",
                     sortable: false,
                     value: "label"
