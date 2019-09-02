@@ -32,6 +32,7 @@
                         v-select(v-model="editedLoaction.country_id" label="Country" :items="countries" item-text="name" item-value="id" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.location" label="Location" type="text" name="location" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.isp" label="ISP" type="text" name="isp" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.mapping_value" label="Mapping Value" type="text" name="mapping_value" )
                 v-card-actions  
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="dialog.edit = false") Cancel

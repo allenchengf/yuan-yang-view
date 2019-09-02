@@ -8,7 +8,7 @@
             v-flex.text-xs-left.py-3(xs4)
                 slot(name="actions-left")
             v-flex.text-xs-right.py-3(xs8)
-                v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
+                v-pagination(v-model="page" :length="pages" :total-visible="7")
 </template>
 
 <script>
@@ -40,7 +40,8 @@ export default {
                 sortBy: "time", // The field that you're sorting by
                 descending: true
             },
-            pages: 0
+            pages: 0,
+            page: 1
         };
     },
     methods: {
@@ -64,7 +65,12 @@ export default {
         }
     },
     watch: {
+        page: function(val) {
+            // console.log(val);
+            this.pagination.page = this.page;
+        },
         pagination: function(value) {
+            // console.log(this.pagination);
             this.setPages();
         },
         perPage: function(value) {

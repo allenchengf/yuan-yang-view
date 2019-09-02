@@ -167,26 +167,26 @@ export default new Router({
                     },
                     component: Logs
                 },
-                {
-                    path: "auto-scan",
-                    meta: {
-                        requireAuth: true,
-                        auth: 0
-                    },
-                    component: AutoScan
-                },
-                {
-                    name: "auto-scan-list",
-                    path: "auto-scan-list",
-                    meta: {
-                        requireAuth: true,
-                        auth: 0
-                    },
-                    component: AutoScanList,
-                    props: route => ({
-                        ...route.params
-                    })
-                },
+                // {
+                //     path: "auto-scan",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 0
+                //     },
+                //     component: AutoScan
+                // },
+                // {
+                //     name: "auto-scan-list",
+                //     path: "auto-scan-list",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 0
+                //     },
+                //     component: AutoScanList,
+                //     props: route => ({
+                //         ...route.params
+                //     })
+                // },
                 {
                     path: "config-backup",
                     meta: {
