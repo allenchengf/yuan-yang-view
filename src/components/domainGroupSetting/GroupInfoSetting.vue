@@ -84,7 +84,8 @@
                     v-card-title.title Add Domain to {{groupInfo.name}}
                     v-card-text
                         v-form(ref="editForm")
-                            v-select(:items="domainList" label="Domain Name" item-text="name" item-value="id" @change="chooseDomain(domainInfo.domainId)" v-model="domainInfo.domainId" )
+                            //- v-select(:items="domainList" label="Domain Name" item-text="name" item-value="id" @change="chooseDomain(domainInfo.domainId)" v-model="domainInfo.domainId")
+                            v-select(v-model="selectedDomains" :items="domainList" label="Domain Name" item-text="name" item-value="id" multiple @change="chooseDomainList(selectedDomains)")
                     v-card-actions  
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -109,6 +110,7 @@ export default {
     mixins: [textFieldRules, timeUtils],
     data() {
         return {
+            selectedDomains: [],
             items: [
                 {
                     text: "a",
@@ -182,6 +184,9 @@ export default {
         };
     },
     methods: {
+        chooseDomainList(val) {
+            // console.log(val);
+        },
         chooseCdnProvider(defaultCdnProvider) {
             this.defaultCdnProvider = defaultCdnProvider;
             this.selectedCdnProvider = this.cdnProviderMapping[
@@ -427,6 +432,7 @@ export default {
                 });
             });
             this.domainList = _.compact(this.domainList);
+            // console.log(this.domainList, "domainList");
         },
         addItem: function() {
             this.$refs.editForm.reset();
@@ -463,6 +469,7 @@ export default {
                                 "Update group info success!"
                             );
                             this.initialApis();
+                            this.$emit("childMethod");
                             this.closeEditDialog();
                         }.bind(this)
                     )
@@ -522,29 +529,35 @@ export default {
             // console.log(this.domainInfo, "addDomaintoGroup");
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
-                this.$store
-                    .dispatch("grouping/newDomainByGroupId", this.domainInfo)
-                    .then(
-                        function(result) {
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Add domain to group success!"
-                            );
-                            this.initialApis();
-                            this.closeEditDialog();
-                            this.$store.dispatch("global/finishLoading");
-                        }.bind(this)
-                    )
-                    .catch(
-                        function(error) {
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
-                            this.$store.dispatch("global/finishLoading");
-                        }.bind(this)
-                    );
+                this.selectedDomains.forEach((o, i) => {
+                    this.domainInfo.domainId = o;
+                    this.$store
+                        .dispatch(
+                            "grouping/newDomainByGroupId",
+                            this.domainInfo
+                        )
+                        .then(
+                            function(result) {
+                                this.$store.dispatch(
+                                    "global/showSnackbarSuccess",
+                                    "Add domain to group success!"
+                                );
+                                this.initialApis();
+                                this.$store.dispatch("global/finishLoading");
+                            }.bind(this)
+                        )
+                        .catch(
+                            function(error) {
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    error.message
+                                );
+                                this.$store.dispatch("global/finishLoading");
+                            }.bind(this)
+                        );
+                });
             }
+            this.closeEditDialog();
         },
         deleteDomain() {
             // console.log(this.domainInfo, "delete");

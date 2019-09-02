@@ -22,6 +22,8 @@
                                 td {{ props.item.ttl }}
                                 td {{ props.item.url }}
                                 td
+                                    v-switch(color="primary" v-model="props.item.scannable" @change="switchScannable(props.item)" hide-details)
+                                td
                                     v-switch(color="primary" v-model="props.item.status" @change="switchAction(props.item)" hide-details)
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)")
@@ -38,6 +40,14 @@
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                             v-btn(color="primary" flat="flat" @click="updateCDN") Save
+                v-dialog(v-model="dialog.changeScannable" max-width="460" persistent)
+                        v-card
+                            v-card-title.title {{scannableFormTitle}}
+                            v-card-text Are you sure want to change {{scannableInfo.name}}'s scannable ?
+                            v-card-actions  
+                                v-spacer
+                                v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                                v-btn(color="primary" flat="flat" @click="changeScannableAction") Yes
                 v-dialog(v-model="dialog.changeStatus" max-width="460" persistent)
                     v-card
                         v-window(v-model="step")
@@ -72,7 +82,8 @@ export default {
             searchText: "",
             dialog: {
                 edit: false,
-                changeStatus: false
+                changeStatus: false,
+                changeScannable: false
             },
             filterData: [],
             headers: [
@@ -102,6 +113,12 @@ export default {
                     value: "url"
                 },
                 {
+                    text: "Scannable",
+                    align: "left",
+                    sortable: false,
+                    value: "scannable"
+                },
+                {
                     text: "Status",
                     align: "left",
                     sortable: false,
@@ -121,7 +138,8 @@ export default {
             checkData: {
                 have_multi_cdn: [],
                 only_default: []
-            }
+            },
+            scannableInfo: {}
         };
     },
     computed: {
@@ -129,6 +147,11 @@ export default {
             return this.editedIndex === -1
                 ? "New CDN Provider"
                 : "Edit CDN Provider";
+        },
+        scannableFormTitle() {
+            return this.scannableInfo.scannable === true
+                ? "Turn On Scannable"
+                : "Turn Off Scannable";
         },
         doubleCheckFormTitle() {
             return this.open === true
@@ -146,6 +169,10 @@ export default {
             } else {
                 this.open = false;
             }
+        },
+        switchScannable(item) {
+            this.scannableInfo = item;
+            this.dialog.changeScannable = true;
         },
         checkCdnProvider() {
             // console.log("check api");
@@ -176,8 +203,32 @@ export default {
                     }.bind(this)
                 );
         },
+        changeScannableAction() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch(
+                    "cdnProviders/changeCdnProviderScannable",
+                    this.scannableInfo
+                )
+                .then(
+                    function(result) {
+                        this.getAllCDNs();
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         changeStatusAction() {
-            // console.log(this.switchItem);
             if (this.switchItem.status == true) {
                 //要開就直接change status
                 this.updateStatus();
@@ -187,10 +238,6 @@ export default {
                 this.checkCdnProvider();
             }
         },
-
-        // updateAction() {
-        //     this.updateStatus();
-        // },
         updateStatus() {
             if (this.switchItem.status == true) {
                 this.switchItem.status = 1;
@@ -318,6 +365,7 @@ export default {
         closeEditDialog: function() {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
+            this.dialog.changeScannable = false;
             this.getAllCDNs();
             this.step = 1;
         }

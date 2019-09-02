@@ -8,7 +8,7 @@
                     v-card-title
                         .subheading Domains
                         v-spacer
-                        v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
+                        //- v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
@@ -26,9 +26,9 @@
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-flex(xs12 sm6 md3)
-                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
+                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN" clearable)
                             v-flex(xs12 sm6 md3)
-                                v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
+                                v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup" clearable)
                     h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             tr
@@ -38,7 +38,7 @@
                                 td
                                     span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
                                     span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
-                                td {{props.item.domain_group.length !== 0 ? props.item.domain_group[0].name : ""}}
+                                td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
                                         v-icon(small) edit
@@ -70,6 +70,7 @@
 import textFieldRules from "../../utils/textFieldRules.js";
 import timeUtils from "../../utils/timeUtils.js";
 import XLSX from "xlsx";
+import _ from "lodash";
 
 export default {
     mixins: [textFieldRules, timeUtils],
@@ -150,44 +151,86 @@ export default {
     },
     methods: {
         chooseCdnFilter() {
+            // console.log(this.selectedCDN.length);
+            this.selectedCDN.sort();
             this.filterAction();
         },
         chooseGroupFilter() {
+            // console.log(this.selectedGroup);
+
             this.filterAction();
         },
-        chooseCDN() {
-            // console.log(this.cdn.cdn_provider_id);
-        },
+        chooseCDN() {},
         filterAction() {
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
-                this.selectedCDN.forEach((o, i) => {
-                    this.filteredItems = this.filterData.filter(item => {
-                        return item.cdnArrayName.indexOf(o) > -1;
-                    });
+                // console.log("A");
+                var filteredItems = [];
+                this.filterData.forEach((o, i) => {
+                    o.cdnArrayName.sort();
+                    // console.log(_.isEqual(o.cdnArrayName, this.selectedCDN));
+                    if (_.isEqual(o.cdnArrayName, this.selectedCDN) == true) {
+                        filteredItems.push(this.filterData[i]);
+                    }
                 });
-            } else {
-                this.filteredItems = this.filterData;
+                var filteredData = [];
+                filteredData.push(filteredItems);
+                this.filteredItems = filteredData[0];
             }
             if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
-                this.selectedCDN.forEach((o, i) => {
-                    this.filteredItems = this.filterData.filter(item => {
-                        if (item.domain_group.length !== 0) {
-                            return (
-                                item.domain_group[0].name ==
-                                    this.selectedGroup &&
-                                item.cdnArrayName.indexOf(o) > -1
-                            );
-                        }
-                    });
+                // console.log("B");
+
+                var filteredItems = [];
+                this.filterData.forEach((o, i) => {
+                    o.cdnArrayName.sort();
+                    if (
+                        _.isEqual(o.cdnArrayName, this.selectedCDN) == true &&
+                        o.domain_group.length !== 0 &&
+                        o.domain_group[0].name === this.selectedGroup
+                    ) {
+                        // console.log(i);
+                        filteredItems.push(this.filterData[i]);
+                    }
                 });
+                var filteredData = [];
+                filteredData.push(filteredItems);
+                this.filteredItems = filteredData[0];
             }
-            if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
-                this.filteredItems = this.filterData.filter(i => {
-                    if (i.domain_group.length !== 0) {
-                        return i.domain_group[0].name == this.selectedGroup;
+            if (
+                this.selectedCDN.length == 0 &&
+                this.selectedGroup == undefined
+            ) {
+                // console.log("c");
+
+                this.filteredItems = this.filterData;
+            }
+            if (this.selectedCDN.length == 0 && this.selectedGroup == "") {
+                // console.log("D");
+
+                this.filteredItems = this.filterData;
+            }
+            if (this.selectedGroup !== "" && this.selectedGroup !== undefined) {
+                // console.log("E");
+
+                this.filteredItems = this.filterData.filter(item => {
+                    if (item.domain_group.length !== 0) {
+                        return item.domain_group[0].name == this.selectedGroup;
                     }
                 });
             }
+
+            // if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
+            //     this.selectedCDN.forEach((o, i) => {
+            //         this.filteredItems = this.filterData.filter(item => {
+            //             if (item.domain_group.length !== 0) {
+            //                 return (
+            //                     item.domain_group[0].name ==
+            //                         this.selectedGroup &&
+            //                     item.cdnArrayName.indexOf(o) > -1
+            //                 );
+            //             }
+            //         });
+            //     });
+            // }
         },
         pickFile() {
             this.$refs.file.click();

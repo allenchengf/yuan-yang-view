@@ -12,7 +12,7 @@
             v-flex(xs12)
                     v-tabs-items(v-model="tabsModel")
                         v-tab-item(v-for="item in tabItems" :key="item.key")
-                            component(:is="item.component" :groupId="groupId" :currentTab="reloadPage")               
+                            component(:is="item.component" :groupId="groupId" :currentTab="reloadPage" v-on:childMethod="parentMethod")               
 </template>
 <script>
 import GroupInfoSetting from "../../components/domainGroupSetting/GroupInfoSetting";
@@ -73,6 +73,10 @@ export default {
         }
     },
     methods: {
+        parentMethod() {
+            // console.log("Hello World");
+            this.getGroupInfo();
+        },
         nowTab(value) {
             // console.log(value);
             this.currentTab = value;

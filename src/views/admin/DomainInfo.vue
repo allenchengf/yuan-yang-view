@@ -12,7 +12,7 @@
             v-flex(xs12)
                     v-tabs-items(v-model="tabsModel")
                         v-tab-item(v-for="item in tabItems" :key="item.key")
-                            component(:is="item.component" :domain_id="domain_id" :currentTab="reloadPage")
+                            component(:is="item.component" :domain_id="domain_id" :currentTab="reloadPage" v-on:childMethod="parentMethod")
                         
                             
             
@@ -76,6 +76,10 @@ export default {
         }
     },
     methods: {
+        parentMethod() {
+            // console.log("Hello World");
+            this.getDomainInfo();
+        },
         nowTab(value) {
             this.currentTab = value;
         },
