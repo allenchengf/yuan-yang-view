@@ -29,6 +29,18 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        changeCdnProviderScannable: (context, data) => {
+            return axios
+                .patch("yuanyang/cdn_providers/" + data.id + "/scannable", {
+                    scannable: data.scannable
+                })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         changeCdnProviderDefault: (context, data) => {
             return axios
                 .patch("yuanyang/cdn_providers/" + data.id + "/change")
