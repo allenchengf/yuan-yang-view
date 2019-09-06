@@ -69,7 +69,7 @@
                     v-layout(wrap)
                         v-flex(xs12 sm6 md4)
                             v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
                     template(slot="items" slot-scope="{props, index}")
                         tr
                             td {{index}}
@@ -86,6 +86,14 @@
                         v-form(ref="editForm")
                             //- v-select(:items="domainList" label="Domain Name" item-text="name" item-value="id" @change="chooseDomain(domainInfo.domainId)" v-model="domainInfo.domainId")
                             v-select(v-model="selectedDomains" :items="domainList" label="Domain Name" item-text="name" item-value="id" multiple @change="chooseDomainList(selectedDomains)")
+                        //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
+                        //-     template(v-slot:items="props")
+                        //-         td 
+                        //-             v-checkbox(v-model="props.selected" primary hide-details)
+                        //-         td {{props.index + 1}}
+                        //-         td {{props.item.name}}
+                                //- td {{props.item.cdnArray.join()}}
+
                     v-card-actions  
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
@@ -110,6 +118,38 @@ export default {
     mixins: [textFieldRules, timeUtils],
     data() {
         return {
+            page: [5, 10, 25, "All"],
+            pagination: {
+                rowsPerPage: 20
+            },
+            rowsPerPageItems: [
+                { name: "20 per page", value: 20 },
+                { name: "50 per pages", value: 50 }
+            ],
+            perPage: 5,
+            pages: 0,
+            domainListHeaders: [
+                {
+                    text: "#",
+                    align: "left",
+                    sortable: false,
+                    width: "80px",
+                    value: "index"
+                },
+                {
+                    text: "Domain Name",
+                    align: "left",
+                    sortable: true,
+                    value: "name"
+                }
+                // {
+                //     text: "CDNs",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "cdnArray"
+                // }
+            ],
+            selected: [],
             selectedDomains: [],
             items: [
                 {
@@ -526,7 +566,11 @@ export default {
             }
         },
         addNewDomain() {
+            // console.log(this.selected, "selectedDomains");
             // console.log(this.domainInfo, "addDomaintoGroup");
+            // this.selectedDomains = this.selected;
+            // console.log(this.selectedDomains, "selectedDomains");
+
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.selectedDomains.forEach((o, i) => {
@@ -557,6 +601,31 @@ export default {
                         );
                 });
             }
+            // this.$store.dispatch("global/startLoading");
+            // this.selectedDomains.forEach((o, i) => {
+            //     this.domainInfo.domainId = o.id;
+            //     this.$store
+            //         .dispatch("grouping/newDomainByGroupId", this.domainInfo)
+            //         .then(
+            //             function(result) {
+            //                 this.$store.dispatch(
+            //                     "global/showSnackbarSuccess",
+            //                     "Add domain to group success!"
+            //                 );
+            //                 this.initialApis();
+            //                 this.$store.dispatch("global/finishLoading");
+            //             }.bind(this)
+            //         )
+            //         .catch(
+            //             function(error) {
+            //                 this.$store.dispatch(
+            //                     "global/showSnackbarError",
+            //                     error.message
+            //                 );
+            //                 this.$store.dispatch("global/finishLoading");
+            //             }.bind(this)
+            //         );
+            // });
             this.closeEditDialog();
         },
         deleteDomain() {

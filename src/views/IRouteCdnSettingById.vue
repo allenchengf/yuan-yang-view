@@ -29,7 +29,7 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
                             v-flex(xs12 sm12 md12)
                                 v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
-                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'")
+                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'" hide-actions)
                         template(v-slot:items="props" )
                             td 
                                 v-checkbox(v-model="props.selected" primary hide-details)
@@ -43,8 +43,13 @@
                                         v-icon(small) edit
                     v-layout.px-2(row align-center)
                         v-flex.text-xs-left.py-3(xs4)
-                        v-flex.text-xs-right.py-3(xs8)
-                            v-pagination(v-model="page" :length="pages" :total-visible="7")
+                            slot(name="actions-left")
+                        v-layout(row align-center)
+                            v-layout(row align-center)
+                                small Rows per page:
+                                v-select.px-3(:items="page" v-model="perPage" align-center)
+                            v-flex.text-xs-right.py-3(xs8)
+                                v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
                 //- Dialogs
                 v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
                     v-card 
@@ -79,6 +84,7 @@ import _ from "lodash";
 export default {
     data() {
         return {
+            page: [5, 10, 25, "All"],
             alert: false,
             selectCDN: "",
             selected: [],
@@ -195,9 +201,8 @@ export default {
                 { name: "20 per page", value: 20 },
                 { name: "50 per pages", value: 50 }
             ],
-            perPage: 20,
+            perPage: 5,
             pages: 0,
-            page: 1,
             domainId: "",
             rawData: {},
             domainList: [],
@@ -240,9 +245,13 @@ export default {
             this.setPages();
         },
         perPage: function(value) {
-            // console.log(value);
-            // console.log(this.perPage);
-            this.pagination.rowsPerPage = value;
+            console.log("change perpage");
+            console.log(this.filterData.length);
+            if (value == "All") {
+                this.pagination.rowsPerPage = this.filterData.length;
+            } else {
+                this.pagination.rowsPerPage = value;
+            }
             this.setPages();
         },
         searchText: function(val) {
@@ -260,11 +269,6 @@ export default {
                     this.filterDataAction();
                 }
             });
-        },
-        page: function(val) {
-            console.log(val);
-            this.pagination.page = this.page;
-            // this.getAllIRouteCdnByGroup();
         }
     },
     methods: {
@@ -476,9 +480,11 @@ export default {
             if (this.perPage == null || this.filteredItems == null) {
                 this.pages = null;
             } else {
-                this.pages = Math.ceil(
-                    this.filteredItems.length / this.perPage
-                );
+                var length =
+                    this.pagination.totalItems == 0
+                        ? this.filteredItems.length
+                        : this.pagination.totalItems;
+                this.pages = Math.ceil(length / this.pagination.rowsPerPage);
             }
         },
         chooseCdnProvider(data) {
