@@ -152,12 +152,15 @@ export default new Router({
                 },
                 {
                     name: "iRouteCdnSettingById",
-                    path: "iroutecdn-rules",
+                    path: "iroutecdn/rules/",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: IRouteCdnSettingById
+                    component: IRouteCdnSettingById,
+                    props: route => ({
+                        ...route.params
+                    })
                 },
                 {
                     path: "logs",
