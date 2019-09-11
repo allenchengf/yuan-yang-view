@@ -85,13 +85,13 @@
                     v-card-text
                         v-form(ref="editForm")
                             //- v-select(:items="domainList" label="Domain Name" item-text="name" item-value="id" @change="chooseDomain(domainInfo.domainId)" v-model="domainInfo.domainId")
-                            v-select(v-model="selectedDomains" :items="domainList" label="Domain Name" item-text="name" item-value="id" multiple @change="chooseDomainList(selectedDomains)")
-                        //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
-                        //-     template(v-slot:items="props")
-                        //-         td 
-                        //-             v-checkbox(v-model="props.selected" primary hide-details)
-                        //-         td {{props.index + 1}}
-                        //-         td {{props.item.name}}
+                            //- v-select(v-model="selectedDomains" :items="domainList" label="Domain Name" item-text="name" item-value="id" multiple @change="chooseDomainList(selectedDomains)")
+                        v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
+                            template(v-slot:items="props")
+                                td 
+                                    v-checkbox(v-model="props.selected" primary hide-details)
+                                td {{props.index + 1}}
+                                td {{props.item.name}}
                                 //- td {{props.item.cdnArray.join()}}
 
                     v-card-actions  
@@ -568,64 +568,64 @@ export default {
         addNewDomain() {
             // console.log(this.selected, "selectedDomains");
             // console.log(this.domainInfo, "addDomaintoGroup");
-            // this.selectedDomains = this.selected;
+            this.selectedDomains = this.selected;
             // console.log(this.selectedDomains, "selectedDomains");
 
-            if (this.$refs.editForm.validate()) {
-                this.$store.dispatch("global/startLoading");
-                this.selectedDomains.forEach((o, i) => {
-                    this.domainInfo.domainId = o;
-                    this.$store
-                        .dispatch(
-                            "grouping/newDomainByGroupId",
-                            this.domainInfo
-                        )
-                        .then(
-                            function(result) {
-                                this.$store.dispatch(
-                                    "global/showSnackbarSuccess",
-                                    "Add domain to group success!"
-                                );
-                                this.initialApis();
-                                this.$store.dispatch("global/finishLoading");
-                            }.bind(this)
-                        )
-                        .catch(
-                            function(error) {
-                                this.$store.dispatch(
-                                    "global/showSnackbarError",
-                                    error.message
-                                );
-                                this.$store.dispatch("global/finishLoading");
-                            }.bind(this)
-                        );
-                });
-            }
-            // this.$store.dispatch("global/startLoading");
-            // this.selectedDomains.forEach((o, i) => {
-            //     this.domainInfo.domainId = o.id;
-            //     this.$store
-            //         .dispatch("grouping/newDomainByGroupId", this.domainInfo)
-            //         .then(
-            //             function(result) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarSuccess",
-            //                     "Add domain to group success!"
-            //                 );
-            //                 this.initialApis();
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         )
-            //         .catch(
-            //             function(error) {
-            //                 this.$store.dispatch(
-            //                     "global/showSnackbarError",
-            //                     error.message
-            //                 );
-            //                 this.$store.dispatch("global/finishLoading");
-            //             }.bind(this)
-            //         );
-            // });
+            // if (this.$refs.editForm.validate()) {
+            //     this.$store.dispatch("global/startLoading");
+            //     this.selectedDomains.forEach((o, i) => {
+            //         this.domainInfo.domainId = o;
+            //         this.$store
+            //             .dispatch(
+            //                 "grouping/newDomainByGroupId",
+            //                 this.domainInfo
+            //             )
+            //             .then(
+            //                 function(result) {
+            //                     this.$store.dispatch(
+            //                         "global/showSnackbarSuccess",
+            //                         "Add domain to group success!"
+            //                     );
+            //                     this.initialApis();
+            //                     this.$store.dispatch("global/finishLoading");
+            //                 }.bind(this)
+            //             )
+            //             .catch(
+            //                 function(error) {
+            //                     this.$store.dispatch(
+            //                         "global/showSnackbarError",
+            //                         error.message
+            //                     );
+            //                     this.$store.dispatch("global/finishLoading");
+            //                 }.bind(this)
+            //             );
+            //     });
+            // }
+            this.$store.dispatch("global/startLoading");
+            this.selectedDomains.forEach((o, i) => {
+                this.domainInfo.domainId = o.id;
+                this.$store
+                    .dispatch("grouping/newDomainByGroupId", this.domainInfo)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Add domain to group success!"
+                            );
+                            this.initialApis();
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+            });
             this.closeEditDialog();
         },
         deleteDomain() {
@@ -665,6 +665,7 @@ export default {
                 this.dialog.changeDefault = false;
                 this.dialog.delete = false;
             }
+            this.domainList = [];
         }
     },
     mounted() {
