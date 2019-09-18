@@ -6,6 +6,10 @@ import Login from "./views/Login.vue";
 import Forgot from "./views/ForgotPassword.vue";
 import Authentication from "./views/Authentication.vue";
 
+import Users from "./views/h7admin/Users.vue";
+import UserGroups from "./views/h7admin/UserGroups.vue";
+import UserGroupInfo from "./views/h7admin/UserGroupInfo.vue";
+
 import Dashboard from "./views/Dashboard.vue";
 import CdnProvidersSetting from "./views/admin/CdnProvidersSetting";
 import DomainsSetting from "./views/admin/DomainsSetting.vue";
@@ -206,6 +210,34 @@ export default new Router({
                         auth: 2
                     },
                     component: NetworkSetting
+                },
+                {
+                    path: "users",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: Users
+                },
+                {
+                    path: "user-groups",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: UserGroups
+                },
+                {
+                    path: "user-groups/:group_id",
+                    name: "userGroupInfo",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: UserGroupInfo,
+                    props: route => ({
+                        ...route.params
+                    })
                 }
             ]
         }

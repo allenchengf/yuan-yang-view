@@ -87,6 +87,18 @@ export default {
                     icon: "settings",
                     router: "/admin/networks",
                     auth: 2
+                },
+                {
+                    title: "Users",
+                    icon: "account_circle",
+                    router: "/admin/users",
+                    auth: 2
+                },
+                {
+                    title: "Groups",
+                    icon: "group_add",
+                    router: "/admin/user-groups",
+                    auth: 2
                 }
             ],
             right: null
