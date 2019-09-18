@@ -13,6 +13,8 @@ import grouping from "./modules/grouping";
 import config from "./modules/config";
 import logs from "./modules/logs";
 import crawlers from "./modules/crawlers";
+import users from "./modules/users";
+import userGroup from "./modules/userGroup";
 
 Vue.use(Vuex);
 
@@ -29,6 +31,8 @@ export default new Vuex.Store({
         grouping,
         config,
         logs,
-        crawlers
+        crawlers,
+        users,
+        userGroup
     }
 });

@@ -6,6 +6,10 @@ import Login from "./views/Login.vue";
 import Forgot from "./views/ForgotPassword.vue";
 import Authentication from "./views/Authentication.vue";
 
+// import Users from "./views/h7admin/Users.vue";
+// import UserGroups from "./views/h7admin/UserGroups.vue";
+// import UserGroupInfo from "./views/h7admin/UserGroupInfo.vue";
+
 import Dashboard from "./views/Dashboard.vue";
 import CdnProvidersSetting from "./views/admin/CdnProvidersSetting";
 import DomainsSetting from "./views/admin/DomainsSetting.vue";
@@ -16,8 +20,8 @@ import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import IRouteCdnSettingById from "./views/IRouteCdnSettingById";
 // import AllIRouteCdnSetting from "./views/AllIRouteCdnSetting";
 import Logs from "./views/admin/Logs.vue";
-import AutoScan from "./views/admin/tools/AutoScan.vue";
-import AutoScanList from "./views/admin/tools/AutoScanList.vue";
+// import AutoScan from "./views/admin/tools/AutoScan.vue";
+// import AutoScanList from "./views/admin/tools/AutoScanList.vue";
 import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
 import NetworkSetting from "./views/h7admin/NetworkSetting.vue";
 
@@ -152,12 +156,15 @@ export default new Router({
                 },
                 {
                     name: "iRouteCdnSettingById",
-                    path: "iroutecdn-rules",
+                    path: "iroutecdn/rules/",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: IRouteCdnSettingById
+                    component: IRouteCdnSettingById,
+                    props: route => ({
+                        ...route.params
+                    })
                 },
                 {
                     path: "logs",
@@ -167,26 +174,26 @@ export default new Router({
                     },
                     component: Logs
                 },
-                {
-                    path: "auto-scan",
-                    meta: {
-                        requireAuth: true,
-                        auth: 0
-                    },
-                    component: AutoScan
-                },
-                {
-                    name: "auto-scan-list",
-                    path: "auto-scan-list",
-                    meta: {
-                        requireAuth: true,
-                        auth: 0
-                    },
-                    component: AutoScanList,
-                    props: route => ({
-                        ...route.params
-                    })
-                },
+                // {
+                //     path: "auto-scan",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 0
+                //     },
+                //     component: AutoScan
+                // },
+                // {
+                //     name: "auto-scan-list",
+                //     path: "auto-scan-list",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 0
+                //     },
+                //     component: AutoScanList,
+                //     props: route => ({
+                //         ...route.params
+                //     })
+                // },
                 {
                     path: "config-backup",
                     meta: {
@@ -204,6 +211,34 @@ export default new Router({
                     },
                     component: NetworkSetting
                 }
+                // {
+                //     path: "users",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 2
+                //     },
+                //     component: Users
+                // },
+                // {
+                //     path: "user-groups",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 2
+                //     },
+                //     component: UserGroups
+                // },
+                // {
+                //     path: "user-groups/:group_id",
+                //     name: "userGroupInfo",
+                //     meta: {
+                //         requireAuth: true,
+                //         auth: 2
+                //     },
+                //     component: UserGroupInfo,
+                //     props: route => ({
+                //         ...route.params
+                //     })
+                // }
             ]
         }
     ]

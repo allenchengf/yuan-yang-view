@@ -37,6 +37,36 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        getAllIRouteCdnByGroup: (context, data) => {
+            return axios
+                .get(
+                    "yuanyang/routing-rules/groups?current_page=" +
+                        data.current_page +
+                        "&per_page=" +
+                        data.per_page
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getAllIRouteCdnByDomain: (context, data) => {
+            return axios
+                .get(
+                    "yuanyang/routing-rules/domains?current_page=" +
+                        data.current_page +
+                        "&per_page=" +
+                        data.per_page
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         updateDomainIRouteCDN: (context, data) => {
             return axios
                 .put(

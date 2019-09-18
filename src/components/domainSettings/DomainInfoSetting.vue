@@ -313,6 +313,7 @@ export default {
                                 "Update domain info success!"
                             );
                             this.getDomainInfo();
+                            this.$emit("childMethod");
                             this.closeEditDialog();
                         }.bind(this)
                     )

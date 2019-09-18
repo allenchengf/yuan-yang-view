@@ -9,7 +9,7 @@
 
                 v-card
                     v-card-title
-                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search="searchText" )
+                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search="searchText" :per-page="10")
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td.text-xs-left {{ index}}
@@ -32,6 +32,7 @@
                         v-select(v-model="editedLoaction.country_id" label="Country" :items="countries" item-text="name" item-value="id" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.location" label="Location" type="text" name="location" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.isp" label="ISP" type="text" name="isp" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.mapping_value" label="Mapping Value" type="text" name="mapping_value" )
                 v-card-actions  
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="dialog.edit = false") Cancel

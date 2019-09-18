@@ -69,11 +69,11 @@ export default {
                     icon: "build",
                     auth: 0,
                     children: [
-                        {
-                            title: "Auto Scan",
-                            router: "/admin/auto-scan",
-                            auth: 0
-                        },
+                        // {
+                        //     title: "Auto Scan",
+                        //     router: "/admin/auto-scan",
+                        //     auth: 0
+                        // },
                         {
                             title: "Config Backup",
                             router: "/admin/config-backup",
@@ -88,6 +88,18 @@ export default {
                     router: "/admin/networks",
                     auth: 2
                 }
+                // {
+                //     title: "Users",
+                //     icon: "account_circle",
+                //     router: "/admin/users",
+                //     auth: 2
+                // },
+                // {
+                //     title: "Groups",
+                //     icon: "group_add",
+                //     router: "/admin/user-groups",
+                //     auth: 2
+                // }
             ],
             right: null
         };

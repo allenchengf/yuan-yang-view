@@ -7,7 +7,7 @@
             v-toolbar-title.mr-5.align-center.site-logo
                 span.title
                     router-link(to="/admin")
-                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="250" )
+                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="150" )
             v-spacer
             //- v-btn(icon)
             v-menu(offset-y )
