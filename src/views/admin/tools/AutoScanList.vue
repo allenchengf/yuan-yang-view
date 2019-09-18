@@ -281,6 +281,7 @@ export default {
             });
         },
         transformData() {
+            console.log(this.scanData);
             this.scanData[0].scanned.forEach((o, i) => {
                 o.location_networks[this.scanData[0].cdnProvider.name] = {};
                 if (o.latency == null) {

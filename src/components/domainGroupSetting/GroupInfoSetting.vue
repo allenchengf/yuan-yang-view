@@ -566,41 +566,7 @@ export default {
             }
         },
         addNewDomain() {
-            // console.log(this.selected, "selectedDomains");
-            // console.log(this.domainInfo, "addDomaintoGroup");
             this.selectedDomains = this.selected;
-            // console.log(this.selectedDomains, "selectedDomains");
-
-            // if (this.$refs.editForm.validate()) {
-            //     this.$store.dispatch("global/startLoading");
-            //     this.selectedDomains.forEach((o, i) => {
-            //         this.domainInfo.domainId = o;
-            //         this.$store
-            //             .dispatch(
-            //                 "grouping/newDomainByGroupId",
-            //                 this.domainInfo
-            //             )
-            //             .then(
-            //                 function(result) {
-            //                     this.$store.dispatch(
-            //                         "global/showSnackbarSuccess",
-            //                         "Add domain to group success!"
-            //                     );
-            //                     this.initialApis();
-            //                     this.$store.dispatch("global/finishLoading");
-            //                 }.bind(this)
-            //             )
-            //             .catch(
-            //                 function(error) {
-            //                     this.$store.dispatch(
-            //                         "global/showSnackbarError",
-            //                         error.message
-            //                     );
-            //                     this.$store.dispatch("global/finishLoading");
-            //                 }.bind(this)
-            //             );
-            //     });
-            // }
             this.$store.dispatch("global/startLoading");
             this.selectedDomains.forEach((o, i) => {
                 this.domainInfo.domainId = o.id;
@@ -612,7 +578,6 @@ export default {
                                 "global/showSnackbarSuccess",
                                 "Add domain to group success!"
                             );
-                            this.initialApis();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -626,6 +591,7 @@ export default {
                         }.bind(this)
                     );
             });
+            this.initialApis();
             this.closeEditDialog();
         },
         deleteDomain() {

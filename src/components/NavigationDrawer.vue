@@ -69,11 +69,11 @@ export default {
                     icon: "build",
                     auth: 0,
                     children: [
-                        // {
-                        //     title: "Auto Scan",
-                        //     router: "/admin/auto-scan",
-                        //     auth: 0
-                        // },
+                        {
+                            title: "Auto Scan",
+                            router: "/admin/auto-scan",
+                            auth: 0
+                        },
                         {
                             title: "Config Backup",
                             router: "/admin/config-backup",

@@ -558,7 +558,7 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data;
-                        // console.log(this.filterData);
+                        console.log(this.filterData);
                         this.filterData.forEach((o, i) => {
                             o.index = i + 1;
                         });
@@ -729,7 +729,7 @@ export default {
             });
             this.filteredItems = this.filterData;
             var info = [];
-            info.current_page = this.currentPage;
+            info.current_page = 1;
             info.per_page = this.perPage;
             this.$store
                 .dispatch("iRouteCdn/getAllIRouteCdnByDomain", info)
@@ -747,7 +747,7 @@ export default {
                                 filterData.push(o);
                             });
                         }
-                        // this.pages = data.last_page;
+                        this.pages = data.last_page;
                         if (data.last_page > 1) {
                             for (var i = 2; i < data.last_page + 1; i++) {
                                 var dataInfo = [];
@@ -779,10 +779,6 @@ export default {
                                                         filterData.push(o);
                                                     }
                                                 );
-                                                // console.log(
-                                                //     filterData,
-                                                //     "filterdatadddd"
-                                                // );
                                                 this.filterData = [];
                                                 filterData.forEach((o, i) => {
                                                     o.location_network.forEach(
@@ -799,10 +795,36 @@ export default {
                                                     }
                                                 );
                                                 this.filteredItems = this.filterData;
-                                                // console.log(
-                                                //     this.filterData,
-                                                //     "filterData3"
-                                                // );
+                                                // console.log(this.filteredItems);
+
+                                                this.filterData.forEach(
+                                                    (o, i) => {
+                                                        o.cdn_provider = [];
+                                                        this.allListMapping[
+                                                            o.name
+                                                        ].forEach(
+                                                            (obj, idx) => {
+                                                                o.cdn_provider.push(
+                                                                    obj.cdns
+                                                                );
+                                                            }
+                                                        );
+                                                    }
+                                                );
+                                                this.filterData.forEach(
+                                                    (o, i) => {
+                                                        o.cdn_provider.forEach(
+                                                            (obj, idx) => {
+                                                                obj.name = "";
+                                                                obj.name = this.cdnProviderIdMapping[
+                                                                    o.cdn_provider[
+                                                                        idx
+                                                                    ].cdn_provider_id
+                                                                ];
+                                                            }
+                                                        );
+                                                    }
+                                                );
                                             }
 
                                             this.pages = Math.ceil(
@@ -817,28 +839,53 @@ export default {
                                         }.bind(this)
                                     );
                             }
+                        } else {
+                            if (data.domains !== undefined) {
+                                data.domains.forEach((o, i) => {
+                                    o.location_network.forEach((obj, idx) => {
+                                        obj.name = o.name;
+                                        obj.domainId = o.id;
+                                    });
+                                    filterData.push(o);
+                                });
+                                this.filterData = [];
+                                filterData.forEach((o, i) => {
+                                    o.location_network.forEach((obj, idx) => {
+                                        this.filterData.push(obj);
+                                    });
+                                });
+                                this.filterData.forEach((o, i) => {
+                                    o.index = i + 1;
+                                });
+                                this.filteredItems = this.filterData;
+                                this.filterData.forEach((o, i) => {
+                                    o.cdn_provider = [];
+                                    this.allListMapping[o.name].forEach(
+                                        (obj, idx) => {
+                                            o.cdn_provider.push(obj.cdns);
+                                        }
+                                    );
+                                });
+                                this.filterData.forEach((o, i) => {
+                                    o.cdn_provider.forEach((obj, idx) => {
+                                        obj.name = "";
+                                        obj.name = this.cdnProviderIdMapping[
+                                            o.cdn_provider[idx].cdn_provider_id
+                                        ];
+                                    });
+                                });
+                                this.pages = Math.ceil(
+                                    this.filteredItems.length /
+                                        this.pagination.rowsPerPage
+                                );
+                            }
                         }
 
                         // this.filteredItems = this.filterData;
-                        this.filterData.forEach((o, i) => {
-                            o.cdn_provider = [];
-                            this.allListMapping[o.name].forEach((obj, idx) => {
-                                o.cdn_provider.push(obj.cdns);
-                            });
-                        });
-                        this.filterData.forEach((o, i) => {
-                            o.cdn_provider.forEach((obj, idx) => {
-                                obj.name = "";
-                                obj.name = this.cdnProviderIdMapping[
-                                    o.cdn_provider[idx].cdn_provider_id
-                                ];
-                            });
-                        });
 
                         this.getAllIRouteIsp();
                         this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems);
                         this.pages = Math.ceil(
                             this.filteredItems.length /
                                 this.pagination.rowsPerPage
@@ -855,10 +902,9 @@ export default {
         },
         getAllIRouteCdnByGroup() {
             var info = [];
-            info.current_page = this.currentPage;
+            info.current_page = 1;
             info.per_page = this.perPage;
             this.$store.dispatch("global/startLoading");
-
             this.$store
                 .dispatch("iRouteCdn/getAllIRouteCdnByGroup", info)
                 .then(
@@ -969,7 +1015,7 @@ export default {
                         this.getAllIRouteIsp();
                         this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems);
+                        // console.log(this.filteredItems, "all");
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                         return Promise.resolve();
@@ -1121,13 +1167,6 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change CDN provider success!"
                         );
-                        if (this.$route.query.id !== undefined) {
-                            this.filterData = [];
-                            this.getAllIRouteInfo();
-                            this.getList();
-                        } else {
-                            this.getGroupIRouteInfo();
-                        }
                     }.bind(this)
                 )
                 .catch(
@@ -1139,6 +1178,13 @@ export default {
                         );
                     }.bind(this)
                 );
+            if (this.$route.query.id !== undefined) {
+                this.filterData = [];
+                this.getAllIRouteCdnByGroup();
+                this.getList();
+            } else {
+                this.getGroupIRouteInfo();
+            }
         },
         updateDomainIRouteCDN() {
             // console.log(this.iRouteCDN);
@@ -1152,13 +1198,6 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change CDN provider success!"
                         );
-                        if (this.$route.query.id !== undefined) {
-                            this.filterData = [];
-                            this.getAllIRouteInfo();
-                            this.getList();
-                        } else {
-                            this.getDomainIRouteInfo();
-                        }
                     }.bind(this)
                 )
                 .catch(
@@ -1170,6 +1209,13 @@ export default {
                         );
                     }.bind(this)
                 );
+            if (this.$route.query.id !== undefined) {
+                this.filterData = [];
+                this.getAllIRouteCdnByGroup();
+                this.getList();
+            } else {
+                this.getDomainIRouteInfo();
+            }
         },
         changeCdnProvider() {
             if (this.editedIndex == -1) {
@@ -1194,13 +1240,13 @@ export default {
                         .dispatch("iRouteCdn/updateGroupIRouteCDN", o)
                         .then(
                             function(result) {
-                                if (this.$route.query.id !== undefined) {
-                                    this.filterData = [];
-                                    this.getAllIRouteInfo();
-                                    this.getList();
-                                } else {
-                                    this.getGroupIRouteInfo();
-                                }
+                                // if (this.$route.query.id !== undefined) {
+                                //     this.filterData = [];
+                                //     this.getAllIRouteCdnByGroup();
+                                //     this.getList();
+                                // } else {
+                                //     this.getGroupIRouteInfo();
+                                // }
                             }.bind(this)
                         )
                         .catch(
@@ -1218,13 +1264,13 @@ export default {
                         .dispatch("iRouteCdn/updateDomainIRouteCDN", o)
                         .then(
                             function(result) {
-                                if (this.$route.query.id !== undefined) {
-                                    this.filterData = [];
-                                    this.getAllIRouteInfo();
-                                    this.getList();
-                                } else {
-                                    this.getDomainIRouteInfo();
-                                }
+                                // if (this.$route.query.id !== undefined) {
+                                //     this.filterData = [];
+                                //     this.getAllIRouteCdnByGroup();
+                                //     this.getList();
+                                // } else {
+                                //     this.getDomainIRouteInfo();
+                                // }
                             }.bind(this)
                         )
                         .catch(
@@ -1238,6 +1284,18 @@ export default {
                         );
                 }
             });
+            if (this.$route.query.id !== undefined) {
+                // this.filterData = [];
+                this.getAllIRouteCdnByGroup();
+                this.getList();
+                this.currentPage = 1;
+                this.pagination.page = this.currentPage;
+            } else if (this.$route.query.group_id !== undefined) {
+                this.getGroupIRouteInfo();
+            } else {
+                this.getDomainIRouteInfo();
+            }
+
             this.selected = [];
             this.closeEditDialog();
         },
