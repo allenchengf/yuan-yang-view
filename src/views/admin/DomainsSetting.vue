@@ -1,6 +1,6 @@
 <template lang="pug">
     v-container#domainsSetting.grid-list-lg
-        v-layout(wrap)
+        v-layout(wrap column)
             v-flex(xs12)
                 .title Domains
             v-flex(xs12)
@@ -8,7 +8,7 @@
                     v-card-title
                         .subheading Domains
                         v-spacer
-                        //- v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
+                        v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
