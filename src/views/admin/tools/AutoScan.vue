@@ -1,22 +1,24 @@
 <template lang="pug">
-    v-container#autoscan
+    v-container#autoscan.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Auto Scan
+                .title Auto Scan
             v-flex(xs12)
                 v-card
                     v-card-title
                         .subheading Auto Scan
                         v-spacer
-                        v-flex(xs4 sm2 md2)
+                        .xs4.sm2.md2
                             v-select(:items="crawlerGroup" v-model="selectedCrawler" label="Select crawler" item-text="name" item-value="id")
                         v-btn.my-0(color="primary" @click="startScan") Scan
-                        v-btn.my-0(color="primary" @click="") Change
+                        v-btn.my-0(color="primary" @click="changeAll") Change
                     v-divider
                     v-card-text
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                            v-flex.ma-4.text-xs-right.grey--text
+                                span 2019-09-19 
                     h7-data-table(:headers="filterHeaders" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
                         template(slot="items" slot-scope="{props, index}")
                             tr
@@ -30,7 +32,8 @@
                                 td(v-if="isShownColumn('yuanTest') && props.item.yuanTest !== undefined") {{props.item.yuanTest.latency }} 
                                 td(v-if="isShownColumn('Akamai') && props.item.Akamai !== undefined") {{props.item.Akamai.latency }} 
                                 td(v-if="isShownColumn('HostAdvice') && props.item.HostAdvice !== undefined") {{props.item.HostAdvice.latency }} 
-                              
+                    
+                        
                         
 
                 //- v-card
@@ -60,7 +63,7 @@ export default {
     data() {
         return {
             searchText: "",
-            selectedCrawler: 1,
+            selectedCrawler: "",
             selectedCdnProvider: [],
             crawlerGroup: [],
             cdnProviderList: [],
@@ -179,6 +182,8 @@ export default {
                 .then(
                     function(result) {
                         this.crawlerGroup = result.data;
+                        this.selectedCrawler = this.crawlerGroup[0].id;
+
                         // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -204,10 +209,10 @@ export default {
                                 this.tableSettings[o.name] = o.name;
                             }
                         });
-                        console.log(this.tableSettings);
+                        // console.log(this.tableSettings);
                         this.tableHeaderChanged();
-
-                        console.log(this.cdnProviderList);
+                        this.getLastScanData();
+                        // console.log(this.cdnProviderList);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -223,7 +228,7 @@ export default {
         },
 
         startScan() {
-            console.log(this.selectedCrawler);
+            // console.log(this.selectedCrawler);
             this.$store.dispatch("global/startLoading");
             this.getScanData();
         },
@@ -254,7 +259,7 @@ export default {
             // this.$store.dispatch("global/finishLoading");
         },
         transformData() {
-            console.log(this.scanData, "scanData");
+            // console.log(this.scanData, "scanData");
             this.scanData[0].scanned.forEach((o, i) => {
                 o.location_networks[this.scanData[0].cdnProvider.name] = {};
                 if (o.latency == null) {
@@ -276,7 +281,7 @@ export default {
 
                 this.filteredItem.push(o.location_networks);
             });
-            console.log(this.filteredItem, "this.filteredItem");
+            // console.log(this.filteredItem, "this.filteredItem");
             this.filteredItem.forEach((o, i) => {
                 for (var idx = 1; idx < this.scanData.length; idx++) {
                     this.scanData[idx].scanned.forEach((object, index) => {
@@ -306,12 +311,64 @@ export default {
                 result.has(item.id) ? repeat.add(item) : result.add(item);
             });
             this.filteredItems = [...result];
-            console.log(this.filteredItems, "filterItems");
+            // console.log(this.filteredItems, "filterItems");
             this.$store.dispatch("global/finishLoading");
 
             // console.log(result); // {1, 2, "a", 3, "b"}
             // console.log(repeat); // {1, "a"}
             // console.log(this.filteredItem, "item");
+        },
+        changeAll() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("crawlers/changeAllCdnProvider")
+                .then(
+                    function(result) {
+                        // console.log(result.data, "data...change");
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Change all CDN provider success!"
+                        );
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getLastScanData() {
+            this.cdnProviderList.forEach((o, i) => {
+                o.scan_platform = this.selectedCrawler;
+                o.cdn_provider_id = o.id;
+            });
+            // console.log(this.cdnProviderList, "getLasttime");
+            this.cdnProviderList.forEach((o, i) => {
+                this.$store
+                    .dispatch("crawlers/getLastTimeScanData", o)
+                    .then(
+                        function(result) {
+                            this.scanData.push(result.data);
+                            // console.log(this.scanData, "data...");
+
+                            this.transformData();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            // this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            });
         }
     },
     mounted() {
@@ -321,3 +378,7 @@ export default {
     }
 };
 </script>
+<style lang="sass" scoped>
+td
+  text-transform: capitalize
+</style>
