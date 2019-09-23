@@ -1,5 +1,5 @@
 <template lang="pug">
-    v-container#user-list(grid-list-lg)
+    v-container#user-list.grid-list-lg
         v-layout(wrap)
             v-flex(xs12)
                 .title Users
