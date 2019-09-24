@@ -26,9 +26,9 @@
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-flex(xs12 sm6 md3)
-                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN" clearable)
+                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
                             v-flex(xs12 sm6 md3)
-                                v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup" clearable)
+                                v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
                     h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             tr
@@ -163,14 +163,17 @@ export default {
         chooseCDN() {},
         filterAction() {
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
-                // console.log("A");
+                // console.log(this.selectedCDN);
                 var filteredItems = [];
                 this.filterData.forEach((o, i) => {
                     o.cdnArrayName.sort();
-                    // console.log(_.isEqual(o.cdnArrayName, this.selectedCDN));
-                    if (_.isEqual(o.cdnArrayName, this.selectedCDN) == true) {
-                        filteredItems.push(this.filterData[i]);
-                    }
+                    this.selectedCDN.forEach((obj, idx) => {
+                        // console.log(_.indexOf(o.cdnArrayName, obj));
+
+                        if (_.indexOf(o.cdnArrayName, obj) !== -1) {
+                            filteredItems.push(this.filterData[i]);
+                        }
+                    });
                 });
                 var filteredData = [];
                 filteredData.push(filteredItems);
@@ -182,14 +185,16 @@ export default {
                 var filteredItems = [];
                 this.filterData.forEach((o, i) => {
                     o.cdnArrayName.sort();
-                    if (
-                        _.isEqual(o.cdnArrayName, this.selectedCDN) == true &&
-                        o.domain_group.length !== 0 &&
-                        o.domain_group[0].name === this.selectedGroup
-                    ) {
-                        // console.log(i);
-                        filteredItems.push(this.filterData[i]);
-                    }
+                    this.selectedCDN.forEach((obj, idx) => {
+                        if (
+                            _.indexOf(o.cdnArrayName, obj) !== -1 &&
+                            o.domain_group.length !== 0 &&
+                            o.domain_group[0].name === this.selectedGroup
+                        ) {
+                            // console.log(i);
+                            filteredItems.push(this.filterData[i]);
+                        }
+                    });
                 });
                 var filteredData = [];
                 filteredData.push(filteredItems);
@@ -217,20 +222,6 @@ export default {
                     }
                 });
             }
-
-            // if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
-            //     this.selectedCDN.forEach((o, i) => {
-            //         this.filteredItems = this.filterData.filter(item => {
-            //             if (item.domain_group.length !== 0) {
-            //                 return (
-            //                     item.domain_group[0].name ==
-            //                         this.selectedGroup &&
-            //                     item.cdnArrayName.indexOf(o) > -1
-            //                 );
-            //             }
-            //         });
-            //     });
-            // }
         },
         pickFile() {
             this.$refs.file.click();
@@ -309,6 +300,7 @@ export default {
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
                 .then(
                     function(result) {
+                        // this.$refs.file = "";
                         this.initialApis();
                         this.$store.dispatch("global/finishLoading");
                         this.$store.dispatch(
