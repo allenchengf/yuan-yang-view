@@ -80,6 +80,16 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
+        },
+        deleteCdnProvider: (context, id) => {
+            return axios
+                .delete("yuanyang/cdn_providers/" + id)
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
         }
     }
 };
