@@ -18,23 +18,27 @@
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-flex.ma-4.text-xs-right.grey--text
-                                span 2019-09-19 
+                                span Scanned at : {{scannedDate}}
                     h7-data-table(:headers="filterHeaders" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td {{ index }}
                                 td {{ props.item.continent.name }} / {{props.item.country.name}} / {{props.item.location}} / {{props.item.isp}}
-                                td(v-if="isShownColumn('Hiero7') && props.item.Hiero7.latency !== undefined") {{ props.item.Hiero7.latency }}
-                                td(v-if="isShownColumn('CloudFront') && props.item.CloudFront !== undefined") {{props.item.CloudFront.latency }}
-                                td(v-if="isShownColumn('Cloudflare') && props.item.Cloudflare !== undefined") {{props.item.Cloudflare.latency }}
-                                td(v-if="isShownColumn('alibabaCloud') && props.item.alibabaCloud !== undefined") {{props.item.alibabaCloud.latency }}
-                                td(v-if="isShownColumn('AlibabaCloud') && props.item.AlibabaCloud !== undefined") {{props.item.AlibabaCloud.latency }}
-                                td(v-if="isShownColumn('yuanTest') && props.item.yuanTest !== undefined") {{props.item.yuanTest.latency }} 
-                                td(v-if="isShownColumn('Akamai') && props.item.Akamai !== undefined") {{props.item.Akamai.latency }} 
-                                td(v-if="isShownColumn('HostAdvice') && props.item.HostAdvice !== undefined") {{props.item.HostAdvice.latency }} 
+                                td(v-if="isShownColumn('Hiero7') && props.item.Hiero7.latency !== undefined")
+                                    span(:style="props.item.Hiero7.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{ props.item.Hiero7.latency }}
+                                td(v-if="isShownColumn('CloudFront') && props.item.CloudFront !== undefined")
+                                    span(:style="props.item.CloudFront.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.CloudFront.latency }}
+                                td(v-if="isShownColumn('Cloudflare') && props.item.Cloudflare !== undefined")
+                                    span(:style="props.item.Cloudflare.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.Cloudflare.latency }}
+                                td(v-if="isShownColumn('alibabaCloud') && props.item.alibabaCloud !== undefined")
+                                    span(:style="props.item.alibabaCloud.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.alibabaCloud.latency }}
+                                td(v-if="isShownColumn('AlibabaCloud') && props.item.AlibabaCloud !== undefined")
+                                    span(:style="props.item.AlibabaCloud.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.AlibabaCloud.latency }}
+                                //- td(v-if="isShownColumn('yuanTest') && props.item.yuanTest !== undefined" :style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.yuanTest.latency }} 
+                                //- td(v-if="isShownColumn('Akamai') && props.item.Akamai !== undefined" :style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.Akamai.latency }} 
+                                //- td(v-if="isShownColumn('HostAdvice') && props.item.HostAdvice !== undefined")
+                                //-     span(:style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.HostAdvice.latency }} 
                     
-                        
-                        
 
                 //- v-card
                 //-     v-card-title.title.font-weight-regular.justify-space-between
@@ -62,6 +66,7 @@
 export default {
     data() {
         return {
+            scannedDate: "2019-09-24 16:58:47",
             searchText: "",
             selectedCrawler: "",
             selectedCdnProvider: [],
@@ -86,74 +91,74 @@ export default {
                     key: "continent",
                     text: "Continent / Country / Region / ISP",
                     align: "left",
-                    sortable: true,
+                    sortable: false,
                     value: "continent.name",
                     control: false
-                },
-                {
-                    key: "Hiero7",
-                    text: "Hiero7 (ms)",
-                    align: "left",
-                    sortable: true,
-                    value: "Hiero7",
-                    control: true
-                },
-                {
-                    key: "CloudFront",
-                    text: "CloudFront (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "CloudFront",
-                    control: true
-                },
-                {
-                    key: "Cloudflare",
-                    text: "Cloudflare (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "Cloudflare",
-                    control: true
-                },
-                {
-                    key: "alibabaCloud",
-                    text: "AlibabaCloud (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "alibabaCloud",
-                    control: true
-                },
-                {
-                    key: "AlibabaCloud",
-                    text: "AlibabaCloud (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "AlibabaCloud",
-                    control: true
-                },
-                {
-                    key: "yuanTest",
-                    text: "YuanTest (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "yuanTest",
-                    control: true
-                },
-                {
-                    key: "Akamai",
-                    text: "Akamai (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "Akamai",
-                    control: true
-                },
-                {
-                    key: "HostAdvice",
-                    text: "HostAdvice (ms)",
-                    align: "left",
-                    sortable: false,
-                    value: "HostAdvice",
-                    control: true
                 }
+                // {
+                //     key: "Hiero7",
+                //     text: "Hiero7 (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "Hiero7",
+                //     control: true
+                // },
+                // {
+                //     key: "CloudFront",
+                //     text: "CloudFront (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "CloudFront",
+                //     control: true
+                // },
+                // {
+                //     key: "Cloudflare",
+                //     text: "Cloudflare (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "Cloudflare",
+                //     control: true
+                // },
+                // {
+                //     key: "alibabaCloud",
+                //     text: "AlibabaCloud (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "alibabaCloud",
+                //     control: true
+                // },
+                // {
+                //     key: "AlibabaCloud",
+                //     text: "AlibabaCloud (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "AlibabaCloud",
+                //     control: true
+                // },
+                // {
+                //     key: "yuanTest",
+                //     text: "YuanTest (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "yuanTest",
+                //     control: true
+                // },
+                // {
+                //     key: "Akamai",
+                //     text: "Akamai (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "Akamai",
+                //     control: true
+                // },
+                // {
+                //     key: "HostAdvice",
+                //     text: "HostAdvice (ms)",
+                //     align: "left",
+                //     sortable: false,
+                //     value: "HostAdvice",
+                //     control: true
+                // }
             ]
         };
     },
@@ -182,7 +187,7 @@ export default {
                 .then(
                     function(result) {
                         this.crawlerGroup = result.data;
-                        this.selectedCrawler = this.crawlerGroup[0].id;
+                        this.selectedCrawler = this.crawlerGroup[1].id;
 
                         // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -190,10 +195,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
@@ -209,26 +214,46 @@ export default {
                                 this.tableSettings[o.name] = o.name;
                             }
                         });
-                        // console.log(this.tableSettings);
+                        // console.log(this.cdnProviderList, "cdn");
+                        for (
+                            var i = 2;
+                            i < this.cdnProviderList.length + 2;
+                            i++
+                        ) {
+                            // console.log(i);
+                            var headers = {
+                                key: "",
+                                text: "",
+                                sortable: false,
+                                value: ""
+                            };
+                            headers.key = this.cdnProviderList[i - 2].name;
+                            headers.text =
+                                this.cdnProviderList[i - 2].name + " (ms) ";
+                            headers.value = this.cdnProviderList[i - 2].name;
+
+                            this.headers.push(headers);
+                        }
+                        // console.log(this.headers);
                         this.tableHeaderChanged();
                         this.getLastScanData();
-                        // console.log(this.cdnProviderList);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarError",
+                        //     error.message
+                        // );
                     }.bind(this)
                 );
         },
 
         startScan() {
             // console.log(this.selectedCrawler);
+            // console.log(this.cdnProviderList);
             this.$store.dispatch("global/startLoading");
             this.getScanData();
         },
@@ -247,10 +272,10 @@ export default {
                     .catch(
                         function(error) {
                             // this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
+                            // this.$store.dispatch(
+                            //     "global/showSnackbarError",
+                            //     error.message
+                            // );
                         }.bind(this)
                     );
             });
@@ -260,6 +285,7 @@ export default {
         },
         transformData() {
             // console.log(this.scanData, "scanData");
+            this.scannedDate = this.scanData[0].scannedAt;
             this.scanData[0].scanned.forEach((o, i) => {
                 o.location_networks[this.scanData[0].cdnProvider.name] = {};
                 if (o.latency == null) {
@@ -316,7 +342,34 @@ export default {
 
             // console.log(result); // {1, 2, "a", 3, "b"}
             // console.log(repeat); // {1, "a"}
-            // console.log(this.filteredItem, "item");
+            // console.log(this.filteredItems, "items");
+            this.findMinByRow();
+        },
+        findMinByRow() {
+            this.filteredItems.forEach((o, i) => {
+                o.latencyArray = [];
+                var latencyArray = [];
+
+                this.cdnProviderList.forEach((obj, idx) => {
+                    latencyArray.push(o[obj.name].latency);
+                });
+                o.latencyArray = latencyArray;
+                if (_.min(latencyArray) !== "No Data") {
+                    o.min = _.min(latencyArray);
+                } else {
+                    o.min = "";
+                }
+            });
+            this.filteredItems.forEach((o, i) => {
+                this.cdnProviderList.forEach((obj, idx) => {
+                    if (o[obj.name].latency == o.min) {
+                        o[obj.name].min = true;
+                    } else {
+                        o[obj.name].min = false;
+                    }
+                });
+            });
+            // console.log(this.filteredItems, "deal");
         },
         changeAll() {
             this.$store.dispatch("global/startLoading");
@@ -361,11 +414,11 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            // this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
+                            this.$store.dispatch("global/finishLoading");
+                            // this.$store.dispatch(
+                            //     "global/showSnackbarError",
+                            //     error.message
+                            // );
                         }.bind(this)
                     );
             });
