@@ -77,12 +77,16 @@ export default {
             this.setPages();
         },
         perPage: function(value) {
-            if (value == "All") {
-                this.pagination.rowsPerPage = this.items.length;
+            if (this.items.length !== 0) {
+                if (value == "All") {
+                    this.pagination.rowsPerPage = this.items.length;
+                } else {
+                    this.pagination.rowsPerPage = value;
+                }
+                this.setPages();
             } else {
-                this.pagination.rowsPerPage = value;
+                this.pages = 1;
             }
-            this.setPages();
         },
         items: function(value) {
             this.setPages();
