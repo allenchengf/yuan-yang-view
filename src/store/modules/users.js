@@ -3,13 +3,46 @@ import axios from "axios";
 
 export default {
     namespaced: true,
-    state: {},
+    state: {
+        users: []
+    },
     getters: {},
-    mutations: {},
+    mutations: {
+        updateUsers: (state, users) => {
+            state.users = users;
+        }
+    },
     actions: {
-        getAllCdnProvider: context => {
+        getAll: context => {
             return axios
-                .get("yuanyang/cdn_providers")
+                .get("yuanyang_user_module/users?user_group_id=0")
+                .then(function(response) {
+                    response.data.data.forEach((obj, idx) => {
+                        obj.status = obj.deleted_at == null ? true : false;
+                    });
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getUsers: context => {
+            return axios
+                .get("yuanyang_user_module/users")
+                .then(function(response) {
+                    response.data.data.forEach((obj, idx) => {
+                        obj.status = obj.deleted_at == null ? true : false;
+                    });
+                    context.commit("updateUsers", response.data.data);
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        getUsersByGroup: (context, groupId) => {
+            return axios
+                .get("yuanyang_user_module/users?user_group_id=" + groupId)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -17,11 +50,10 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        changeCdnProviderStatus: (context, data) => {
+
+        getUserProfile: (context, uid) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/status", {
-                    status: data.status
-                })
+                .get("yuanyang_user_module/users/" + uid + "/profile")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -29,11 +61,12 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        changeCdnProviderScannable: (context, data) => {
+        updateUserProfile: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/scannable", {
-                    scannable: data.scannable
-                })
+                .put(
+                    "yuanyang_user_module/users/" + data.uid + "/profile",
+                    data
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -41,9 +74,12 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        changeCdnProviderDefault: (context, data) => {
+        updateUserRole: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/change")
+                .patch(
+                    "yuanyang_user_module/users/" + data.uid + "/level",
+                    data
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -51,9 +87,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        updateCdnProvider: (context, data) => {
+        updateUserStatus: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id, data)
+                .put("yuanyang_user_module/users/" + data.uid + "/status", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -61,9 +97,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        newCdnProvider: (context, data) => {
+        newUser: (context, data) => {
             return axios
-                .post("yuanyang/cdn_providers", data)
+                .post("yuanyang_user_module/users", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -71,19 +107,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        checkCdnProvider: (context, id) => {
+        forgotPassword: (context, email) => {
             return axios
-                .get("yuanyang/cdn_providers/" + id + "/check")
-                .then(function(response) {
-                    return Promise.resolve(response.data);
-                })
-                .catch(function(error) {
-                    return Promise.reject(error.response.data);
-                });
-        },
-        deleteCdnProvider: (context, id) => {
-            return axios
-                .delete("yuanyang/cdn_providers/" + id)
+                .post("yuanyang_user_module/password/email", { email: email })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

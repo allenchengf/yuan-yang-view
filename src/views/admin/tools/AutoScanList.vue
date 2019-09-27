@@ -281,6 +281,7 @@ export default {
             });
         },
         transformData() {
+            // console.log(this.scanData);
             this.scanData[0].scanned.forEach((o, i) => {
                 o.location_networks[this.scanData[0].cdnProvider.name] = {};
                 if (o.latency == null) {
@@ -332,7 +333,7 @@ export default {
                 result.has(item.id) ? repeat.add(item) : result.add(item);
             });
             this.filteredItems = [...result];
-            console.log(this.filteredItems);
+            // console.log(this.filteredItems);
             // console.log(result); // {1, 2, "a", 3, "b"}
             // console.log(repeat); // {1, "a"}
             // console.log(this.filteredItem, "item");

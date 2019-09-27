@@ -17,6 +17,21 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        getLastTimeScanData: (context, data) => {
+            return axios
+                .get(
+                    "yuanyang/scan-platform/" +
+                        data.scan_platform +
+                        "/scanned-data?cdn_provider_id=" +
+                        data.cdn_provider_id
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         getScanData: (context, data) => {
             return axios
                 .post(
@@ -38,6 +53,16 @@ export default {
                     old_cdn_provider_id: data.old_cdn_provider_id,
                     new_cdn_provider_id: data.new_cdn_provider_id
                 })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        changeAllCdnProvider: context => {
+            return axios
+                .put("yuanyang/scan-platform/change-all")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

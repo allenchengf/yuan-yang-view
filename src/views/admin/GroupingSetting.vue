@@ -1,8 +1,8 @@
 <template lang="pug">
-    v-container#grouping
+    v-container#grouping.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Grouping
+                .title Grouping
             v-flex(xs12)
                 v-card
                     v-card-title
@@ -26,27 +26,27 @@
                                     v-icon(small) edit
                                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                     v-icon(small) delete
-        v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
-                v-card
-                    v-card-title.title New Group
-                    v-card-text
-                        v-form(ref="editForm")
-                            v-text-field(v-model="group.name" label="Group Name" type="text" name="name" :rules="[rules.required]")
-                            v-select(:items="domainsData" label="Inherited settings by domain" item-text="name" item-value="id" @change="chooseDomain(group.domain_id)" v-model="group.domain_id" )
-                            v-text-field(v-model="group.label" label="Note" type="text" name="label")
+                v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
+                        v-card
+                            v-card-title.title New Group
+                            v-card-text
+                                v-form(ref="editForm")
+                                    v-text-field(v-model="group.name" label="Group Name" type="text" name="name" :rules="[rules.required]")
+                                    v-select(:items="domainsData" label="Inherited settings by domain" item-text="name" item-value="id" @change="chooseDomain(group.domain_id)" v-model="group.domain_id" )
+                                    v-text-field(v-model="group.label" label="Note" type="text" name="label")
 
-                    v-card-actions  
-                        v-spacer
-                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                        v-btn(color="primary" flat="flat" @click="updateGroup('newGroup')") Save
-        v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
-                v-card
-                    v-card-title.title Delete Group
-                    v-card-text Are you sure want to delete this group "{{group.name}}" ?
-                    v-card-actions  
-                        v-spacer
-                        v-btn(color="error" flat="flat" @click="updateGroup('deleteGroup')") Delete
-                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                            v-card-actions  
+                                v-spacer
+                                v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                                v-btn(color="primary" flat="flat" @click="updateGroup('newGroup')") Save
+                v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
+                        v-card
+                            v-card-title.title Delete Group
+                            v-card-text Are you sure want to delete this group "{{group.name}}" ?
+                            v-card-actions  
+                                v-spacer
+                                v-btn(color="error" flat="flat" @click="updateGroup('deleteGroup')") Delete
+                                v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";

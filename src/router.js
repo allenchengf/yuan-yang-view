@@ -3,8 +3,14 @@ import Router from "vue-router";
 import AdminLayout from "./views/Layout.vue";
 import Logout from "./views/Logout.vue";
 import Login from "./views/Login.vue";
+import Settings from "./views/Settings.vue";
+import ResetPassword from "./views/ResetPassword.vue";
 import Forgot from "./views/ForgotPassword.vue";
 import Authentication from "./views/Authentication.vue";
+
+import Users from "./views/h7admin/Users.vue";
+import UserGroups from "./views/h7admin/UserGroups.vue";
+import UserGroupInfo from "./views/h7admin/UserGroupInfo.vue";
 
 import Dashboard from "./views/Dashboard.vue";
 import CdnProvidersSetting from "./views/admin/CdnProvidersSetting";
@@ -14,7 +20,6 @@ import GroupingSetting from "./views/admin/GroupingSetting.vue";
 import GroupInfo from "./views/admin/GroupInfo.vue";
 import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import IRouteCdnSettingById from "./views/IRouteCdnSettingById";
-// import AllIRouteCdnSetting from "./views/AllIRouteCdnSetting";
 import Logs from "./views/admin/Logs.vue";
 import AutoScan from "./views/admin/tools/AutoScan.vue";
 import AutoScanList from "./views/admin/tools/AutoScanList.vue";
@@ -36,14 +41,6 @@ export default new Router({
             component: Login
         },
         {
-            path: "forgot",
-            name: "forgot",
-            meta: {
-                requireAuth: false
-            },
-            component: Forgot
-        },
-        {
             path: "/auth",
             meta: {
                 requireAuth: false,
@@ -59,6 +56,23 @@ export default new Router({
             },
             component: Logout
         },
+        {
+            path: "/forgot",
+            meta: {
+                requireAuth: false,
+                auth: 0
+            },
+            component: Forgot
+        },
+        {
+            path: "/reset-password",
+            name: "reset",
+            meta: {
+                requireAuth: false,
+                auth: 0
+            },
+            component: ResetPassword
+        },
         { path: "*", redirect: "/admin" },
         {
             path: "/admin",
@@ -67,6 +81,14 @@ export default new Router({
             },
             component: AdminLayout,
             children: [
+                {
+                    path: "settings",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: Settings
+                },
                 {
                     path: "",
                     redirect: "cdn-providers",
@@ -152,12 +174,15 @@ export default new Router({
                 },
                 {
                     name: "iRouteCdnSettingById",
-                    path: "iroutecdn-rules",
+                    path: "iroutecdn/rules/",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: IRouteCdnSettingById
+                    component: IRouteCdnSettingById,
+                    props: route => ({
+                        ...route.params
+                    })
                 },
                 {
                     path: "logs",
@@ -167,26 +192,26 @@ export default new Router({
                     },
                     component: Logs
                 },
-                // {
-                //     path: "auto-scan",
-                //     meta: {
-                //         requireAuth: true,
-                //         auth: 0
-                //     },
-                //     component: AutoScan
-                // },
-                // {
-                //     name: "auto-scan-list",
-                //     path: "auto-scan-list",
-                //     meta: {
-                //         requireAuth: true,
-                //         auth: 0
-                //     },
-                //     component: AutoScanList,
-                //     props: route => ({
-                //         ...route.params
-                //     })
-                // },
+                {
+                    path: "auto-scan",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: AutoScan
+                },
+                {
+                    name: "auto-scan-list",
+                    path: "auto-scan-list",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: AutoScanList,
+                    props: route => ({
+                        ...route.params
+                    })
+                },
                 {
                     path: "config-backup",
                     meta: {
@@ -203,6 +228,34 @@ export default new Router({
                         auth: 2
                     },
                     component: NetworkSetting
+                },
+                {
+                    path: "users",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: Users
+                },
+                {
+                    path: "user-groups",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: UserGroups
+                },
+                {
+                    path: "user-groups/:group_id",
+                    name: "userGroupInfo",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: UserGroupInfo,
+                    props: route => ({
+                        ...route.params
+                    })
                 }
             ]
         }

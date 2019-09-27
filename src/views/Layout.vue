@@ -7,7 +7,7 @@
             v-toolbar-title.mr-5.align-center.site-logo
                 span.title
                     router-link(to="/admin")
-                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="250" )
+                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="150" )
             v-spacer
             //- v-btn(icon)
             v-menu(offset-y )
@@ -17,8 +17,8 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    //- v-list-tile(@click="gotoSettings")
-                    //-     v-list-tile-title Settings
+                    v-list-tile(to="/admin/settings")
+                        v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
