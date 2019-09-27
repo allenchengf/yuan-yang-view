@@ -3,6 +3,8 @@ import Router from "vue-router";
 import AdminLayout from "./views/Layout.vue";
 import Logout from "./views/Logout.vue";
 import Login from "./views/Login.vue";
+import Settings from "./views/Settings.vue";
+import ResetPassword from "./views/ResetPassword.vue";
 import Forgot from "./views/ForgotPassword.vue";
 import Authentication from "./views/Authentication.vue";
 
@@ -18,7 +20,6 @@ import GroupingSetting from "./views/admin/GroupingSetting.vue";
 import GroupInfo from "./views/admin/GroupInfo.vue";
 import IRouteCdnSetting from "./views/IRouteCdn.vue";
 import IRouteCdnSettingById from "./views/IRouteCdnSettingById";
-// import AllIRouteCdnSetting from "./views/AllIRouteCdnSetting";
 import Logs from "./views/admin/Logs.vue";
 import AutoScan from "./views/admin/tools/AutoScan.vue";
 import AutoScanList from "./views/admin/tools/AutoScanList.vue";
@@ -40,14 +41,6 @@ export default new Router({
             component: Login
         },
         {
-            path: "forgot",
-            name: "forgot",
-            meta: {
-                requireAuth: false
-            },
-            component: Forgot
-        },
-        {
             path: "/auth",
             meta: {
                 requireAuth: false,
@@ -63,6 +56,23 @@ export default new Router({
             },
             component: Logout
         },
+        {
+            path: "/forgot",
+            meta: {
+                requireAuth: false,
+                auth: 0
+            },
+            component: Forgot
+        },
+        {
+            path: "/reset-password",
+            name: "reset",
+            meta: {
+                requireAuth: false,
+                auth: 0
+            },
+            component: ResetPassword
+        },
         { path: "*", redirect: "/admin" },
         {
             path: "/admin",
@@ -71,6 +81,14 @@ export default new Router({
             },
             component: AdminLayout,
             children: [
+                {
+                    path: "settings",
+                    meta: {
+                        requireAuth: true,
+                        auth: 0
+                    },
+                    component: Settings
+                },
                 {
                     path: "",
                     redirect: "cdn-providers",
