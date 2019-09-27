@@ -66,7 +66,7 @@ export default {
     actions: {
         login: (context, account) => {
             return axios
-                .post("user_module/login", account)
+                .post("yuanyang_user_module/login", account)
                 .then(function(response) {
                     if (!response.data.data.google2fa) {
                         // console.log(response.data.data.user)
@@ -89,9 +89,59 @@ export default {
         },
         getProfile: context => {
             return axios
-                .get("user_module/users/self")
+                .get("yuanyang_user_module/users/self")
                 .then(function(response) {
                     context.commit("updateAccountInfo", response.data.data);
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        forgotPassword: (context, email) => {
+            return axios
+                .post("yuanyang_user_module/password/email", { email: email })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        resetPassword: (context, data) => {
+            return axios
+                .post("yuanyang_user_module/password/reset", data)
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        updateProfile: (context, data) => {
+            return axios
+                .put(
+                    "yuanyang_user_module/users/" +
+                        context.getters.accountId() +
+                        "/profile",
+                    data
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        updatePassword: (context, data) => {
+            return axios
+                .put(
+                    "yuanyang_user_module/users/" +
+                        context.getters.accountId() +
+                        "/password",
+                    data
+                )
+                .then(function(response) {
                     return Promise.resolve(response.data);
                 })
                 .catch(function(error) {

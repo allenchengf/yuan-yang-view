@@ -9,7 +9,7 @@
 
                 v-card
                     v-card-title
-                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search="searchText" )
+                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search="searchText" :per-page="10")
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td.text-xs-left {{ index}}

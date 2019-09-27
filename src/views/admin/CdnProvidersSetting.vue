@@ -28,6 +28,8 @@
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)")
                                         v-icon(small) edit
+                                    v-btn.ma-0(flat icon small color="primary" @click="deleteItem(props.item)")
+                                        v-icon(small) delete
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
@@ -40,6 +42,14 @@
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                             v-btn(color="primary" flat="flat" @click="updateCDN") Save
+                v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Delete CDN Provider
+                        v-card-text Are you sure want to delete {{cdn.name}}?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                            v-btn(color="primary" flat="flat" @click="deleteCDN") Yes
                 v-dialog(v-model="dialog.changeScannable" max-width="460" persistent)
                         v-card
                             v-card-title.title {{scannableFormTitle}}
@@ -82,6 +92,7 @@ export default {
             searchText: "",
             dialog: {
                 edit: false,
+                delete: false,
                 changeStatus: false,
                 changeScannable: false
             },
@@ -137,9 +148,11 @@ export default {
             step: 1,
             checkData: {
                 have_multi_cdn: [],
-                only_default: []
+                only_default: [],
+                be_used: []
             },
-            scannableInfo: {}
+            scannableInfo: {},
+            type: ""
         };
     },
     computed: {
@@ -175,20 +188,36 @@ export default {
             this.dialog.changeScannable = true;
         },
         checkCdnProvider() {
-            // console.log("check api");
+            // console.log(this.type, "check api");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdnProviders/checkCdnProvider", this.switchItem.id)
                 .then(
                     function(result) {
                         this.checkData = result.data;
-                        if (
-                            this.checkData.have_multi_cdn.length == 0 &&
-                            this.checkData.only_default.length == 0
-                        ) {
-                            this.updateStatus();
-                        } else {
-                            this.step = 2;
+                        if (this.type == "check") {
+                            if (
+                                this.checkData.have_multi_cdn.length == 0 &&
+                                this.checkData.only_default.length == 0
+                            ) {
+                                this.updateStatus();
+                            } else {
+                                this.step = 2;
+                            }
+                        }
+                        if (this.type == "delete") {
+                            if (this.checkData.be_used.length == 0) {
+                                // this.deleteCDN();
+                                this.dialog.delete = true;
+                            } else {
+                                this.closeEditDialog();
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    "This CDN provider is used by domains so can't be deleted."
+                                );
+                            }
+
+                            // this.closeEditDialog();
                         }
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -235,6 +264,7 @@ export default {
                 // console.log("open");
             } else {
                 //要關要先打check api
+                this.type = "check";
                 this.checkCdnProvider();
             }
         },
@@ -301,6 +331,14 @@ export default {
             this.dialog.edit = true;
             this.cdn = Object.assign({}, item);
         },
+        deleteItem: function(item) {
+            // console.log(item, "delete");
+            // this.dialog.delete = true;
+            this.cdn = Object.assign({}, item);
+            this.type = "delete";
+            this.switchItem.id = this.cdn.id;
+            this.checkCdnProvider();
+        },
         updateCDN: function() {
             if (this.editedIndex == -1) {
                 this.addNewCDN();
@@ -362,12 +400,40 @@ export default {
                 this.closeEditDialog();
             }
         },
+        deleteCDN: function() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/deleteCdnProvider", this.cdn.id)
+                .then(
+                    function(result) {
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Delete CDN Provider success!"
+                        );
+                        this.getAllCDNs();
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.getAllCDNs();
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                );
+        },
         closeEditDialog: function() {
             this.dialog.edit = false;
+            this.dialog.delete = false;
             this.dialog.changeStatus = false;
             this.dialog.changeScannable = false;
             this.getAllCDNs();
             this.step = 1;
+            this.type = "";
         }
     },
     mounted() {

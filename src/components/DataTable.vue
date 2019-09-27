@@ -1,14 +1,19 @@
 <template lang="pug">
     #datatable
-        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination")
+        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination"  hide-actions)
             template(slot="items" slot-scope="props")
                 slot(name="items" :props="props" :index="rowIndex(props.index)")
-                
-        v-layout.px-2(row align-center)
-            v-flex.text-xs-left.py-3(xs4)
-                slot(name="actions-left")
-            v-flex.text-xs-right.py-3(xs8)
-                v-pagination(v-model="page" :length="pages" :total-visible="7")
+
+        v-flex.px-2        
+            v-layout.px-2(row align-center)
+                v-flex.text-xs-left
+                    v-layout(row align-center)
+                        small Rows per page:
+                        v-select.px-3.py-3(:items="page" v-model="perPage" hide-details)
+                //- v-flex.text-xs-left.py-3(xs4)
+                //-     slot(name="actions-left")
+                v-flex.text-xs-right.py-3(xs8)
+                    v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
 </template>
 
 <script>
@@ -31,17 +36,20 @@ export default {
         perPage: {
             type: Number,
             default: 20
+        },
+        sortBy: {
+            type: String
         }
     },
     data() {
         return {
+            page: [5, 10, 25, "All"],
             pagination: {
                 rowsPerPage: this.perPage,
                 sortBy: "time", // The field that you're sorting by
                 descending: true
             },
-            pages: 0,
-            page: 1
+            pages: 0
         };
     },
     methods: {
@@ -65,17 +73,20 @@ export default {
         }
     },
     watch: {
-        page: function(val) {
-            // console.log(val);
-            this.pagination.page = this.page;
-        },
         pagination: function(value) {
-            // console.log(this.pagination);
             this.setPages();
         },
         perPage: function(value) {
-            this.pagination.rowsPerPage = value;
-            this.setPages();
+            if (this.items.length !== 0) {
+                if (value == "All") {
+                    this.pagination.rowsPerPage = this.items.length;
+                } else {
+                    this.pagination.rowsPerPage = value;
+                }
+                this.setPages();
+            } else {
+                this.pages = 1;
+            }
         },
         items: function(value) {
             this.setPages();

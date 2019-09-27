@@ -1,8 +1,8 @@
 <template lang="pug">
-    v-container#logs
+    v-container#logs.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Operation Logs
+                .title Operation Logs
             v-flex(xs12)
                 v-card
                     v-card-title

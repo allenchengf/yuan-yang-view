@@ -1,16 +1,20 @@
 <template lang="pug">
-    v-container#iroutecdn
+    v-container#iroutecdn.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 iRouteCDN
+                .title iRouteCDN
             v-flex(xs12)
                 v-card
                     v-card-title
-                        v-flex(xs12 sm6 md4)
-                            v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                        .subheading iRouteCDN
                         v-spacer
                         v-btn.my-0(color="primary" @click="goToAllPage()") All
                     v-divider
+                    v-card-text
+                        v-layout(wrap)
+                            v-flex(xs12 sm6 md4)
+                                v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                    
                     h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             tr(@click="goToNextPage(props.item)" style="cursor: pointer")

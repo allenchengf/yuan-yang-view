@@ -29,11 +29,11 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
                             v-flex(xs12 sm12 md12)
                                 v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
-                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'")
+                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'" hide-actions)
                         template(v-slot:items="props" )
                             td 
                                 v-checkbox(v-model="props.selected" primary hide-details)
-                            td {{props.index + 1}}
+                            td {{props.item.index}}
                             td(v-if="breadcrumbsItems[1].text === 'All'") {{props.item.name}}
                             td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
                             td {{props.item.isp}}
@@ -41,10 +41,15 @@
                                 span
                                     v-btn.ma-0(flat icon small color="primary" title="edit" @click="editItem(props.item)") 
                                         v-icon(small) edit
-                    v-layout.px-2(row align-center)
-                        v-flex.text-xs-left.py-3(xs4)
+                    v-layout.px-4(row align-center)
+                        v-flex.text-xs-left
+                            v-layout(row align-center)
+                                small Rows per page:
+                                v-select.px-3.py-3(:items="page" v-model="perPage" hide-details)
+                        //- v-flex.text-xs-left.py-3(xs4)
+                        //-     slot(name="actions-left")
                         v-flex.text-xs-right.py-3(xs8)
-                            v-pagination(v-model="page" :length="pages" :total-visible="7")
+                            v-pagination(v-model="currentPage" :length="pages" :total-visible="7")
                 //- Dialogs
                 v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
                     v-card 
@@ -60,8 +65,8 @@
                             v-form(ref="editForm")
                                 v-select(:items="cdnProvider" label="CDN Provider" item-text="name" item-value="cdn_provider_id" @change="chooseCdnProvider(iRouteCDN.cdn.cdn_provider_id)" v-model="iRouteCDN.cdn.cdn_provider_id")
 
-                        h7-data-table(:headers="headers" :items="selected" single-line v-if="editedIndex == -1")
-                            template(slot="items" slot-scope="{props, index}")
+                        h7-data-table(:headers="headers" :items="selected" single-line v-if="editedIndex == -1" :per-page="5")
+                            template(slot="items" slot-scope="{props, index}" ) 
                                 tr
                                     td {{ index }}
                                     td(v-if="breadcrumbsItems[1].text === 'All'") {{props.item.name}}
@@ -75,10 +80,13 @@
 </template>
 <script>
 import _ from "lodash";
+import { once } from "events";
 
 export default {
     data() {
         return {
+            currentPage: 1,
+            page: [5, 10, 25, "All"],
             alert: false,
             selectCDN: "",
             selected: [],
@@ -107,7 +115,7 @@ export default {
                 {
                     text: "#",
                     align: "left",
-                    sortable: false,
+                    sortable: true,
                     width: "80px",
                     value: "index"
                 },
@@ -140,7 +148,7 @@ export default {
                 {
                     text: "#",
                     align: "left",
-                    sortable: false,
+                    sortable: true,
                     width: "80px",
                     value: "index"
                 },
@@ -195,9 +203,8 @@ export default {
                 { name: "20 per page", value: 20 },
                 { name: "50 per pages", value: 50 }
             ],
-            perPage: 20,
+            perPage: 25,
             pages: 0,
-            page: 1,
             domainId: "",
             rawData: {},
             domainList: [],
@@ -240,9 +247,12 @@ export default {
             this.setPages();
         },
         perPage: function(value) {
-            // console.log(value);
-            // console.log(this.perPage);
-            this.pagination.rowsPerPage = value;
+            this.pagination.rowsPerPage = this.perPage;
+            if (value == "All") {
+                this.pagination.rowsPerPage = this.filterData.length;
+            } else {
+                this.pagination.rowsPerPage = value;
+            }
             this.setPages();
         },
         searchText: function(val) {
@@ -261,10 +271,9 @@ export default {
                 }
             });
         },
-        page: function(val) {
-            console.log(val);
-            this.pagination.page = this.page;
-            // this.getAllIRouteCdnByGroup();
+        currentPage: function() {
+            this.pagination.page = this.currentPage;
+            // console.log(this.pagination.page, "dddd");
         }
     },
     methods: {
@@ -476,17 +485,28 @@ export default {
             if (this.perPage == null || this.filteredItems == null) {
                 this.pages = null;
             } else {
-                this.pages = Math.ceil(
-                    this.filteredItems.length / this.perPage
-                );
+                var length =
+                    this.pagination.totalItems == 0
+                        ? this.filteredItems.length
+                        : this.pagination.totalItems;
+                this.pages = Math.ceil(length / this.pagination.rowsPerPage);
             }
         },
         chooseCdnProvider(data) {
             // console.log(data);
-            if (this.iRouteCDN.groupId !== undefined) {
+            // console.log(this.cdnProviderMapping);
+            if (
+                this.editedIndex !== -1 &&
+                this.iRouteCDN.groupId !== undefined
+            ) {
                 this.iRouteCDN.cdn.cdn_provider_id = data;
-            } else {
+                // console.log(this.iRouteCDN, "group single");
+            } else if (
+                this.editedIndex !== -1 &&
+                this.iRouteCDN.domainId !== undefined
+            ) {
                 this.iRouteCDN.cdn.cdn_provider_id = data;
+                // console.log(this.iRouteCDN, "domain single");
             }
             if (this.editedIndex == -1) {
                 this.selected.forEach((o, i) => {
@@ -494,13 +514,20 @@ export default {
                     if (this.$route.query.id == undefined) {
                         if (this.groupId !== undefined) {
                             o.groupId = this.groupId;
+                            o.cdn.cdn_provider_id = this.cdnProviderMapping[
+                                data
+                            ];
                         } else {
                             o.domainId = this.domainId;
+                            o.cdn.cdn_provider_id = this.cdnProviderMapping[
+                                data
+                            ];
                         }
                     }
                 });
+                // console.log(this.selected, "selected");
             }
-            // console.log(this.selected, "selected");
+            // console.log(this.iRouteCDN, "iRouteCDN");
         },
         getDomainList() {
             this.$store
@@ -525,6 +552,7 @@ export default {
                 .then(
                     function(result) {
                         this.infoData = result.data.domain;
+                        // this.mapping();
                         this.breadcrumbsItems[1].text = this.infoData.name;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -588,8 +616,14 @@ export default {
                             ];
                         });
 
-                        this.cdnProviderItems = this.cdnProvider;
+                        // this.cdnProviderItems = this.cdnProvider;
+
+                        // this.cdnProviderItems.unshift("All");
+                        this.cdnProvider.forEach((o, i) => {
+                            this.cdnProviderItems.push(o.name);
+                        });
                         this.cdnProviderItems.unshift("All");
+                        // console.log(this.cdnProviderItems, "cdnProviderItems");
 
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -661,6 +695,8 @@ export default {
                 );
         },
         mapping() {
+            // console.log(this.cdnProviderIdMapping, "cdnProviderIdMapping");
+            // console.log(this.infoData.cdns, "ccc");
             if (this.breadcrumbsItems[1].text !== "All") {
                 this.infoData.cdns.forEach((o, i) => {
                     o.name = this.cdnProviderIdMapping[o.cdn_provider_id];
@@ -668,8 +704,12 @@ export default {
                 this.cdnProvider = this.infoData.cdns;
             }
 
-            this.cdnProviderItems = this.cdnProvider;
+            // this.cdnProviderItems = this.cdnProvider;
+            this.cdnProvider.forEach((o, i) => {
+                this.cdnProviderItems.push(o.name);
+            });
             this.cdnProviderItems.unshift("All");
+            // console.log(this.cdnProviderItems, "cdnProviderItems");
         },
         getList() {
             // this.$store.dispatch("global/startLoading");
@@ -705,101 +745,13 @@ export default {
                     }.bind(this)
                 );
         },
-        getAllIRouteCdnByDomain(filterData) {
-            var info = [];
-            info.current_page = this.page;
-            info.per_page = 5;
-            this.$store
-                .dispatch("iRouteCdn/getAllIRouteCdnByDomain", info)
-                .then(
-                    function(result) {
-                        var data = result.data;
-                        // var filterData = [];
-                        if (data.domains !== undefined) {
-                            data.domains.forEach((o, i) => {
-                                o.location_network.forEach((obj, idx) => {
-                                    obj.name = o.name;
-                                    obj.domainId = o.id;
-                                });
-                                filterData.push(o);
-                            });
-                        }
-                        this.filterData = [];
-
-                        filterData.forEach((o, i) => {
-                            o.location_network.forEach((obj, idx) => {
-                                this.filterData.push(obj);
-                            });
-                        });
-                        this.filterData.forEach((o, i) => {
-                            o.cdn_provider = [];
-                            this.allListMapping[o.name].forEach((obj, idx) => {
-                                o.cdn_provider.push(obj.cdns);
-                            });
-                        });
-                        this.filterData.forEach((o, i) => {
-                            o.cdn_provider.forEach((obj, idx) => {
-                                obj.name = "";
-                                obj.name = this.cdnProviderIdMapping[
-                                    o.cdn_provider[idx].cdn_provider_id
-                                ];
-                            });
-                        });
-                        this.filterData.forEach((o, i) => {
-                            o.index = i + 1;
-                        });
-                        this.getAllIRouteIsp();
-                        this.getAllIRouteCdnProvider();
-                        this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems);
-                        this.setPages();
-                        this.$store.dispatch("global/finishLoading");
-                        return Promise.resolve();
-                    }.bind(this)
-                )
-                .catch(
-                    function(error) {
-                        return Promise.reject(error);
-                    }.bind(this)
-                );
-        },
-        getAllIRouteCdnByGroup() {
-            var info = [];
-            info.current_page = this.page;
-            info.per_page = 5;
-            this.$store
-                .dispatch("iRouteCdn/getAllIRouteCdnByGroup", info)
-                .then(
-                    function(result) {
-                        var data = result.data;
-                        var filterData = [];
-                        if (data.domain_groups !== undefined) {
-                            data.domain_groups.forEach((o, i) => {
-                                o.location_network.forEach((obj, idx) => {
-                                    obj.name = o.name;
-                                    obj.groupId = o.id;
-                                });
-                                filterData.push(o);
-                            });
-                        }
-                        this.getAllIRouteCdnByDomain(filterData);
-
-                        this.$store.dispatch("global/finishLoading");
-                        return Promise.resolve();
-                    }.bind(this)
-                )
-                .catch(
-                    function(error) {
-                        return Promise.reject(error);
-                    }.bind(this)
-                );
-        },
         getAllIRouteInfo() {
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("iRouteCdn/getAllIRouteCdn")
                 .then(
                     function(result) {
+                        this.filterData = [];
                         var data = result.data;
                         var filterData = [];
                         if (data.domainGroup !== undefined) {
@@ -845,7 +797,7 @@ export default {
                         this.getAllIRouteIsp();
                         this.getAllIRouteCdnProvider();
                         this.filteredItems = this.filterData;
-                        // console.log(this.filteredItems);
+                        // console.log(this.filteredItems, "all");
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                         return Promise.resolve();
@@ -938,11 +890,11 @@ export default {
         },
         editItem(item) {
             this.iRouteCDN = Object.assign({}, item);
-
+            // console.log(this.iRouteCDN);
             if (this.$route.query.id !== undefined) {
                 this.cdnProvider = item.cdn_provider;
             } else {
-                this.cdnProvider = this.cdnProviderItems.slice(1);
+                // this.cdnProvider = this.cdnProviderItems.slice(1);
                 if (this.groupId !== undefined) {
                     this.iRouteCDN.groupId = this.groupId;
                 } else {
@@ -998,9 +950,7 @@ export default {
                             "Change CDN provider success!"
                         );
                         if (this.$route.query.id !== undefined) {
-                            this.filterData = [];
                             this.getAllIRouteInfo();
-                            this.getList();
                         } else {
                             this.getGroupIRouteInfo();
                         }
@@ -1029,9 +979,7 @@ export default {
                             "Change CDN provider success!"
                         );
                         if (this.$route.query.id !== undefined) {
-                            this.filterData = [];
                             this.getAllIRouteInfo();
-                            this.getList();
                         } else {
                             this.getDomainIRouteInfo();
                         }
@@ -1063,22 +1011,13 @@ export default {
             }
         },
         batchChangeCdnProvider() {
+            this.$store.dispatch("global/startLoading");
+
             this.selected.forEach((o, i) => {
                 if (o.groupId !== undefined) {
-                    this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("iRouteCdn/updateGroupIRouteCDN", o)
-                        .then(
-                            function(result) {
-                                if (this.$route.query.id !== undefined) {
-                                    this.filterData = [];
-                                    this.getAllIRouteInfo();
-                                    this.getList();
-                                } else {
-                                    this.getGroupIRouteInfo();
-                                }
-                            }.bind(this)
-                        )
+                        .then(function(result) {}.bind(this))
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
@@ -1089,20 +1028,9 @@ export default {
                             }.bind(this)
                         );
                 } else {
-                    this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("iRouteCdn/updateDomainIRouteCDN", o)
-                        .then(
-                            function(result) {
-                                if (this.$route.query.id !== undefined) {
-                                    this.filterData = [];
-                                    this.getAllIRouteInfo();
-                                    this.getList();
-                                } else {
-                                    this.getDomainIRouteInfo();
-                                }
-                            }.bind(this)
-                        )
+                        .then(function(result) {}.bind(this))
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
@@ -1114,11 +1042,34 @@ export default {
                         );
                 }
             });
+            if (this.$route.query.id !== undefined) {
+                var vm = this;
+                setTimeout(function() {
+                    vm.getAllIRouteInfo();
+                    vm.getList();
+                }, 5000);
+            } else if (this.$route.query.group_id !== undefined) {
+                var vm = this;
+
+                setTimeout(function() {
+                    vm.getGroupIRouteInfo();
+                    // console.log(vm.filteredItems);
+                }, 5000);
+            } else {
+                var vm = this;
+
+                setTimeout(function() {
+                    vm.getDomainIRouteInfo();
+                    // console.log(vm.filteredItems);
+                }, 5000);
+            }
             this.selected = [];
             this.closeEditDialog();
+            this.$store.dispatch("global/finishLoading");
         },
         closeEditDialog() {
             this.dialog.edit = false;
+            this.selected = [];
         },
         closeAlertDialog() {
             this.dialog.alert = false;
@@ -1126,7 +1077,8 @@ export default {
     },
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
-
+        this.pagination.rowsPerPage = this.perPage;
+        this.pagination.page = this.currentPage;
         this.getAllCdnProvider();
         if (this.$route.query.group_id !== undefined) {
             this.headers = this.groupsDomainsHeaders;
@@ -1138,7 +1090,6 @@ export default {
             this.infoData.name = "All";
             this.breadcrumbsItems[1].text = "All";
             this.getAllIRouteInfo();
-            // this.getAllIRouteCdnByGroup();
             this.getList();
         } else {
             this.headers = this.groupsDomainsHeaders;
@@ -1154,10 +1105,13 @@ export default {
 </script>
 
 <style lang="sass" scoped>
+// *
+//     border: 0.4px solid grey
 .v-select
     text-transform: capitalize
 .v-select-list
     text-transform: capitalize
 td
   text-transform: capitalize
+
 </style>

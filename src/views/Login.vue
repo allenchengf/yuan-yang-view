@@ -1,8 +1,8 @@
 <template lang="pug">
     v-layout#login(align-center justify-center)
         v-card(mx-auto min-width="460")
-            v-card-text
-                h1(style="text-align: center" display-1 text--primary) Sign in YuanYang 
+            //- h1(style="text-align: center" display-1 text--primary) Sign in iRouteCDN 
+            v-img.mx-auto.signIn(:src="require('../assets/images/iRouteCDN_signin.png')" max-width="160")
             v-window(v-model="step")
                 v-window-item(:value="1")
                     v-form(ref="userForm" lazy-validation valid onsubmit="return false;")
@@ -13,7 +13,7 @@
                             v-alert.text-md-left(:value="loginError" color="error" icon="warning" outline transition="scale-transition") {{loginErrorMessage}}
                             //- v-checkbox(label="Remember me" color="primary")
                             v-btn(color="primary" block @click="signIn") Sign in
-                            //- router-link(to="/forgot") Forgot your password?
+                            router-link(to="/forgot") Forgot your password?
                 v-window-item(:value="2")
                     v-form(ref="otpForm" lazy-validation valid onsubmit="return false;")
                         v-container
@@ -44,7 +44,9 @@ export default {
                     const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                     return pattern.test(value) || "Invalid e-mail.";
                 },
-                otp: value => (value != null && value.length == 6) || "Please enter 6-digit code."
+                otp: value =>
+                    (value != null && value.length == 6) ||
+                    "Please enter 6-digit code."
             },
             otpCode: "",
             otpToken: "",
@@ -134,5 +136,8 @@ export default {
 .v-stepper {
     background: transparent;
     box-shadow: none;
+}
+.signIn {
+    margin-top: 40px;
 }
 </style>
