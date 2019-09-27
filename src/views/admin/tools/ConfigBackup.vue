@@ -1,8 +1,8 @@
 <template lang="pug">
-    v-container#configBackup
+    v-container#configBackup.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Config Backup
+                .title Config Backup
             v-flex(xs12)
                 v-card
                     v-card-title

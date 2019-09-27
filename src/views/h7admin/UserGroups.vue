@@ -1,12 +1,12 @@
 <template lang="pug">
-    v-container#user-list(grid-list-lg)
+    v-container#user-list.grid-list-lg
         v-layout(wrap)
             v-flex(xs12)
-                .title Groups
+                .title User Groups
             v-flex(xs12)
                 v-card
                     v-card-title
-                        .subheading Group List
+                        .subheading User Group List
                         v-spacer
                         v-btn.my-0(color="primary" @click="addGroup()") Add Group
                     v-divider

@@ -59,6 +59,16 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
+        },
+        changeAllCdnProvider: context => {
+            return axios
+                .put("yuanyang/scan-platform/change-all")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
         }
     }
 };

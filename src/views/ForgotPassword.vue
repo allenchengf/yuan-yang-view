@@ -1,8 +1,8 @@
 <template lang="pug">
     v-layout#forgot-password(align-center justify-center)
-        v-flex(xs10 md9)
-            v-img.mx-auto(:src="require('../assets/images/hiero7_square.png')" width="100px")
-            .title.mt-3 Forgot your password?
+        v-card(mx-auto min-width="460")
+            v-img.mx-auto.forgot(:src="require('../assets/images/iRouteCDN_signin.png')" max-width="160")
+            .title.mt-4.ml-4 Forgot your password?
             v-container
                 v-form(ref="forgotForm" lazy-validation valid onsubmit="return false;")
                     .tips.text-md-left Enter your email address to receive your new password.
@@ -23,18 +23,20 @@ export default {
     methods: {
         submitAction: function() {
             this.$store.dispatch("global/startLoading");
+            this.$store.dispatch(
+                "global/showSnackbarSuccess",
+                "An e-mail will be sent to " +
+                    this.email +
+                    " with further instructions."
+            );
+
             if (this.$refs.forgotForm.validate()) {
                 this.$store
                     .dispatch("account/forgotPassword", this.email)
                     .then(
                         function(result) {
-                            this.success = true;
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "An e-mail will be sent to " +
-                                    this.email +
-                                    " with further instructions."
-                            );
+                            // this.success = true;
+                            this.$router.push("/login");
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -54,4 +56,11 @@ export default {
 </script>
 
 <style scoped>
+.v-stepper {
+    background: transparent;
+    box-shadow: none;
+}
+.forgot {
+    margin-top: 40px;
+}
 </style>

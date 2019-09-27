@@ -13,7 +13,7 @@
                             v-alert.text-md-left(:value="loginError" color="error" icon="warning" outline transition="scale-transition") {{loginErrorMessage}}
                             //- v-checkbox(label="Remember me" color="primary")
                             v-btn(color="primary" block @click="signIn") Sign in
-                            //- router-link(to="/forgot") Forgot your password?
+                            router-link(to="/forgot") Forgot your password?
                 v-window-item(:value="2")
                     v-form(ref="otpForm" lazy-validation valid onsubmit="return false;")
                         v-container

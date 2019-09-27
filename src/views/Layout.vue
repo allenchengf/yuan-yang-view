@@ -17,8 +17,8 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    //- v-list-tile(@click="gotoSettings")
-                    //-     v-list-tile-title Settings
+                    v-list-tile(to="/admin/settings")
+                        v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
