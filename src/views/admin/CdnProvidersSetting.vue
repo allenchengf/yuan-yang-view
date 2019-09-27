@@ -151,7 +151,8 @@ export default {
                 only_default: [],
                 be_used: []
             },
-            scannableInfo: {}
+            scannableInfo: {},
+            type: ""
         };
     },
     computed: {
@@ -187,29 +188,36 @@ export default {
             this.dialog.changeScannable = true;
         },
         checkCdnProvider() {
-            // console.log("check api");
+            // console.log(this.type, "check api");
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdnProviders/checkCdnProvider", this.switchItem.id)
                 .then(
                     function(result) {
                         this.checkData = result.data;
-                        if (
-                            this.checkData.have_multi_cdn.length == 0 &&
-                            this.checkData.only_default.length == 0
-                        ) {
-                            this.updateStatus();
-                        } else {
-                            this.step = 2;
+                        if (this.type == "check") {
+                            if (
+                                this.checkData.have_multi_cdn.length == 0 &&
+                                this.checkData.only_default.length == 0
+                            ) {
+                                this.updateStatus();
+                            } else {
+                                this.step = 2;
+                            }
                         }
-                        if (this.checkData.be_used.length == 0) {
-                            this.deleteCDN();
-                        } else {
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                "This CDN provider is used by domains so can't be deleted."
-                            );
-                            this.closeEditDialog();
+                        if (this.type == "delete") {
+                            if (this.checkData.be_used.length == 0) {
+                                // this.deleteCDN();
+                                this.dialog.delete = true;
+                            } else {
+                                this.closeEditDialog();
+                                this.$store.dispatch(
+                                    "global/showSnackbarError",
+                                    "This CDN provider is used by domains so can't be deleted."
+                                );
+                            }
+
+                            // this.closeEditDialog();
                         }
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -256,6 +264,7 @@ export default {
                 // console.log("open");
             } else {
                 //要關要先打check api
+                this.type = "check";
                 this.checkCdnProvider();
             }
         },
@@ -324,10 +333,11 @@ export default {
         },
         deleteItem: function(item) {
             // console.log(item, "delete");
-            this.dialog.delete = true;
+            // this.dialog.delete = true;
             this.cdn = Object.assign({}, item);
-            // console.log(this.cdn);
-            // this.checkCdnProvider()
+            this.type = "delete";
+            this.switchItem.id = this.cdn.id;
+            this.checkCdnProvider();
         },
         updateCDN: function() {
             if (this.editedIndex == -1) {
@@ -423,6 +433,7 @@ export default {
             this.dialog.changeScannable = false;
             this.getAllCDNs();
             this.step = 1;
+            this.type = "";
         }
     },
     mounted() {
