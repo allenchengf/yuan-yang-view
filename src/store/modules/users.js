@@ -15,7 +15,7 @@ export default {
     actions: {
         getAll: context => {
             return axios
-                .get("user_module/users?user_group_id=0")
+                .get("yuanyang_user_module/users?user_group_id=0")
                 .then(function(response) {
                     response.data.data.forEach((obj, idx) => {
                         obj.status = obj.deleted_at == null ? true : false;
@@ -28,7 +28,7 @@ export default {
         },
         getUsers: context => {
             return axios
-                .get("user_module/users")
+                .get("yuanyang_user_module/users")
                 .then(function(response) {
                     response.data.data.forEach((obj, idx) => {
                         obj.status = obj.deleted_at == null ? true : false;
@@ -42,7 +42,7 @@ export default {
         },
         getUsersByGroup: (context, groupId) => {
             return axios
-                .get("user_module/users?user_group_id=" + groupId)
+                .get("yuanyang_user_module/users?user_group_id=" + groupId)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -53,7 +53,7 @@ export default {
 
         getUserProfile: (context, uid) => {
             return axios
-                .get("user_module/users/" + uid + "/profile")
+                .get("yuanyang_user_module/users/" + uid + "/profile")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -63,7 +63,10 @@ export default {
         },
         updateUserProfile: (context, data) => {
             return axios
-                .put("user_module/users/" + data.uid + "/profile", data)
+                .put(
+                    "yuanyang_user_module/users/" + data.uid + "/profile",
+                    data
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -73,7 +76,10 @@ export default {
         },
         updateUserRole: (context, data) => {
             return axios
-                .patch("user_module/users/" + data.uid + "/level", data)
+                .patch(
+                    "yuanyang_user_module/users/" + data.uid + "/level",
+                    data
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -83,7 +89,7 @@ export default {
         },
         updateUserStatus: (context, data) => {
             return axios
-                .put("user_module/users/" + data.uid + "/status", data)
+                .put("yuanyang_user_module/users/" + data.uid + "/status", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -93,7 +99,7 @@ export default {
         },
         newUser: (context, data) => {
             return axios
-                .post("user_module/users", data)
+                .post("yuanyang_user_module/users", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -103,7 +109,7 @@ export default {
         },
         forgotPassword: (context, email) => {
             return axios
-                .post("user_module/password/email", { email: email })
+                .post("yuanyang_user_module/password/email", { email: email })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

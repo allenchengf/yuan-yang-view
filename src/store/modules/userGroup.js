@@ -14,7 +14,7 @@ export default {
     actions: {
         getAll: context => {
             return axios
-                .get("user_module/userGroups")
+                .get("yuanyang_user_module/userGroups")
                 .then(function(response) {
                     response.data.data.forEach((obj, idx) => {
                         obj.status = obj.deleted_at == null ? true : false;
@@ -27,7 +27,7 @@ export default {
         },
         getById: (context, id) => {
             return axios
-                .get("user_module/userGroups/" + id)
+                .get("yuanyang_user_module/userGroups/" + id)
                 .then(function(response) {
                     response.data.data.status =
                         response.data.data.deleted_at == null ? true : false;
@@ -39,7 +39,7 @@ export default {
         },
         updateUserGroup: (context, data) => {
             return axios
-                .put("user_module/userGroups/" + data.id, {
+                .put("yuanyang_user_module/userGroups/" + data.id, {
                     name: data.name,
                     unique_id: data.unique_id
                 })
@@ -52,7 +52,7 @@ export default {
         },
         updateGroupStatus: (context, data) => {
             return axios
-                .put("user_module/userGroups/" + data.id + "/status", {
+                .put("yuanyang_user_module/userGroups/" + data.id + "/status", {
                     status: data.status
                 })
                 .then(function(response) {
@@ -64,7 +64,7 @@ export default {
         },
         newUserGroup: (context, data) => {
             return axios
-                .post("user_module/userGroups", data)
+                .post("yuanyang_user_module/userGroups", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -75,7 +75,10 @@ export default {
         newUserToGroup: (context, data) => {
             return axios
                 .post(
-                    "user_module/users/" + data.uid + "/group/" + data.groupId,
+                    "yuanyang_user_module/users/" +
+                        data.uid +
+                        "/group/" +
+                        data.groupId,
                     { level: data.level }
                 )
                 .then(function(response) {
@@ -88,7 +91,7 @@ export default {
         updateUserLevel: (context, data) => {
             return axios
                 .patch(
-                    "user_module/users/" +
+                    "yuanyang_user_module/users/" +
                         data.uid +
                         "/group/" +
                         data.user_group_mapping.user_group_id,
@@ -106,7 +109,10 @@ export default {
         removeUserFromGroup: (context, data) => {
             return axios
                 .delete(
-                    "user_module/users/" + data.uid + "/group/" + data.groupId
+                    "yuanyang_user_module/users/" +
+                        data.uid +
+                        "/group/" +
+                        data.groupId
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
