@@ -19,48 +19,13 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-flex.ma-4.text-xs-right.grey--text
                                 span Scanned at : {{scannedDate}}
-                    h7-data-table(:headers="filterHeaders" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
+                    h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td {{ index }}
                                 td {{ props.item.continent.name }} / {{props.item.country.name}} / {{props.item.location}} / {{props.item.isp}}
-                                td(v-if="isShownColumn('Hiero7') && props.item.Hiero7.latency !== undefined")
-                                    span(:style="props.item.Hiero7.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{ props.item.Hiero7.latency }}
-                                td(v-if="isShownColumn('CloudFront') && props.item.CloudFront !== undefined")
-                                    span(:style="props.item.CloudFront.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.CloudFront.latency }}
-                                td(v-if="isShownColumn('Cloudflare') && props.item.Cloudflare !== undefined")
-                                    span(:style="props.item.Cloudflare.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.Cloudflare.latency }}
-                                td(v-if="isShownColumn('alibabaCloud') && props.item.alibabaCloud !== undefined")
-                                    span(:style="props.item.alibabaCloud.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.alibabaCloud.latency }}
-                                td(v-if="isShownColumn('AlibabaCloud') && props.item.AlibabaCloud !== undefined")
-                                    span(:style="props.item.AlibabaCloud.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.AlibabaCloud.latency }}
-                                //- td(v-if="isShownColumn('yuanTest') && props.item.yuanTest !== undefined" :style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.yuanTest.latency }} 
-                                //- td(v-if="isShownColumn('Akamai') && props.item.Akamai !== undefined" :style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.Akamai.latency }} 
-                                //- td(v-if="isShownColumn('HostAdvice') && props.item.HostAdvice !== undefined")
-                                //-     span(:style="props.item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{props.item.HostAdvice.latency }} 
-                    
-
-                //- v-card
-                //-     v-card-title.title.font-weight-regular.justify-space-between
-                //-         span {{ currentTitle }}
-                //-         v-avatar.subheading.white--text(color="primary" size="24" v-text="step")
-                //-     v-window(v-model="step")
-                //-         v-window-item(:value="1")
-                //-             v-card-text
-                //-                 v-radio-group(v-model="selectedCrawler")
-                //-                     v-radio(v-for="item in crawlerGroup" :key="item.id" :label="item.name" :value="item.id")
-                //-         v-window-item(:value="2")
-                //-             v-card-text
-                //-                 v-container
-                //-                     v-checkbox(v-for="item in cdnProviderList" :disabled="item.status == 0 || item.url == null" :key="item.id" :label="item.name" :value="item.id" v-model="selectedCdnProvider")
-                //-     v-divider
-                //-     v-card-actions
-                //-         v-btn(:disabled="step === 1" flat @click="back") Back
-                //-         v-spacer
-                //-         v-btn(v-if="step === 2" color="primary" depressed @click="startScan" :disabled="selectedCdnProvider.length == 0") Start Scan
-                //-         v-btn(v-if="step !== 2" color="primary" depressed @click="next" :disabled="selectedCrawler==''") Next
- 
-
+                                td(v-for="item in props.item.scanned")
+                                    span(:style="item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.latency}}
 </template>
 <script>
 export default {
@@ -75,8 +40,52 @@ export default {
             scanData: [],
             tableSettings: {},
             filteredItem: [],
-            filteredItems: [],
+            filteredItems: [
+                // {
+                //     continent: {
+                //         name: "American"
+                //     },
+                //     country: {
+                //         name: "NY"
+                //     },
+                //     location: "DD",
+                //     isp: "CT",
+                //     scanned: [
+                //         { name: "Cloudfront", latency: 146 },
+                //         {
+                //             name: "Cloudflare",
+                //             latency: 249
+                //         },
+                //         {
+                //             name: "Hiero7",
+                //             latency: 99
+                //         }
+                //     ]
+                // },
+                // {
+                //     continent: {
+                //         name: "Asia"
+                //     },
+                //     country: {
+                //         name: "China"
+                //     },
+                //     location: "CC",
+                //     isp: "CM",
+                //     scanned: [
+                //         { name: "Cloudfront", latency: 126 },
+                //         {
+                //             name: "Cloudflare",
+                //             latency: 289
+                //         },
+                //         {
+                //             name: "Hiero7",
+                //             latency: 90
+                //         }
+                //     ]
+                // }
+            ],
             filterHeaders: [],
+            regionMapping: {},
             headers: [
                 {
                     key: "id",
@@ -95,70 +104,6 @@ export default {
                     value: "continent.name",
                     control: false
                 }
-                // {
-                //     key: "Hiero7",
-                //     text: "Hiero7 (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "Hiero7",
-                //     control: true
-                // },
-                // {
-                //     key: "CloudFront",
-                //     text: "CloudFront (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "CloudFront",
-                //     control: true
-                // },
-                // {
-                //     key: "Cloudflare",
-                //     text: "Cloudflare (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "Cloudflare",
-                //     control: true
-                // },
-                // {
-                //     key: "alibabaCloud",
-                //     text: "AlibabaCloud (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "alibabaCloud",
-                //     control: true
-                // },
-                // {
-                //     key: "AlibabaCloud",
-                //     text: "AlibabaCloud (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "AlibabaCloud",
-                //     control: true
-                // },
-                // {
-                //     key: "yuanTest",
-                //     text: "YuanTest (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "yuanTest",
-                //     control: true
-                // },
-                // {
-                //     key: "Akamai",
-                //     text: "Akamai (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "Akamai",
-                //     control: true
-                // },
-                // {
-                //     key: "HostAdvice",
-                //     text: "HostAdvice (ms)",
-                //     align: "left",
-                //     sortable: false,
-                //     value: "HostAdvice",
-                //     control: true
-                // }
             ]
         };
     },
@@ -170,12 +115,31 @@ export default {
         }
     },
     methods: {
+        headerSetting() {
+            this.headers.splice(2, this.headers.length - 2);
+            this.filteredItems[0].scanned.forEach((o, i) => {
+                var headers = {
+                    align: "left",
+                    control: true,
+                    key: "",
+                    text: "",
+                    sortable: false,
+                    value: ""
+                };
+                headers.key = o.name;
+                headers.value = o.name;
+                headers.text = o.name + " (ms)";
+                this.headers.push(headers);
+            });
+            // console.log(this.headers, "headers");
+        },
         tableHeaderChanged: function() {
             this.filterHeaders = this.headers.filter(
                 ((item, i) => {
                     return this.tableSettings[item.key] || !item.control;
                 }).bind(this)
             );
+            // console.log(this.filterHeaders);
         },
         isShownColumn: function(key) {
             return this.tableSettings[key];
@@ -211,31 +175,9 @@ export default {
                         result.data.forEach((o, i) => {
                             if (o.scannable == true) {
                                 this.cdnProviderList.push(o);
-                                this.tableSettings[o.name] = o.name;
+                                // this.tableSettings[o.name] = o.name;
                             }
                         });
-                        // console.log(this.cdnProviderList, "cdn");
-                        for (
-                            var i = 2;
-                            i < this.cdnProviderList.length + 2;
-                            i++
-                        ) {
-                            // console.log(i);
-                            var headers = {
-                                key: "",
-                                text: "",
-                                sortable: false,
-                                value: ""
-                            };
-                            headers.key = this.cdnProviderList[i - 2].name;
-                            headers.text =
-                                this.cdnProviderList[i - 2].name + " (ms) ";
-                            headers.value = this.cdnProviderList[i - 2].name;
-
-                            this.headers.push(headers);
-                        }
-                        // console.log(this.headers);
-                        this.tableHeaderChanged();
                         this.getLastScanData();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -252,12 +194,13 @@ export default {
         },
 
         startScan() {
-            // console.log(this.selectedCrawler);
-            // console.log(this.cdnProviderList);
             this.$store.dispatch("global/startLoading");
+
             this.getScanData();
         },
         getScanData() {
+            this.scanData = [];
+
             this.cdnProviderList.forEach((o, i) => {
                 o.scan_platform = this.selectedCrawler;
                 o.cdn_provider_id = o.id;
@@ -279,79 +222,63 @@ export default {
                         }.bind(this)
                     );
             });
-            // this.transformData();
 
             // this.$store.dispatch("global/finishLoading");
         },
         transformData() {
+            this.filteredItem = [];
+            this.filteredItems = [];
             // console.log(this.scanData, "scanData");
             this.scannedDate = this.scanData[0].scannedAt;
+
+            this.scanData.forEach((o, i) => {
+                o.scanned.forEach((obj, idx) => {
+                    obj.cdnProvider = o.cdnProvider;
+                    obj.location_networks.scanned = {};
+                    var scanned = {};
+                    scanned.name = obj.cdnProvider.name;
+                    if (obj.latency == null) {
+                        scanned.latency = "No Data";
+                    } else {
+                        scanned.latency = obj.latency;
+                    }
+                    obj.location_networks.scanned = scanned;
+                });
+            });
+
+            this.scanData.forEach((o, i) => {
+                o.scanned.forEach((obj, idx) => {
+                    this.regionMapping[obj.location_networks.id] = [];
+                });
+            });
+            this.scanData.forEach((o, i) => {
+                o.scanned.forEach((obj, idx) => {
+                    this.regionMapping[obj.location_networks.id].push(
+                        obj.location_networks.scanned
+                    );
+                });
+            });
+            // console.log(this.regionMapping, "regionMapping");
+
             this.scanData[0].scanned.forEach((o, i) => {
-                o.location_networks[this.scanData[0].cdnProvider.name] = {};
-                if (o.latency == null) {
-                    o.location_networks[
-                        this.scanData[0].cdnProvider.name
-                    ].latency = "No Data";
-                } else {
-                    o.location_networks[
-                        this.scanData[0].cdnProvider.name
-                    ].latency = o.latency;
-                }
-
-                o.location_networks[
-                    this.scanData[0].cdnProvider.name
-                ].name = this.scanData[0].cdnProvider.name;
-                o.location_networks[
-                    this.scanData[0].cdnProvider.name
-                ].id = this.scanData[0].cdnProvider.id;
-
                 this.filteredItem.push(o.location_networks);
             });
-            // console.log(this.filteredItem, "this.filteredItem");
             this.filteredItem.forEach((o, i) => {
-                for (var idx = 1; idx < this.scanData.length; idx++) {
-                    this.scanData[idx].scanned.forEach((object, index) => {
-                        if (o.id == object.location_networks.id) {
-                            o[this.scanData[idx].cdnProvider.name] = {};
-                            o[
-                                this.scanData[idx].cdnProvider.name
-                            ].name = this.scanData[idx].cdnProvider.name;
-                            o[
-                                this.scanData[idx].cdnProvider.name
-                            ].id = this.scanData[idx].cdnProvider.id;
-                            if (object.latency == null) {
-                                o[this.scanData[idx].cdnProvider.name].latency =
-                                    "No Data";
-                            } else {
-                                o[this.scanData[idx].cdnProvider.name].latency =
-                                    object.latency;
-                            }
-                        }
-                    });
-                }
+                o.scanned = this.regionMapping[o.id];
             });
 
-            var result = new Set();
-            var repeat = new Set();
-            this.filteredItem.forEach(item => {
-                result.has(item.id) ? repeat.add(item) : result.add(item);
-            });
-            this.filteredItems = [...result];
-            // console.log(this.filteredItems, "filterItems");
+            // console.log(this.filteredItem, "filteredItem");
+            this.filteredItems = this.filteredItem;
+            this.headerSetting();
             this.$store.dispatch("global/finishLoading");
-
-            // console.log(result); // {1, 2, "a", 3, "b"}
-            // console.log(repeat); // {1, "a"}
-            // console.log(this.filteredItems, "items");
             this.findMinByRow();
         },
         findMinByRow() {
             this.filteredItems.forEach((o, i) => {
                 o.latencyArray = [];
                 var latencyArray = [];
-
-                this.cdnProviderList.forEach((obj, idx) => {
-                    latencyArray.push(o[obj.name].latency);
+                o.scanned.forEach((obj, idx) => {
+                    latencyArray.push(obj.latency);
                 });
                 o.latencyArray = latencyArray;
                 if (_.min(latencyArray) !== "No Data") {
@@ -361,11 +288,11 @@ export default {
                 }
             });
             this.filteredItems.forEach((o, i) => {
-                this.cdnProviderList.forEach((obj, idx) => {
-                    if (o[obj.name].latency == o.min) {
-                        o[obj.name].min = true;
+                o.scanned.forEach((obj, idx) => {
+                    if (obj.latency == o.min) {
+                        obj.min = true;
                     } else {
-                        o[obj.name].min = false;
+                        obj.min = false;
                     }
                 });
             });
@@ -407,7 +334,7 @@ export default {
                     .then(
                         function(result) {
                             this.scanData.push(result.data);
-                            // console.log(this.scanData, "data...");
+                            // console.log(result.data, "data...");
 
                             this.transformData();
                         }.bind(this)

@@ -400,7 +400,7 @@ export default {
                 this.closeEditDialog();
             }
         },
-        deleteCDN: function() {
+        deleteCDN() {
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdnProviders/deleteCdnProvider", this.cdn.id)
