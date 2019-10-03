@@ -578,6 +578,7 @@ export default {
                                 "global/showSnackbarSuccess",
                                 "Add domain to group success!"
                             );
+                            this.initialApis();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -591,7 +592,7 @@ export default {
                         }.bind(this)
                     );
             });
-            this.initialApis();
+            // this.initialApis();
             this.closeEditDialog();
         },
         deleteDomain() {
