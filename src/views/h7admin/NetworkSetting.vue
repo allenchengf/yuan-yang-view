@@ -129,7 +129,42 @@ export default {
     methods: {
         getNetworks: function() {
             var id = this.tabs[this.currentTab].id;
-            this.$store.dispatch("global/startLoading");
+            // this.$store.dispatch("global/startLoading");
+            // this.$store
+            //     .dispatch("networks/getAllNetworks")
+            //     .then(
+            //         function(result) {
+            //             console.log(result.data);
+            //             result.data.forEach(item => {
+            //                 item.location_text =
+            //                     item.location_network != null
+            //                         ? item.location_network.continent.name +
+            //                           " / " +
+            //                           item.location_network.country.name +
+            //                           " / " +
+            //                           item.location_network.location +
+            //                           " / " +
+            //                           item.location_network.isp
+            //                         : "Not Set";
+            //                 item.crawler_mapping_value =
+            //                     item.location_network != null
+            //                         ? item.location_network.mapping_value
+            //                         : "";
+            //             });
+            //             this.items = result.data;
+            //             console.log(this.items);
+            //             this.$store.dispatch("global/finishLoading");
+            //         }.bind(this)
+            //     )
+            //     .catch(
+            //         function(error) {
+            //             this.$store.dispatch("global/finishLoading");
+            //             this.$store.dispatch(
+            //                 "global/showSnackbarError",
+            //                 error.message
+            //             );
+            //         }.bind(this)
+            //     );
             this.$store
                 .dispatch("networks/getNetworks", id)
                 .then(
