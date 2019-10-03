@@ -5,6 +5,7 @@
                 v-card-title 
                     .subheading Domain Info
                     v-spacer
+                    v-btn.my-0(v-if="domainInfo.domain_group.length !== 0" color="primary" title="edit" @click="removeBtn") Remove from Group
                     v-btn.my-0(color="primary" title="edit" @click="editItem(domainInfo,'domainInfo')") Edit
                 v-divider
                 v-card-text
@@ -85,6 +86,14 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateCDN('newCDN')") Save
+            v-dialog.remove-dialog(v-model="dialog.remove" max-width="460" persistent v-if="domainInfo.domain_group.length !== 0")
+                v-card
+                    v-card-title.title Remove from group
+                    v-card-text Are you sure want to remove this domain from  "{{domainInfo.domain_group[0].name}}" ?
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                        v-btn(color="primary" flat="flat" @click="removeFromGroup") Yes
             v-dialog.change-default-dialog(v-model="dialog.changeDefault" max-width="460" persistent)
                 v-card
                     v-card-title.title Change Default CDN Provider
@@ -163,7 +172,8 @@ export default {
                 edit: false,
                 editCDN: false,
                 changeDefault: false,
-                delete: false
+                delete: false,
+                remove: false
             },
             cdnProvider: [],
             cdnProviderMapping: {},
@@ -181,7 +191,39 @@ export default {
         chooseCDN(value) {
             // console.log(value);
         },
+        removeBtn() {
+            // console.log(this.domainInfo);
+            this.dialog.remove = true;
+        },
+        removeFromGroup() {
+            this.domainInfo.groupId = this.domainInfo.domain_group[0].id;
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("grouping/deleteDomainFromGroup", this.domainInfo)
+                .then(
+                    function(result) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Remove domain from group success!"
+                        );
+                        this.getDomainInfo();
+                        this.initialApis();
+                        this.closeEditDialog();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.closeEditDialog();
 
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         getDomainInfo() {
             // this.domainInfo = this.filterData[0];
             this.$store.dispatch("global/startLoading");
@@ -461,6 +503,7 @@ export default {
                 this.dialog.editCDN = false;
                 this.dialog.changeDefault = false;
                 this.dialog.delete = false;
+                this.dialog.remove = false;
                 this.cdn = {
                     cdn_provider: {
                         name: ""
