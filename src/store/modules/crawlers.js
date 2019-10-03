@@ -17,14 +17,24 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getLastTimeScanData: (context, data) => {
+        // getLastTimeScanData: (context, data) => {
+        //     return axios
+        //         .get(
+        //             "yuanyang/scan-platform/" +
+        //                 data.scan_platform +
+        //                 "/scanned-data?cdn_provider_id=" +
+        //                 data.cdn_provider_id
+        //         )
+        //         .then(function(response) {
+        //             return Promise.resolve(response.data);
+        //         })
+        //         .catch(function(error) {
+        //             return Promise.reject(error.response.data);
+        //         });
+        // },
+        getLastTimeScanData: context => {
             return axios
-                .get(
-                    "yuanyang/scan-platform/" +
-                        data.scan_platform +
-                        "/scanned-data?cdn_provider_id=" +
-                        data.cdn_provider_id
-                )
+                .get("yuanyang/scan-platform/scanned-data")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -38,7 +48,10 @@ export default {
                     "yuanyang/scan-platform/" +
                         data.scan_platform +
                         "/scanned-data",
-                    { cdn_provider_id: data.cdn_provider_id }
+                    {
+                        cdn_provider_id: data.cdn_provider_id,
+                        scanned_at: data.scanned_at
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
