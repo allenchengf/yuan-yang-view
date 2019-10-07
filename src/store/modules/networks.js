@@ -28,6 +28,31 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        newNetwork: (context, data) => {
+            return axios
+                .post("yuanyang/networks", { name: data.name })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        changeLineStatus: (context, data) => {
+            return axios
+                .patch(
+                    "yuanyang/lines/" + data.location_network.id + "/status",
+                    {
+                        status: data.status
+                    }
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         newLine: (context, data) => {
             return axios
                 .post("yuanyang/lines", data)

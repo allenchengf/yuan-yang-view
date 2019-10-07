@@ -121,6 +121,7 @@ export default {
     methods: {
         pickFile() {
             this.$refs.file.click();
+            this.$refs.file.value = "";
         },
         handleFileUpload() {
             var vm = this;

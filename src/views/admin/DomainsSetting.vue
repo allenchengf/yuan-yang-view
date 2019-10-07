@@ -225,11 +225,11 @@ export default {
         },
         pickFile() {
             this.$refs.file.click();
-            // console.log(this.batchData);
-            // console.log("cchh");
+            this.$refs.file.value = "";
         },
         handleFileUpload() {
-            // console.log(this.$refs.file, "newfile");
+            // console.log(this.$refs.file.value.toLowerCase(), "newfile");
+
             var vm = this;
             var fileUpload = this.$refs.file;
             var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
