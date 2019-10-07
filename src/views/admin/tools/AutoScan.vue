@@ -278,10 +278,12 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change all CDN provider success!"
                         );
+                        this.closeEditDialog();
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
+                        this.closeEditDialog();
                         this.$store.dispatch("global/finishLoading");
                         this.$store.dispatch(
                             "global/showSnackbarError",
