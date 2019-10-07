@@ -1,21 +1,31 @@
 <template lang="pug">
-    v-container#networks
+    v-container#networks.grid-list-lg
         v-layout(wrap column)
             v-flex(xs12)
-                .title.text-xs-left.mb-4 Networks
+                .title Networks
+            //- v-flex(xs12)
+            //-     v-tabs(v-model="currentTab" slider-color="primary" left)
+            //-         v-tab( v-for="tab in tabs" :key="tab.id" ) {{tab.name}}
             v-flex(xs12)
-                v-tabs(v-model="currentTab" slider-color="primary" left)
-                    v-tab( v-for="tab in tabs" :key="tab.id" ) {{tab.name}}
-
                 v-card
                     v-card-title
-                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search="searchText" :per-page="10")
+                        .subheading Networks
+                        v-spacer
+                        v-btn.my-0(color="primary" @click="addItem") Add
+                    v-divider                    
+                    v-card-text
+                        v-layout(wrap)
+                            v-flex(xs12 sm6 md4)
+                                v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10")
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td.text-xs-left {{ index}}
                                 td.text-xs-left {{ props.item.name }}
                                 td.text-xs-left {{ props.item.location_text }}
                                 td.text-xs-left {{ props.item.crawler_mapping_value }}
+                                td
+                                    v-switch(color="primary" v-model="props.item.status" @change="changeStatus(props.item)" hide-details)
                                 td.text-xs-left
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item)" title="edit")
                                         v-icon(small) edit
@@ -23,6 +33,28 @@
                                         v-icon(small) delete
 
         //- Dialogs
+        v-dialog.edit-dialog(v-model="dialog.alert" max-width="460" persistent)
+            v-card
+                v-card-title.title Change Region Status
+                v-card-text You can't change this network's status because you should setting it's region first.
+                v-card-actions  
+                    v-spacer
+                    v-btn(color="primary" flat="flat" @click="closeAlert") OK
+        v-dialog.edit-dialog(v-model="dialog.add" max-width="460" persistent)
+            v-card
+                v-card-title.title Add Network
+                v-card-text
+                    v-form(ref="addForm")
+                        v-text-field(v-model="editedLoaction.name" label="Name" type="text" name="name" :rules="[rules.required]")
+                        v-select(v-model="editedLoaction.continent_id" label="Continent" :items="continents" item-text="name" item-value="id" :rules="[rules.required]")
+                        v-select(v-model="editedLoaction.country_id" label="Country" :items="countries" item-text="name" item-value="id" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.location" label="Location" type="text" name="location" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.isp" label="ISP" type="text" name="isp" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.mapping_value" label="Mapping Value" type="text" name="mapping_value" )
+                v-card-actions  
+                    v-spacer
+                    v-btn(color="grey" flat="flat" @click="dialog.add = false") Cancel
+                    v-btn(color="primary" flat="flat" @click="newNetwork") Save
         v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
             v-card
                 v-card-title.title Edit Network: {{ editedNetwork.name }}
@@ -30,7 +62,7 @@
                     v-form(ref="editForm")
                         v-select(v-model="editedLoaction.continent_id" label="Continent" :items="continents" item-text="name" item-value="id" :rules="[rules.required]")
                         v-select(v-model="editedLoaction.country_id" label="Country" :items="countries" item-text="name" item-value="id" :rules="[rules.required]")
-                        v-text-field(v-model="editedLoaction.location" label="Location" type="text" name="location" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.location" label="Region" type="text" name="region" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.isp" label="ISP" type="text" name="isp" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.mapping_value" label="Mapping Value" type="text" name="mapping_value" )
                 v-card-actions  
@@ -56,6 +88,7 @@ export default {
     mixins: [textFieldRules],
     data() {
         return {
+            lineInfo: {},
             tabs: [],
             currentTab: null,
             loading: false,
@@ -103,6 +136,16 @@ export default {
                     value: "crawler_mapping_value"
                 },
                 {
+                    key: "usable",
+                    text: "Usable",
+                    align: "left",
+                    sortable: true,
+                    auth: 0,
+                    control: true,
+                    searchable: false,
+                    value: "status"
+                },
+                {
                     key: "action",
                     text: "Action",
                     align: "left",
@@ -121,6 +164,8 @@ export default {
             continents: [],
             countries: [],
             dialog: {
+                alert: false,
+                add: false,
                 edit: false,
                 delete: false
             }
@@ -128,54 +173,19 @@ export default {
     },
     methods: {
         getNetworks: function() {
-            var id = this.tabs[this.currentTab].id;
-            // this.$store.dispatch("global/startLoading");
-            // this.$store
-            //     .dispatch("networks/getAllNetworks")
-            //     .then(
-            //         function(result) {
-            //             console.log(result.data);
-            //             result.data.forEach(item => {
-            //                 item.location_text =
-            //                     item.location_network != null
-            //                         ? item.location_network.continent.name +
-            //                           " / " +
-            //                           item.location_network.country.name +
-            //                           " / " +
-            //                           item.location_network.location +
-            //                           " / " +
-            //                           item.location_network.isp
-            //                         : "Not Set";
-            //                 item.crawler_mapping_value =
-            //                     item.location_network != null
-            //                         ? item.location_network.mapping_value
-            //                         : "";
-            //             });
-            //             this.items = result.data;
-            //             console.log(this.items);
-            //             this.$store.dispatch("global/finishLoading");
-            //         }.bind(this)
-            //     )
-            //     .catch(
-            //         function(error) {
-            //             this.$store.dispatch("global/finishLoading");
-            //             this.$store.dispatch(
-            //                 "global/showSnackbarError",
-            //                 error.message
-            //             );
-            //         }.bind(this)
-            //     );
+            // var id = this.tabs[this.currentTab].id;
+            this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("networks/getNetworks", id)
+                .dispatch("networks/getAllNetworks")
                 .then(
                     function(result) {
                         // console.log(result.data);
                         result.data.forEach(item => {
                             item.location_text =
                                 item.location_network != null
-                                    ? item.location_network.continent_name +
+                                    ? item.location_network.continent.name +
                                       " / " +
-                                      item.location_network.country_name +
+                                      item.location_network.country.name +
                                       " / " +
                                       item.location_network.location +
                                       " / " +
@@ -185,6 +195,11 @@ export default {
                                 item.location_network != null
                                     ? item.location_network.mapping_value
                                     : "";
+                            if (item.location_network != null) {
+                                item.status = item.location_network.status;
+                            } else {
+                                item.status = false;
+                            }
                         });
                         this.items = result.data;
                         // console.log(this.items);
@@ -200,6 +215,41 @@ export default {
                         );
                     }.bind(this)
                 );
+            // this.$store
+            //     .dispatch("networks/getNetworks", id)
+            //     .then(
+            //         function(result) {
+            //             // console.log(result.data);
+            //             result.data.forEach(item => {
+            //                 item.location_text =
+            //                     item.location_network != null
+            //                         ? item.location_network.continent_name +
+            //                           " / " +
+            //                           item.location_network.country_name +
+            //                           " / " +
+            //                           item.location_network.location +
+            //                           " / " +
+            //                           item.location_network.isp
+            //                         : "Not Set";
+            //                 item.crawler_mapping_value =
+            //                     item.location_network != null
+            //                         ? item.location_network.mapping_value
+            //                         : "";
+            //             });
+            //             this.items = result.data;
+            //             // console.log(this.items);
+            //             this.$store.dispatch("global/finishLoading");
+            //         }.bind(this)
+            //     )
+            //     .catch(
+            //         function(error) {
+            //             this.$store.dispatch("global/finishLoading");
+            //             this.$store.dispatch(
+            //                 "global/showSnackbarError",
+            //                 error.message
+            //             );
+            //         }.bind(this)
+            //     );
         },
         getSchemes: function() {
             this.$store.dispatch("global/startLoading");
@@ -256,7 +306,72 @@ export default {
                     }.bind(this)
                 );
         },
-
+        changeStatus(item) {
+            this.lineInfo = Object.assign({}, item);
+            // console.log(item);
+            if (item.location_network == null) {
+                this.dialog.alert = true;
+            } else {
+                // console.log(item, "changeStatus");
+                this.$store
+                    .dispatch("networks/changeLineStatus", item)
+                    .then(
+                        function(result) {
+                            this.getNetworks();
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Change network status success!"
+                            );
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            }
+        },
+        closeAlert() {
+            this.dialog.alert = false;
+            this.items.forEach((o, i) => {
+                if (o.id == this.lineInfo.id) {
+                    o.status = false;
+                }
+            });
+        },
+        addItem() {
+            this.dialog.add = true;
+            this.$refs.editForm.reset();
+            this.$refs.addForm.reset();
+        },
+        newNetwork() {
+            if (this.$refs.addForm.validate()) {
+                // console.log(this.editedLoaction);
+                this.$store
+                    .dispatch("networks/newNetwork", this.editedLoaction)
+                    .then(
+                        function(result) {
+                            // this.getNetworks();
+                            this.editedIndex = -1;
+                            this.editedLoaction.network_id = result.data.id;
+                            this.updateLine();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            }
+        },
         editItem: function(item) {
             // this.$refs.editForm.reset();
             this.editedNetwork = Object.assign({}, item);
@@ -269,7 +384,7 @@ export default {
             };
 
             if (item.location_network != null) {
-                // console.log(item.location_network);
+                // console.log(item, item.location_network);
                 this.editedIndex = item.location_network.id;
                 this.editedLoaction = this.editedNetwork.location_network;
             } else {
@@ -288,11 +403,13 @@ export default {
         updateLine: function() {
             this.$store.dispatch("global/startLoading");
             if (this.editedIndex == -1) {
+                // console.log(this.editedLoaction, "this.editedIndex == -1");
                 this.$store
                     .dispatch("networks/newLine", this.editedLoaction)
                     .then(
                         function(result) {
                             this.getNetworks();
+                            this.$refs.addForm.reset();
                         }.bind(this)
                     )
                     .catch(
@@ -323,6 +440,7 @@ export default {
                     );
             }
             this.dialog.edit = false;
+            this.dialog.add = false;
         },
         deleteLine: function() {
             this.$store
@@ -350,6 +468,7 @@ export default {
         }
     },
     created() {
+        this.getNetworks();
         this.getSchemes();
         this.getCountries();
         this.getContinents();
@@ -358,4 +477,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+td {
+    text-transform: capitalize;
+}
 </style>
