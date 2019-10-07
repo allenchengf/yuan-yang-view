@@ -239,6 +239,7 @@ export default {
         },
         pickFile() {
             this.$refs.file.click();
+            this.$refs.file.value = "";
         },
         handleFileUpload() {
             // console.log(this.$refs.file, "newfile");
