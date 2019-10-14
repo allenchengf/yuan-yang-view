@@ -17,7 +17,7 @@
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10")
+                    h7-data-table(:headers="headers" :items="items" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" )
                         template(slot="items" slot-scope="{props, index}")
                             tr
                                 td.text-xs-left {{ index}}
@@ -35,7 +35,7 @@
         //- Dialogs
         v-dialog.edit-dialog(v-model="dialog.alert" max-width="460" persistent)
             v-card
-                v-card-title.title Change Region Status
+                v-card-title.title Cant't Change Region Status
                 v-card-text You can't change this network's status because you should setting it's region first.
                 v-card-actions  
                     v-spacer
@@ -48,7 +48,7 @@
                         v-text-field(v-model="editedLoaction.name" label="Name" type="text" name="name" :rules="[rules.required]")
                         v-select(v-model="editedLoaction.continent_id" label="Continent" :items="continents" item-text="name" item-value="id" :rules="[rules.required]")
                         v-select(v-model="editedLoaction.country_id" label="Country" :items="countries" item-text="name" item-value="id" :rules="[rules.required]")
-                        v-text-field(v-model="editedLoaction.location" label="Location" type="text" name="location" :rules="[rules.required]")
+                        v-text-field(v-model="editedLoaction.location" label="Region" type="text" name="region" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.isp" label="ISP" type="text" name="isp" :rules="[rules.required]")
                         v-text-field(v-model="editedLoaction.mapping_value" label="Mapping Value" type="text" name="mapping_value" )
                 v-card-actions  
@@ -88,6 +88,7 @@ export default {
     mixins: [textFieldRules],
     data() {
         return {
+            perPage: 25,
             lineInfo: {},
             tabs: [],
             currentTab: null,
@@ -171,7 +172,22 @@ export default {
             }
         };
     },
+    watch: {
+        perPage: function() {
+            console.log(this.perPage);
+        }
+    },
     methods: {
+        parentMethod(data) {
+            // console.log("ccc");
+            // console.log(data);
+            if (data > 25) {
+                this.perPage = "All";
+            } else {
+                this.perPage = data;
+            }
+            console.log(this.perPage);
+        },
         getNetworks: function() {
             // var id = this.tabs[this.currentTab].id;
             this.$store.dispatch("global/startLoading");
