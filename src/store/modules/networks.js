@@ -3,16 +3,49 @@ import axios from "axios";
 
 export default {
     namespaced: true,
-    state: {
-
-    },
+    state: {},
     getters: {},
-    mutations: {
-    },
+    mutations: {},
     actions: {
+        getAllNetworks: context => {
+            return axios
+                .get("yuanyang/networks")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         getNetworks: (context, id) => {
             var url = "yuanyang/schemes/" + id + "/networks";
-            return axios.get(url)
+            return axios
+                .get(url)
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        newNetwork: (context, data) => {
+            return axios
+                .post("yuanyang/networks", { name: data.name })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        changeLineStatus: (context, data) => {
+            return axios
+                .patch(
+                    "yuanyang/lines/" + data.location_network.id + "/status",
+                    {
+                        status: data.status
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -21,7 +54,8 @@ export default {
                 });
         },
         newLine: (context, data) => {
-            return axios.post("yuanyang/lines", data)
+            return axios
+                .post("yuanyang/lines", data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -30,7 +64,8 @@ export default {
                 });
         },
         updateLine: (context, data) => {
-            return axios.put("yuanyang/lines/" + data.id, data )
+            return axios
+                .put("yuanyang/lines/" + data.id, data)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -39,7 +74,8 @@ export default {
                 });
         },
         deleteLine: (context, data) => {
-            return axios.delete("yuanyang/lines/" + data.id )
+            return axios
+                .delete("yuanyang/lines/" + data.id)
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -47,8 +83,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getSchemes: (context) => {
-            return axios.get("yuanyang/schemes")
+        getSchemes: context => {
+            return axios
+                .get("yuanyang/schemes")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -56,8 +93,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getContinents: (context) => {
-            return axios.get("yuanyang/continents")
+        getContinents: context => {
+            return axios
+                .get("yuanyang/continents")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -65,8 +103,9 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getCountries: (context) => {
-            return axios.get("yuanyang/countries")
+        getCountries: context => {
+            return axios
+                .get("yuanyang/countries")
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

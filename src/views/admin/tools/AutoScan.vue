@@ -11,7 +11,7 @@
                         .xs4.sm2.md2
                             v-select(:items="crawlerGroup" v-model="selectedCrawler" label="Select crawler" item-text="name" item-value="id")
                         v-btn.my-0(color="primary" @click="startScan") Scan
-                        v-btn.my-0(color="primary" @click="changeAll") Change
+                        v-btn.my-0(color="primary" @click="changeBtn") Change
                     v-divider
                     v-card-text
                         v-layout(wrap)
@@ -26,11 +26,23 @@
                                 td {{ props.item.continent.name }} / {{props.item.country.name}} / {{props.item.location}} / {{props.item.isp}}
                                 td(v-for="item in props.item.scanned")
                                     span(:style="item.min == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.latency}}
+                v-dialog.change-dialog(v-model="dialog.change" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Change All Domains' CDN Provider 
+                        v-card-text Are you sure want to change all domains' CDN provider to the best one of following scan result?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                            v-btn(color="primary" flat="flat" @click="changeAll") Yes
 </template>
 <script>
 export default {
     data() {
         return {
+            dialog: {
+                change: false
+            },
+            startScanDate: "",
             scannedDate: "2019-09-24 16:58:47",
             searchText: "",
             selectedCrawler: "",
@@ -40,50 +52,7 @@ export default {
             scanData: [],
             tableSettings: {},
             filteredItem: [],
-            filteredItems: [
-                // {
-                //     continent: {
-                //         name: "American"
-                //     },
-                //     country: {
-                //         name: "NY"
-                //     },
-                //     location: "DD",
-                //     isp: "CT",
-                //     scanned: [
-                //         { name: "Cloudfront", latency: 146 },
-                //         {
-                //             name: "Cloudflare",
-                //             latency: 249
-                //         },
-                //         {
-                //             name: "Hiero7",
-                //             latency: 99
-                //         }
-                //     ]
-                // },
-                // {
-                //     continent: {
-                //         name: "Asia"
-                //     },
-                //     country: {
-                //         name: "China"
-                //     },
-                //     location: "CC",
-                //     isp: "CM",
-                //     scanned: [
-                //         { name: "Cloudfront", latency: 126 },
-                //         {
-                //             name: "Cloudflare",
-                //             latency: 289
-                //         },
-                //         {
-                //             name: "Hiero7",
-                //             latency: 90
-                //         }
-                //     ]
-                // }
-            ],
+            filteredItems: [],
             filterHeaders: [],
             regionMapping: {},
             headers: [
@@ -195,7 +164,8 @@ export default {
 
         startScan() {
             this.$store.dispatch("global/startLoading");
-
+            this.startScanDate = Math.floor(Date.now() / 1000);
+            // console.log(this.startScanDate);
             this.getScanData();
         },
         getScanData() {
@@ -204,6 +174,7 @@ export default {
             this.cdnProviderList.forEach((o, i) => {
                 o.scan_platform = this.selectedCrawler;
                 o.cdn_provider_id = o.id;
+                o.scanned_at = this.startScanDate;
                 this.$store
                     .dispatch("crawlers/getScanData", o)
                     .then(
@@ -228,7 +199,6 @@ export default {
         transformData() {
             this.filteredItem = [];
             this.filteredItems = [];
-            // console.log(this.scanData, "scanData");
             this.scannedDate = this.scanData[0].scannedAt;
 
             this.scanData.forEach((o, i) => {
@@ -258,7 +228,6 @@ export default {
                     );
                 });
             });
-            // console.log(this.regionMapping, "regionMapping");
 
             this.scanData[0].scanned.forEach((o, i) => {
                 this.filteredItem.push(o.location_networks);
@@ -266,8 +235,6 @@ export default {
             this.filteredItem.forEach((o, i) => {
                 o.scanned = this.regionMapping[o.id];
             });
-
-            // console.log(this.filteredItem, "filteredItem");
             this.filteredItems = this.filteredItem;
             this.headerSetting();
             this.$store.dispatch("global/finishLoading");
@@ -296,7 +263,9 @@ export default {
                     }
                 });
             });
-            // console.log(this.filteredItems, "deal");
+        },
+        changeBtn() {
+            this.dialog.change = true;
         },
         changeAll() {
             this.$store.dispatch("global/startLoading");
@@ -304,12 +273,35 @@ export default {
                 .dispatch("crawlers/changeAllCdnProvider")
                 .then(
                     function(result) {
-                        // console.log(result.data, "data...change");
                         this.$store.dispatch("global/finishLoading");
                         this.$store.dispatch(
                             "global/showSnackbarSuccess",
                             "Change all CDN provider success!"
                         );
+                        this.closeEditDialog();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.closeEditDialog();
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        closeEditDialog() {
+            this.dialog.change = false;
+        },
+        getLastScanData() {
+            this.$store
+                .dispatch("crawlers/getLastTimeScanData")
+                .then(
+                    function(result) {
+                        this.scanData = result.data.scanneds;
+                        this.transformData();
                     }.bind(this)
                 )
                 .catch(
@@ -321,34 +313,6 @@ export default {
                         );
                     }.bind(this)
                 );
-        },
-        getLastScanData() {
-            this.cdnProviderList.forEach((o, i) => {
-                o.scan_platform = this.selectedCrawler;
-                o.cdn_provider_id = o.id;
-            });
-            // console.log(this.cdnProviderList, "getLasttime");
-            this.cdnProviderList.forEach((o, i) => {
-                this.$store
-                    .dispatch("crawlers/getLastTimeScanData", o)
-                    .then(
-                        function(result) {
-                            this.scanData.push(result.data);
-                            // console.log(result.data, "data...");
-
-                            this.transformData();
-                        }.bind(this)
-                    )
-                    .catch(
-                        function(error) {
-                            this.$store.dispatch("global/finishLoading");
-                            // this.$store.dispatch(
-                            //     "global/showSnackbarError",
-                            //     error.message
-                            // );
-                        }.bind(this)
-                    );
-            });
         }
     },
     mounted() {
