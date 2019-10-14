@@ -239,6 +239,7 @@ export default {
         },
         pickFile() {
             this.$refs.file.click();
+            this.$refs.file.value = "";
         },
         handleFileUpload() {
             // console.log(this.$refs.file, "newfile");
@@ -458,12 +459,14 @@ export default {
                 o.cdnArray.sort();
             });
             //從孤兒domainList篩掉不同cdn的domain
+            this.domainList = [];
             this.allDomainsData.forEach((o, i) => {
                 if (o.cdnArray.join(", ") === this.cdnArray.join(", ")) {
                     this.domainList.push(o);
                 }
             });
             //篩掉已經被新增在group裡的domain
+
             this.domainList.forEach((o, i) => {
                 this.filterData.forEach((obj, idx) => {
                     if (o.name == obj.name) {
@@ -632,7 +635,8 @@ export default {
                 this.dialog.changeDefault = false;
                 this.dialog.delete = false;
             }
-            this.domainList = [];
+            // this.domainList = [];
+            // this.mapping();
         }
     },
     mounted() {

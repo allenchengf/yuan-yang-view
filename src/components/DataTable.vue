@@ -1,6 +1,6 @@
 <template lang="pug">
     #datatable
-        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination"  hide-actions)
+        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination" hide-actions)
             template(slot="items" slot-scope="props")
                 slot(name="items" :props="props" :index="rowIndex(props.index)")
 
@@ -9,7 +9,7 @@
                 v-flex.text-xs-left
                     v-layout(row align-center)
                         small Rows per page:
-                        v-select.px-3.py-3(:items="page" v-model="perPage" hide-details)
+                        v-select.px-3.py-3(:items="page" v-model="rowsPerPage" hide-details)
                 //- v-flex.text-xs-left.py-3(xs4)
                 //-     slot(name="actions-left")
                 v-flex.text-xs-right.py-3(xs8)
@@ -34,7 +34,7 @@ export default {
             default: ""
         },
         perPage: {
-            type: Number,
+            type: Number | String,
             default: 20
         },
         sortBy: {
@@ -43,6 +43,7 @@ export default {
     },
     data() {
         return {
+            rowsPerPage: 0,
             page: [5, 10, 25, "All"],
             pagination: {
                 rowsPerPage: this.perPage,
@@ -61,7 +62,10 @@ export default {
             );
         },
         setPages: function() {
-            if (this.perPage == null || this.pagination.totalItems == null) {
+            if (
+                this.rowsPerPage == null ||
+                this.pagination.totalItems == null
+            ) {
                 this.pages = null;
             } else {
                 var length =
@@ -74,11 +78,16 @@ export default {
     },
     watch: {
         pagination: function(value) {
+            // console.log(value, "watchPagination");
             this.setPages();
         },
-        perPage: function(value) {
+        rowsPerPage: function(value) {
+            this.pagination.page = 1;
+
             if (this.items.length !== 0) {
                 if (value == "All") {
+                    this.rowsPerPage = value;
+                    this.pagination.page = 1;
                     this.pagination.rowsPerPage = this.items.length;
                 } else {
                     this.pagination.rowsPerPage = value;
@@ -86,7 +95,10 @@ export default {
                 this.setPages();
             } else {
                 this.pages = 1;
+                this.pagination.page = 1;
             }
+            // console.log(this.rowsPerPage);
+            // this.$emit("childMethod", this.rowsPerPage);
         },
         items: function(value) {
             this.setPages();
@@ -94,6 +106,7 @@ export default {
     },
     mounted() {
         this.setPages();
+        this.rowsPerPage = this.perPage;
     }
 };
 </script>
