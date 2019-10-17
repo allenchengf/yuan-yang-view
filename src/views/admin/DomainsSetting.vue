@@ -10,6 +10,7 @@
                         v-spacer
                         v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
+                        v-btn(color="error" dark @click="batchDelete") Batch Delete Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
                                 v-btn.ma-0(flat icon small color="primary" v-on="on")
@@ -29,9 +30,11 @@
                                 v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
-                    h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
-                            tr
+                            tr 
+                                td
+                                    v-checkbox(v-model="props.selected" primary hide-details)
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
@@ -44,6 +47,21 @@
                                         v-icon(small) edit
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                         v-icon(small) delete
+                    //- h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    //-     template(slot="items" slot-scope="{props, index}")
+                    //-         tr
+                    //-             td {{ index }}
+                    //-             td {{ props.item.name }}
+                    //-             td {{ props.item.cname }}.{{dnsPodDomain}}
+                    //-             td
+                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
+                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
+                    //-             td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
+                    //-             td
+                    //-                 v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
+                    //-                     v-icon(small) edit
+                    //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
+                    //-                     v-icon(small) delete
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
@@ -65,6 +83,23 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="updateDomain('delete')") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Batch Delete Domain
+                        v-card-text Are you sure want to delete 
+                            span(v-for="item in selectedArray") "{{item.name}}"
+                            span ?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
+                    v-card 
+                        v-card-title.title Batch delete domain
+                        v-card-text Please at least choose one domain to batch delete.
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -77,6 +112,8 @@ export default {
 
     data() {
         return {
+            // selected: [],
+            selectedArray: [],
             cdnArray: [],
             groupArray: [],
             selectedCDN: [],
@@ -89,7 +126,9 @@ export default {
             dialog: {
                 edit: false,
                 changeStatus: false,
-                delete: false
+                delete: false,
+                batchDelete: false,
+                alert: false
             },
             dnsPodDomain: "shiftcdn.com",
             form: [],
@@ -149,7 +188,56 @@ export default {
             return this.editedIndex === -1 ? "New Domain" : "Edit Domain";
         }
     },
+    watch: {
+        // selected: function() {
+        //     console.log(this.selected);
+        // }
+    },
     methods: {
+        parentMethod(data) {
+            // console.log("ccc");
+            // console.log(data);
+            this.selectedArray = data;
+        },
+        batchDelete() {
+            // console.log(this.selectedArray);
+            if (this.selectedArray.length == 0) {
+                this.dialog.alert = true;
+            } else {
+                this.dialog.batchDelete = true;
+            }
+        },
+        batchDeleteAction() {
+            this.$store.dispatch("global/startLoading");
+
+            this.selectedArray.forEach((o, i) => {
+                this.$store
+                    .dispatch("domains/deleteDomain", o.id)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Delete domain success!"
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+            });
+            var vm = this;
+            setTimeout(function() {
+                vm.initialApis();
+            }, 5000);
+            this.closeEditDialog();
+        },
         chooseCdnFilter() {
             // console.log(this.selectedCDN.length);
             this.selectedCDN.sort();
@@ -553,6 +641,11 @@ export default {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
             this.dialog.delete = false;
+            this.dialog.batchDelete = false;
+            this.selectedArray = [];
+        },
+        closeAlertDialog() {
+            this.dialog.alert = false;
         },
         clearBtn() {
             this.selectedCDN = [];

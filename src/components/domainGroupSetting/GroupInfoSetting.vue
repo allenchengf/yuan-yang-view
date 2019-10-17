@@ -54,6 +54,7 @@
                     .subheading Domain List
                     v-spacer
                     v-btn.my-0(color="primary" @click="addItem") Add Domain
+                    v-btn.my-0(color="error" @click="deleteAction") Batch Delete Domain
                     v-menu(offset-y left) 
                         template(v-slot:activator="{on}")
                             v-btn.ma-0(flat icon small color="primary" v-on="on")
@@ -69,29 +70,44 @@
                     v-layout(wrap)
                         v-flex(xs12 sm6 md4)
                             v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
+                h7-selectable-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="deleteMethod")
                     template(slot="items" slot-scope="{props, index}")
-                        tr
+                        tr 
+                            td
+                                v-checkbox(v-model="props.selected" primary hide-details)
                             td {{index}}
                             td {{props.item.name}}
                             td {{cdnArray.join(', ')}}
                             td
                                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                             v-icon(small) delete
+                //- h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line )
+                //-     template(slot="items" slot-scope="{props, index}")
+                //-         tr
+                //-             td {{index}}
+                //-             td {{props.item.name}}
+                //-             td {{cdnArray.join(', ')}}
+                //-             td
+                //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
+                //-                             v-icon(small) delete
 
             v-dialog.edit-dialog(v-model="dialog.editDomain" max-width="460" persistent)
                 v-card
                     v-card-title.title Add Domain to {{groupInfo.name}}
                     v-card-text
-                        v-form(ref="editForm")
-                            //- v-select(:items="domainList" label="Domain Name" item-text="name" item-value="id" @change="chooseDomain(domainInfo.domainId)" v-model="domainInfo.domainId")
-                            //- v-select(v-model="selectedDomains" :items="domainList" label="Domain Name" item-text="name" item-value="id" multiple @change="chooseDomainList(selectedDomains)")
-                        v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
-                            template(v-slot:items="props")
-                                td 
-                                    v-checkbox(v-model="props.selected" primary hide-details)
-                                td {{props.index + 1}}
-                                td {{props.item.name}}
+                        h7-selectable-data-table(:headers="domainListHeaders" :items="domainList" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                            template(slot="items" slot-scope="{props, index}")
+                                tr 
+                                    td
+                                        v-checkbox(v-model="props.selected" primary hide-details)
+                                    td {{props.index + 1}}
+                                    td {{props.item.name}}
+                        //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
+                        //-     template(v-slot:items="props")
+                        //-         td 
+                        //-             v-checkbox(v-model="props.selected" primary hide-details)
+                        //-         td {{props.index + 1}}
+                        //-         td {{props.item.name}}
                                 //- td {{props.item.cdnArray.join()}}
 
                     v-card-actions  
@@ -106,6 +122,23 @@
                         v-spacer
                         v-btn(color="error" flat="flat" @click="updateDomain('deleteDomain')") Delete
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+            v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Batch Delete Domain from {{groupInfo.name}}
+                        v-card-text Are you sure want to delete 
+                            span(v-for="item in selectedDomains") "{{item.name}}"
+                            span ?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+            v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
+                    v-card 
+                        v-card-title.title Batch delete domain from this group
+                        v-card-text Please at least choose one domain to batch delete.
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
 
 </template>
 <script>
@@ -131,25 +164,26 @@ export default {
             domainListHeaders: [
                 {
                     text: "#",
-                    align: "left",
+                    align: "center",
                     sortable: false,
                     width: "80px",
                     value: "index"
                 },
                 {
                     text: "Domain Name",
-                    align: "left",
+                    align: "center",
                     sortable: true,
                     value: "name"
                 }
                 // {
                 //     text: "CDNs",
-                //     align: "left",
+                //     align: "center",
                 //     sortable: false,
                 //     value: "cdnArray"
                 // }
             ],
-            selected: [],
+            // selected: [],
+            selectedArray: [],
             selectedDomains: [],
             items: [
                 {
@@ -172,26 +206,26 @@ export default {
             headers: [
                 {
                     text: "#",
-                    align: "left",
+                    align: "center",
                     sortable: false,
                     width: "80px",
                     value: "index"
                 },
                 {
                     text: "Domain Name",
-                    align: "left",
+                    align: "center",
                     sortable: true,
                     value: "name"
                 },
                 {
                     text: "CDNs",
-                    align: "left",
+                    align: "center",
                     sortable: false,
                     value: "cdnArray"
                 },
                 {
                     text: "Actions",
-                    align: "left",
+                    align: "center",
                     sortable: false,
                     width: "150px"
                 }
@@ -206,7 +240,9 @@ export default {
                 edit: false,
                 editDomain: false,
                 changeDefault: false,
-                delete: false
+                delete: false,
+                batchDelete: false,
+                alert: false
             },
             selectedCdnProvider: {},
             cdnProvider: [],
@@ -226,6 +262,54 @@ export default {
     methods: {
         chooseDomainList(val) {
             // console.log(val);
+        },
+        parentMethod(data) {
+            this.selectedArray = data;
+            // console.log(this.selectedArray);
+        },
+        deleteMethod(data) {
+            // console.log(data);
+            this.selectedDomains = data;
+        },
+        deleteAction() {
+            if (this.selectedDomains.length == 0) {
+                this.dialog.alert = true;
+            } else {
+                this.dialog.batchDelete = true;
+            }
+            // console.log(this.selectedDomains);
+        },
+        batchDeleteAction() {
+            this.$store.dispatch("global/startLoading");
+            this.selectedDomains.forEach((o, i) => {
+                o.groupId = this.groupInfo.id;
+                this.$store
+                    .dispatch("grouping/deleteDomainFromGroup", o)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Delete domain from group success!"
+                            );
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            });
+
+            var vm = this;
+            setTimeout(function() {
+                vm.initialApis();
+            }, 5000);
+            this.closeEditDialog();
         },
         chooseCdnProvider(defaultCdnProvider) {
             this.defaultCdnProvider = defaultCdnProvider;
@@ -478,7 +562,7 @@ export default {
             // console.log(this.domainList, "domainList");
         },
         addItem: function() {
-            this.$refs.editForm.reset();
+            // this.$refs.editForm.reset();
             this.editedIndex = -1;
             this.dialog.editDomain = true;
             this.type = "NewDomain";
@@ -569,9 +653,8 @@ export default {
             }
         },
         addNewDomain() {
-            this.selectedDomains = this.selected;
             this.$store.dispatch("global/startLoading");
-            this.selectedDomains.forEach((o, i) => {
+            this.selectedArray.forEach((o, i) => {
                 this.domainInfo.domainId = o.id;
                 this.$store
                     .dispatch("grouping/newDomainByGroupId", this.domainInfo)
@@ -634,9 +717,13 @@ export default {
                 this.dialog.editDomain = false;
                 this.dialog.changeDefault = false;
                 this.dialog.delete = false;
+                this.dialog.batchDelete = false;
             }
             // this.domainList = [];
             // this.mapping();
+        },
+        closeAlertDialog() {
+            this.dialog.alert = false;
         }
     },
     mounted() {

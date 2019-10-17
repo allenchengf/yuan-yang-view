@@ -128,10 +128,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -154,10 +154,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -185,11 +185,12 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            // this.$store.dispatch("global/finishLoading");
-                            // this.$store.dispatch(
-                            //     "global/showSnackbarError",
-                            //     error.message
-                            // );
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            console.log(error.message);
                         }.bind(this)
                     );
             });
