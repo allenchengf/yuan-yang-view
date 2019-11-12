@@ -29,27 +29,40 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
                             v-flex(xs12 sm12 md12)
                                 v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
-                    v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'" hide-actions)
-                        template(v-slot:items="props" )
-                            td 
-                                v-checkbox(v-model="props.selected" primary hide-details)
-                            td {{props.item.index}}
-                            td(v-if="breadcrumbsItems[1].text === 'All'") {{props.item.name}}
-                            td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
-                            td {{props.item.isp}}
-                            td {{props.item.cdn.cdn_provider.name}}
-                                span
-                                    v-btn.ma-0(flat icon small color="primary" title="edit" @click="editItem(props.item)") 
-                                        v-icon(small) edit
-                    v-layout.px-4(row align-center)
-                        v-flex.text-xs-left
-                            v-layout(row align-center)
-                                small Rows per page:
-                                v-select.px-3.py-3(:items="page" v-model="perPage" hide-details)
-                        //- v-flex.text-xs-left.py-3(xs4)
-                        //-     slot(name="actions-left")
-                        v-flex.text-xs-right.py-3(xs8)
-                            v-pagination(v-model="currentPage" :length="pages" :total-visible="7")
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                        template(slot="items" slot-scope="{props, index}")
+                            tr 
+                                td
+                                    v-checkbox(v-model="props.selected" primary hide-details)
+                                td {{props.item.index}}
+                                td(v-if="breadcrumbsItems[1].text === 'All'") {{props.item.name}}
+                                td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
+                                td {{props.item.isp}}
+                                td {{props.item.cdn.cdn_provider.name}}
+                                    span
+                                        v-btn.ma-0(flat icon small color="primary" title="edit" @click="editItem(props.item)") 
+                                            v-icon(small) edit
+                    //- v-data-table.elevation-1(v-model="selected" :headers="headers" :items="filteredItems" select-all :search="searchText" :pagination.sync="pagination" :item-key="'index'" hide-actions)
+                    //-     template(v-slot:items="props" )
+                    //-         td 
+                    //-             v-checkbox(v-model="props.selected" primary hide-details)
+                    //-         td {{props.item.index}}
+                    //-         td(v-if="breadcrumbsItems[1].text === 'All'") {{props.item.name}}
+                    //-         td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
+                    //-         td {{props.item.isp}}
+                    //-         td {{props.item.cdn.cdn_provider.name}}
+                    //-             span
+                    //-                 v-btn.ma-0(flat icon small color="primary" title="edit" @click="editItem(props.item)") 
+                    //-                     v-icon(small) edit
+                    //- v-layout.px-4(row align-center)
+                    //-     v-flex.text-xs-left
+                    //-         v-layout(row align-center)
+                    //-             small Rows per page:
+                    //-             v-select.px-3.py-3(:items="page" v-model="perPage" hide-details)
+                    //-     //- v-flex.text-xs-left.py-3(xs4)
+                    //-     //-     slot(name="actions-left")
+                    //-     v-flex.text-xs-right.py-3(xs8)
+                    //-         v-pagination(v-model="currentPage" :length="pages" :total-visible="7")
                 //- Dialogs
                 v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
                     v-card 
@@ -277,6 +290,11 @@ export default {
         }
     },
     methods: {
+        parentMethod(data) {
+            console.log(data);
+            this.selected = data;
+            console.log(this.selected);
+        },
         filterAction() {
             if (this.continentFilter !== "All") {
                 this.filteredItems = this.filterData.filter(i => {
@@ -1064,6 +1082,7 @@ export default {
                 }, 5000);
             }
             this.selected = [];
+            this.parentMethod(this.selected);
             this.closeEditDialog();
             this.$store.dispatch("global/finishLoading");
         },
