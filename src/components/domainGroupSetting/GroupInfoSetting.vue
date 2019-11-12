@@ -91,11 +91,12 @@
                 //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                 //-                             v-icon(small) delete
 
-            v-dialog.edit-dialog(v-model="dialog.editDomain" max-width="460" persistent)
+            v-dialog.edit-dialog(v-model="dialog.editDomain" max-width="660" persistent)
                 v-card
                     v-card-title.title Add Domain to {{groupInfo.name}}
                     v-card-text
-                        h7-selectable-data-table(:headers="domainListHeaders" :items="domainList" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                        v-text-field(v-model="innerSearchText" append-icon="search" label="Search" single-line hide-details)
+                        h7-selectable-data-table(:headers="domainListHeaders" :items="domainList" :loading="$store.state.global.isLoading" :search-text="innerSearchText" :per-page="10" single-line @childMethod="parentMethod")
                             template(slot="items" slot-scope="{props, index}")
                                 tr 
                                     td
@@ -114,7 +115,7 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')") Save
-            v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
+            v-dialog.delete-dialog(v-model="dialog.delete" max-width="660" persistent)
                 v-card
                     v-card-title.title Delete Domain from {{groupInfo.name}}
                     v-card-text Are you sure want to delete "{{domainInfo.name}}" from {{groupInfo.name}} ?
@@ -122,7 +123,7 @@
                         v-spacer
                         v-btn(color="error" flat="flat" @click="updateDomain('deleteDomain')") Delete
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-            v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
+            v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="660" persistent)
                     v-card
                         v-card-title.title Batch Delete Domain from {{groupInfo.name}}
                         v-card-text Are you sure want to delete 
@@ -132,13 +133,26 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-            v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
-                    v-card 
-                        v-card-title.title Batch delete domain from this group
-                        v-card-text Please at least choose one domain to batch delete.
-                        v-card-actions  
-                            v-spacer
-                            v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
+            v-dialog.alert-dialog(v-model="dialog.alert" width= "660" persistent)
+                v-card 
+                    v-card-title.title Batch delete domain from this group
+                    v-card-text Please at least choose one domain to batch delete.
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
+            v-dialog.check-dialog(v-model="dialog.check" width= "660" persistent)
+                v-card 
+                    v-card-title.title Detail info of domains
+                    v-card-text 
+                        h7-data-table(:headers="infoHeaders" :items="detailInfo" :loading="$store.state.global.isLoading" :per-page="10" single-line)
+                            template(slot="items" slot-scope="{props, index}")
+                                td.text-xs-center {{index}}
+                                td.text-xs-center {{props.item.domain_name}}
+                                td.text-xs-center
+                                    span(style="color: green;font-weight:600" :style="props.item.status === 'Success' ? 'color:green;font-weight: 600' : 'color: red'") {{props.item.status}}
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
 
 </template>
 <script>
@@ -151,6 +165,29 @@ export default {
     mixins: [textFieldRules, timeUtils],
     data() {
         return {
+            infoHeaders: [
+                {
+                    text: "#",
+                    align: "center",
+                    sortable: false,
+                    width: "80px",
+                    value: "index"
+                },
+                {
+                    text: "Domain Name",
+                    align: "center",
+                    sortable: true,
+                    value: "name"
+                },
+                {
+                    text: "Status",
+                    align: "center",
+                    sortable: true,
+                    value: "status"
+                }
+            ],
+            info: [],
+            detailInfo: [],
             page: [5, 10, 25, "All"],
             pagination: {
                 rowsPerPage: 20
@@ -203,6 +240,7 @@ export default {
             ],
             groupId: "",
             searchText: "",
+            innerSearchText: "",
             headers: [
                 {
                     text: "#",
@@ -242,7 +280,8 @@ export default {
                 changeDefault: false,
                 delete: false,
                 batchDelete: false,
-                alert: false
+                alert: false,
+                check: false
             },
             selectedCdnProvider: {},
             cdnProvider: [],
@@ -280,6 +319,13 @@ export default {
             // console.log(this.selectedDomains);
         },
         batchDeleteAction() {
+            var domainName = [];
+            var selectObject = [];
+            selectObject = this.selectedDomains;
+            this.info = [];
+            this.detailInfo = [];
+            this.dialog.check = true;
+
             this.$store.dispatch("global/startLoading");
             this.selectedDomains.forEach((o, i) => {
                 o.groupId = this.groupInfo.id;
@@ -287,28 +333,39 @@ export default {
                     .dispatch("grouping/deleteDomainFromGroup", o)
                     .then(
                         function(result) {
-                            this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Delete domain from group success!"
-                            );
+                            var detail = {};
+                            detail.domain_name = result.data.name;
+                            detail.status = result.message;
+                            domainName.push(detail);
+                            this.info = domainName;
+                            if (this.dialog.check == true) {
+                                this.detailInfo = this.info;
+                            }
+
+                            var selectArrayLength = 0;
+                            selectArrayLength = selectObject.length;
+                            // console.log(selectArrayLength, this.info.length);
+                            if (selectArrayLength == this.info.length) {
+                                this.initialApis();
+                            }
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
+                            // console.log(error);
+                            var detail = {};
+                            detail.domain_name = error.data.name;
+                            detail.status = error.message;
+                            domainName.push(detail);
+
+                            this.info = domainName;
+                            if (this.dialog.check == true) {
+                                this.detailInfo = this.info;
+                            }
                             this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
                         }.bind(this)
                     );
             });
-
-            var vm = this;
-            setTimeout(function() {
-                vm.initialApis();
-            }, 5000);
             this.closeEditDialog();
         },
         chooseCdnProvider(defaultCdnProvider) {
@@ -653,6 +710,12 @@ export default {
             }
         },
         addNewDomain() {
+            var selectObject = [];
+            selectObject = this.selectedArray;
+            this.info = [];
+            this.detailInfo = [];
+            this.dialog.check = true;
+            var domainName = [];
             this.$store.dispatch("global/startLoading");
             this.selectedArray.forEach((o, i) => {
                 this.domainInfo.domainId = o.id;
@@ -660,12 +723,22 @@ export default {
                     .dispatch("grouping/newDomainByGroupId", this.domainInfo)
                     .then(
                         function(result) {
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Add domain to group success!"
-                            );
-                            this.initialApis();
-                            this.$store.dispatch("global/finishLoading");
+                            var detail = {};
+                            detail.domain_name = result.data.domain.name;
+                            detail.status = "Success";
+                            domainName.push(detail);
+                            this.info = domainName;
+                            if (this.dialog.check == true) {
+                                this.detailInfo = this.info;
+                            }
+
+                            var selectArrayLength = 0;
+                            selectArrayLength = selectObject.length;
+                            // console.log(selectArrayLength, this.info.length);
+                            if (selectArrayLength == this.info.length) {
+                                this.initialApis();
+                            }
+                            // this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
                     .catch(
@@ -678,7 +751,6 @@ export default {
                         }.bind(this)
                     );
             });
-            // this.initialApis();
             this.closeEditDialog();
         },
         deleteDomain() {
@@ -719,11 +791,14 @@ export default {
                 this.dialog.delete = false;
                 this.dialog.batchDelete = false;
             }
-            // this.domainList = [];
-            // this.mapping();
         },
         closeAlertDialog() {
             this.dialog.alert = false;
+        },
+        closeCheckDialog() {
+            this.$store.dispatch("global/finishLoading");
+            this.dialog.check = false;
+            this.initialApis();
         }
     },
     mounted() {
@@ -733,5 +808,6 @@ export default {
 };
 </script>
 <style lang="sass">
-
+.v-card
+    word-break: break-all
 </style>
