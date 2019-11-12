@@ -1,7 +1,7 @@
 <template lang="pug">
     #datatable
         v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination" hide-actions select-all v-model="selected")
-            template(v-slot:headers="props")
+            template(v-slot:items='props')
                 tr
                     th 
                         v-checkbox(:input-value="props.all" :indeterminate="props.indeterminate" primary hide-details @click.stop="toggleAll")
@@ -11,14 +11,12 @@
             template(slot="items" slot-scope="props")
                 slot(name="items" :props="props" :index="rowIndex(props.index)")
 
-        v-flex.px-2        
-            v-layout.px-2(row align-center)
+        v-flex.px-2
+            v-layout.px-1(row align-center)
                 v-flex.text-xs-left
                     v-layout(row align-center)
                         small Rows per page:
-                        v-select.px-3.py-3(:items="page" v-model="rowsPerPage" hide-details)
-                //- v-flex.text-xs-left.py-3(xs4)
-                //-     slot(name="actions-left")
+                        v-select.px-3.py-3(:items="page" v-model="rowsPerPage" hide-details )
                 v-flex.text-xs-right.py-3(xs8)
                     v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
 </template>
