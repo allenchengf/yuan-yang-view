@@ -15,6 +15,7 @@ import logs from "./modules/logs";
 import crawlers from "./modules/crawlers";
 import users from "./modules/users";
 import userGroup from "./modules/userGroup";
+import progress from "./modules/progress";
 
 Vue.use(Vuex);
 
@@ -33,6 +34,7 @@ export default new Vuex.Store({
         logs,
         crawlers,
         users,
-        userGroup
+        userGroup,
+        progress
     }
 });

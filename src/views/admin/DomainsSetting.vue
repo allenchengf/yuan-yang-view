@@ -30,6 +30,10 @@
                                 v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
+                    v-card-text(v-if="batchStatus")
+                        span Progress of Batch Add Domains 
+                        v-progress-linear(color="warning" height="20" :value="progress") {{progressData.done}} / {{progressData.all}}
+                    //- v-progress-circular(:rotate="-90" :size="100" :width="15" :value="progress" color="red") {{progress}}
                     h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
@@ -100,18 +104,58 @@
                         v-card-actions  
                             v-spacer
                             v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
+                v-dialog.check-dialog(v-model="dialog.check" width= "660" persistent)
+                    v-card 
+                        v-card-title.title Detail info of domains
+                        v-card-text 
+                            h7-data-table(:headers="infoHeaders" :items="detailInfo" :loading="$store.state.global.isLoading" :per-page="10" single-line)
+                                template(slot="items" slot-scope="{props, index}")
+                                    td.text-xs-center {{index}}
+                                    td.text-xs-center {{props.item.domain_name}}
+                                    td.text-xs-center
+                                        span(style="color: green;font-weight:600" :style="props.item.status === 'Success' ? 'color:green;font-weight: 600' : 'color: red'") {{props.item.status}}
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
 import timeUtils from "../../utils/timeUtils.js";
 import XLSX from "xlsx";
 import _ from "lodash";
+import { setTimeout } from "timers";
 
 export default {
     mixins: [textFieldRules, timeUtils],
 
     data() {
         return {
+            infoHeaders: [
+                {
+                    text: "#",
+                    align: "center",
+                    sortable: false,
+                    width: "80px",
+                    value: "index"
+                },
+                {
+                    text: "Domain Name",
+                    align: "center",
+                    sortable: true,
+                    value: "name"
+                },
+                {
+                    text: "Status",
+                    align: "center",
+                    sortable: true,
+                    value: "status"
+                }
+            ],
+            info: [],
+            detailInfo: [],
+            batchStatus: false,
+            progressData: {},
+            progress: 0,
             // selected: [],
             selectedArray: [],
             cdnArray: [],
@@ -128,7 +172,8 @@ export default {
                 changeStatus: false,
                 delete: false,
                 batchDelete: false,
-                alert: false
+                alert: false,
+                check: false
             },
             dnsPodDomain: "shiftcdn.com",
             form: [],
@@ -208,18 +253,33 @@ export default {
             }
         },
         batchDeleteAction() {
+            var selectObject = [];
+            selectObject = this.selectedArray;
+            this.dialog.check = true;
             this.$store.dispatch("global/startLoading");
-
+            var domainName = [];
+            this.info = [];
+            this.detailInfo = [];
             this.selectedArray.forEach((o, i) => {
                 this.$store
                     .dispatch("domains/deleteDomain", o.id)
                     .then(
                         function(result) {
-                            this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Delete domain success!"
-                            );
-                            this.$store.dispatch("global/finishLoading");
+                            var detail = {};
+                            detail.domain_name = result.data.domain_name;
+                            detail.status = "Success";
+                            domainName.push(detail);
+                            this.info = domainName;
+                            if (this.dialog.check == true) {
+                                this.detailInfo = this.info;
+                            }
+
+                            var selectArrayLength = 0;
+                            selectArrayLength = selectObject.length;
+                            // console.log(selectArrayLength, this.info.length);
+                            if (selectArrayLength == this.info.length) {
+                                this.initialApis();
+                            }
                         }.bind(this)
                     )
                     .catch(
@@ -232,14 +292,11 @@ export default {
                         }.bind(this)
                     );
             });
-            var vm = this;
-            setTimeout(function() {
-                vm.initialApis();
-            }, 5000);
             this.closeEditDialog();
+            // this.initialApis();
         },
         chooseCdnFilter() {
-            // console.log(this.selectedCDN.length);
+            // console.log(this.selectedCDN);
             this.selectedCDN.sort();
             this.filterAction();
         },
@@ -250,6 +307,8 @@ export default {
         },
         chooseCDN() {},
         filterAction() {
+            // console.log(this.selectedCDN);
+            // this.filteredItems = [];
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 // console.log(this.selectedCDN);
                 var filteredItems = [];
@@ -310,6 +369,7 @@ export default {
                     }
                 });
             }
+            // console.log(this.filteredItems);
         },
         pickFile() {
             this.$refs.file.click();
@@ -390,11 +450,12 @@ export default {
                     function(result) {
                         // this.$refs.file = "";
                         this.initialApis();
+                        this.getProgress();
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Batch add domains & cdns success!"
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarSuccess",
+                        //     "Batch add domains & cdns success!"
+                        // );
                     }.bind(this)
                 )
                 .catch(
@@ -404,6 +465,48 @@ export default {
                             "global/showSnackbarError",
                             error.message
                         );
+                    }.bind(this)
+                );
+            // this.getProgress();
+        },
+        getProgress() {
+            // this.$store.dispatch("global/startLoading");
+
+            this.$store
+                .dispatch("progress/getProgress", this.user_group_id)
+                .then(
+                    function(result) {
+                        // console.log(result.data);
+                        this.progressData = result.data;
+                        this.progress =
+                            (result.data.done / result.data.all) * 100;
+
+                        var vm = this;
+                        if (result.data.done !== result.data.all) {
+                            this.batchStatus = true;
+
+                            // console.log(
+                            //     this.progressData.done,
+                            //     this.progressData.all
+                            // );
+                            setTimeout(function() {
+                                vm.getProgress();
+                            }, 5000);
+                        } else {
+                            this.batchStatus = false;
+                            // this.$store.dispatch("global/finishLoading");
+                            this.initialApis();
+                        }
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 );
         },
@@ -642,7 +745,6 @@ export default {
             this.dialog.changeStatus = false;
             this.dialog.delete = false;
             this.dialog.batchDelete = false;
-            this.selectedArray = [];
         },
         closeAlertDialog() {
             this.dialog.alert = false;
@@ -660,14 +762,18 @@ export default {
                     info: data
                 }
             });
+        },
+
+        closeCheckDialog() {
+            this.$store.dispatch("global/finishLoading");
+            this.dialog.check = false;
+            this.initialApis();
         }
     },
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
-        // this.getAllDomains();
-        // this.getAllCdnProvider();
-        // this.mapping();
+        this.getProgress();
     }
 };
 </script>
