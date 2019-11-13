@@ -26,7 +26,7 @@ axios.interceptors.response.use(
         return response;
     },
     error => {
-        // console.log(error.response.status);
+        // console.log(error.response);
 
         switch (error.response.status) {
             case 401:
@@ -36,10 +36,19 @@ axios.interceptors.response.use(
                 router.push({ path: "/" });
                 break;
         }
-
-        error.response.data.text = error.response.data.errorCode
-            ? errorHandler[error.response.data.errorCode]
-            : error.response.data.message;
+        switch (error.response.data.errorCode) {
+            case 1001:
+                error.response.data.message =
+                    errorHandler[error.response.data.errorCode];
+                break;
+            case 1002:
+                error.response.data.message =
+                    errorHandler[error.response.data.errorCode];
+                break;
+        }
+        // error.response.data.text = error.response.data.errorCode
+        //     ? errorHandler[error.response.data.errorCode]
+        //     : error.response.data.message;
         return Promise.reject(error);
     }
 );

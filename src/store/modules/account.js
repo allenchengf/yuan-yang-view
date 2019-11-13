@@ -31,10 +31,14 @@ export default {
             return user.uid;
         },
         accountAuth: state => () => {
-            var user = JSON.parse(localStorage.getItem("user"));
-            if (user.user_group_id == 1) {
+            var user = JSON.parse(localStorage.getItem("auth"));
+            // console.log(user, "user");
+            if (user.user_group_mapping.user_group_id == 1) {
                 user["user_type"] = "hiero7";
-            } else if (user.user_group_id != 1 && user.level == 1) {
+            } else if (
+                user.user_group_mapping.user_group_id != 1 &&
+                user.user_group_mapping.level == 1
+            ) {
                 user["user_type"] = "admin";
             } else {
                 user["user_type"] = "user";
@@ -43,8 +47,8 @@ export default {
             return state.userType[type].auth;
         },
         accountGroupId: state => () => {
-            var user = JSON.parse(localStorage.getItem("user"));
-            return user.user_group_id;
+            var user = JSON.parse(localStorage.getItem("auth"));
+            return user.user_group_mapping.user_group_id;
         }
     },
     // -----------------------------------------------------------------
@@ -56,11 +60,11 @@ export default {
         },
         updateAccountToken: (state, token) => {
             localStorage.setItem("token", token);
+        },
+        updateAccountAuth: (state, auth) => {
+            Vue.set(state, "auth", auth);
+            localStorage.setItem("auth", JSON.stringify(auth));
         }
-        // updateAccountAuth: (state, auth) => {
-        //     Vue.set(state, "auth", auth);
-        //     localStorage.setItem("auth", JSON.stringify(auth));
-        // }
     },
     // -----------------------------------------------------------------
     actions: {
@@ -68,13 +72,26 @@ export default {
             return axios
                 .post("yuanyang_user_module/login", account)
                 .then(function(response) {
+                    // console.log(response.data, "ss");
+
                     if (!response.data.data.google2fa) {
-                        // console.log(response.data.data.user)
-                        response.data.data.user.user_group_mapping.name =
-                            response.data.data.user.name;
+                        // response.data.data.user.user_group_mapping.name =
+                        //     response.data.data.user.name;
+                        // context.commit(
+                        //     "updateAccountInfo",
+                        //     response.data.data.user.user_group_mapping
+                        // );
+                        // context.commit(
+                        //     "updateAccountToken",
+                        //     response.data.data.token
+                        // );
                         context.commit(
                             "updateAccountInfo",
-                            response.data.data.user.user_group_mapping
+                            response.data.data.user
+                        );
+                        context.commit(
+                            "updateAccountAuth",
+                            response.data.data.user
                         );
                         context.commit(
                             "updateAccountToken",
@@ -87,9 +104,32 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        verify2FACode: (context, data) => {
+            return axios
+                .post("yuanyang_user_module/2fa/verify", data)
+                .then(function(response) {
+                    context.commit(
+                        "updateAccountInfo",
+                        response.data.data.user
+                    );
+                    context.commit(
+                        "updateAccountToken",
+                        response.data.data.token
+                    );
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         getProfile: context => {
             return axios
-                .get("yuanyang_user_module/users/self")
+                .get(
+                    "yuanyang_user_module/users/" +
+                        context.getters.accountId() +
+                        "/profile?key=" +
+                        process.env.VUE_APP_PLATFORM_KEY
+                )
                 .then(function(response) {
                     context.commit("updateAccountInfo", response.data.data);
                     return Promise.resolve(response.data);
@@ -97,6 +137,15 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
+            // return axios
+            //     .get("yuanyang_user_module/users/self")
+            //     .then(function(response) {
+            //         context.commit("updateAccountInfo", response.data.data);
+            //         return Promise.resolve(response.data);
+            //     })
+            //     .catch(function(error) {
+            //         return Promise.reject(error.response.data);
+            //     });
         },
         forgotPassword: (context, email) => {
             return axios
@@ -159,6 +208,36 @@ export default {
             router.push(
                 "/login?message=" + "sign in success." + "&type=success"
             );
+        },
+        getOtpQRCode: context => {
+            return axios
+                .get("yuanyang_user_module/2fa/qrcode")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        enableOtp: (context, data) => {
+            return axios
+                .post("yuanyang_user_module/2fa/enable", data)
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        disableOtp: context => {
+            return axios
+                .delete("yuanyang_user_module/2fa/disable")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
         }
     }
 };

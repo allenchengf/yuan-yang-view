@@ -10,6 +10,7 @@
                         v-spacer
                         v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
+                        v-btn(color="error" dark @click="batchDelete") Batch Delete Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
                                 v-btn.ma-0(flat icon small color="primary" v-on="on")
@@ -29,9 +30,15 @@
                                 v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
-                    h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    v-card-text(v-if="batchStatus")
+                        span Progress of Batch Add Domains 
+                        v-progress-linear(color="warning" height="20" :value="progress") {{progressData.done}} / {{progressData.all}}
+                    //- v-progress-circular(:rotate="-90" :size="100" :width="15" :value="progress" color="red") {{progress}}
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
-                            tr
+                            tr 
+                                td
+                                    v-checkbox(v-model="props.selected" primary hide-details)
                                 td {{ index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}.{{dnsPodDomain}}
@@ -44,6 +51,21 @@
                                         v-icon(small) edit
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                         v-icon(small) delete
+                    //- h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    //-     template(slot="items" slot-scope="{props, index}")
+                    //-         tr
+                    //-             td {{ index }}
+                    //-             td {{ props.item.name }}
+                    //-             td {{ props.item.cname }}.{{dnsPodDomain}}
+                    //-             td
+                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
+                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
+                    //-             td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
+                    //-             td
+                    //-                 v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
+                    //-                     v-icon(small) edit
+                    //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
+                    //-                     v-icon(small) delete
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
@@ -65,18 +87,77 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="updateDomain('delete')") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
+                    v-card
+                        v-card-title.title Batch Delete Domain
+                        v-card-text Are you sure want to delete 
+                            span(v-for="item in selectedArray") "{{item.name}}"
+                            span ?
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
+                            v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+                v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
+                    v-card 
+                        v-card-title.title Batch delete domain
+                        v-card-text Please at least choose one domain to batch delete.
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
+                v-dialog.check-dialog(v-model="dialog.check" width= "660" persistent)
+                    v-card 
+                        v-card-title.title Detail info of domains
+                        v-card-text 
+                            h7-data-table(:headers="infoHeaders" :items="detailInfo" :loading="$store.state.global.isLoading" :per-page="10" single-line)
+                                template(slot="items" slot-scope="{props, index}")
+                                    td.text-xs-center {{index}}
+                                    td.text-xs-center {{props.item.domain_name}}
+                                    td.text-xs-center
+                                        span(style="color: green;font-weight:600" :style="props.item.status === 'Success' ? 'color:green;font-weight: 600' : 'color: red'") {{props.item.status}}
+                        v-card-actions  
+                            v-spacer
+                            v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
 import timeUtils from "../../utils/timeUtils.js";
 import XLSX from "xlsx";
 import _ from "lodash";
+import { setTimeout } from "timers";
 
 export default {
     mixins: [textFieldRules, timeUtils],
 
     data() {
         return {
+            infoHeaders: [
+                {
+                    text: "#",
+                    align: "center",
+                    sortable: false,
+                    width: "80px",
+                    value: "index"
+                },
+                {
+                    text: "Domain Name",
+                    align: "center",
+                    sortable: true,
+                    value: "name"
+                },
+                {
+                    text: "Status",
+                    align: "center",
+                    sortable: true,
+                    value: "status"
+                }
+            ],
+            info: [],
+            detailInfo: [],
+            batchStatus: false,
+            progressData: {},
+            progress: 0,
+            // selected: [],
+            selectedArray: [],
             cdnArray: [],
             groupArray: [],
             selectedCDN: [],
@@ -89,7 +170,10 @@ export default {
             dialog: {
                 edit: false,
                 changeStatus: false,
-                delete: false
+                delete: false,
+                batchDelete: false,
+                alert: false,
+                check: false
             },
             dnsPodDomain: "shiftcdn.com",
             form: [],
@@ -149,9 +233,70 @@ export default {
             return this.editedIndex === -1 ? "New Domain" : "Edit Domain";
         }
     },
+    watch: {
+        // selected: function() {
+        //     console.log(this.selected);
+        // }
+    },
     methods: {
+        parentMethod(data) {
+            // console.log("ccc");
+            // console.log(data);
+            this.selectedArray = data;
+        },
+        batchDelete() {
+            // console.log(this.selectedArray);
+            if (this.selectedArray.length == 0) {
+                this.dialog.alert = true;
+            } else {
+                this.dialog.batchDelete = true;
+            }
+        },
+        batchDeleteAction() {
+            var selectObject = [];
+            selectObject = this.selectedArray;
+            this.dialog.check = true;
+            this.$store.dispatch("global/startLoading");
+            var domainName = [];
+            this.info = [];
+            this.detailInfo = [];
+            this.selectedArray.forEach((o, i) => {
+                this.$store
+                    .dispatch("domains/deleteDomain", o.id)
+                    .then(
+                        function(result) {
+                            var detail = {};
+                            detail.domain_name = result.data.domain_name;
+                            detail.status = "Success";
+                            domainName.push(detail);
+                            this.info = domainName;
+                            if (this.dialog.check == true) {
+                                this.detailInfo = this.info;
+                            }
+
+                            var selectArrayLength = 0;
+                            selectArrayLength = selectObject.length;
+                            // console.log(selectArrayLength, this.info.length);
+                            if (selectArrayLength == this.info.length) {
+                                this.initialApis();
+                            }
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+            });
+            this.closeEditDialog();
+            // this.initialApis();
+        },
         chooseCdnFilter() {
-            // console.log(this.selectedCDN.length);
+            // console.log(this.selectedCDN);
             this.selectedCDN.sort();
             this.filterAction();
         },
@@ -162,6 +307,8 @@ export default {
         },
         chooseCDN() {},
         filterAction() {
+            // console.log(this.selectedCDN);
+            // this.filteredItems = [];
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 // console.log(this.selectedCDN);
                 var filteredItems = [];
@@ -222,6 +369,7 @@ export default {
                     }
                 });
             }
+            // console.log(this.filteredItems);
         },
         pickFile() {
             this.$refs.file.click();
@@ -302,11 +450,12 @@ export default {
                     function(result) {
                         // this.$refs.file = "";
                         this.initialApis();
+                        this.getProgress();
                         this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Batch add domains & cdns success!"
-                        );
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarSuccess",
+                        //     "Batch add domains & cdns success!"
+                        // );
                     }.bind(this)
                 )
                 .catch(
@@ -316,6 +465,48 @@ export default {
                             "global/showSnackbarError",
                             error.message
                         );
+                    }.bind(this)
+                );
+            // this.getProgress();
+        },
+        getProgress() {
+            // this.$store.dispatch("global/startLoading");
+
+            this.$store
+                .dispatch("progress/getProgress", this.user_group_id)
+                .then(
+                    function(result) {
+                        // console.log(result.data);
+                        this.progressData = result.data;
+                        this.progress =
+                            (result.data.done / result.data.all) * 100;
+
+                        var vm = this;
+                        if (result.data.done !== result.data.all) {
+                            this.batchStatus = true;
+
+                            // console.log(
+                            //     this.progressData.done,
+                            //     this.progressData.all
+                            // );
+                            setTimeout(function() {
+                                vm.getProgress();
+                            }, 5000);
+                        } else {
+                            this.batchStatus = false;
+                            // this.$store.dispatch("global/finishLoading");
+                            this.initialApis();
+                        }
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 );
         },
@@ -553,6 +744,10 @@ export default {
             this.dialog.edit = false;
             this.dialog.changeStatus = false;
             this.dialog.delete = false;
+            this.dialog.batchDelete = false;
+        },
+        closeAlertDialog() {
+            this.dialog.alert = false;
         },
         clearBtn() {
             this.selectedCDN = [];
@@ -567,14 +762,18 @@ export default {
                     info: data
                 }
             });
+        },
+
+        closeCheckDialog() {
+            this.$store.dispatch("global/finishLoading");
+            this.dialog.check = false;
+            this.initialApis();
         }
     },
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
-        // this.getAllDomains();
-        // this.getAllCdnProvider();
-        // this.mapping();
+        this.getProgress();
     }
 };
 </script>

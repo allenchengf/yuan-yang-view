@@ -10,10 +10,12 @@
                             v-flex.px-2(xs12 sm6 md3)
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
+                            v-btn(color="warning" dark @click="") Batch Delete Domain
                             v-btn(color="primary" dark @click="addItem") Add Domain
                             v-btn(color="primary" dark @click="pickFile") Batch Add Domain
                                 v-icon attach_file 
                                 input.d-none(ref="file" type="file" @change="handleFileUpload()")
+                            
 
                     v-data-table.elevation-1(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :pagination.sync="pagination"  hide-actions :search="searchText")
                         v-progress-linear(v-slot:progress color="primary")
