@@ -119,8 +119,14 @@ export default {
                 .dispatch("crawlers/getScanProvider")
                 .then(
                     function(result) {
-                        this.crawlerGroup = result.data;
-                        this.selectedCrawler = this.crawlerGroup[1].id;
+                        this.crawlerGroup = [];
+                        result.data.forEach((o, i) => {
+                            if (o.status == "active") {
+                                this.crawlerGroup.push(o);
+                            }
+                        });
+                        // this.crawlerGroup = result.data;
+                        this.selectedCrawler = this.crawlerGroup[0].id;
 
                         // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
