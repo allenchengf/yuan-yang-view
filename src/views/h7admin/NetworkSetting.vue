@@ -342,6 +342,7 @@ export default {
                     )
                     .catch(
                         function(error) {
+                            this.getNetworks();
                             this.$store.dispatch("global/finishLoading");
                             this.$store.dispatch(
                                 "global/showSnackbarError",

@@ -11,6 +11,8 @@ Vue.config.productionTip = false;
 //component
 import datatable from "./components/DataTable";
 Vue.component("h7-data-table", datatable);
+import selectableDatatable from "./components/SelectableDataTable";
+Vue.component("h7-selectable-data-table", selectableDatatable);
 
 Vue.prototype.$axios = axios;
 Vue.prototype.$errorHandler = errorHandler;
@@ -29,7 +31,7 @@ router.beforeEach((to, from, next) => {
     } else {
         if (token && varifyToken() && to.path == "/login") {
             next({ path: getHomePage() });
-            
+
             // var redirect = to.query.redirect;
             // if (redirect != null) {
             //     location.replace(redirect + "?token=" + token);

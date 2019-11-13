@@ -53,8 +53,8 @@
                                     .setting-content.grey--text Click to change password
                             v-list-tile-action
                                 v-icon(color="grey") chevron_right
-                        //- v-divider
-                    //- v-list(subheader)
+                        v-divider
+                    v-list(subheader)
                         v-subheader Security
                         v-list-tile(@click="dialog.otp = true;")
                             v-list-tile-content
@@ -101,7 +101,7 @@
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="closePasswordDialog") Cancel
                     v-btn(color="primary" flat="flat" @click="updatePassword") Update
-        //- v-dialog.otp-dialog(v-model="dialog.otp" max-width="460" persistent )
+        v-dialog.otp-dialog(v-model="dialog.otp" max-width="460" persistent )
             v-card(v-if="user.otp == false")
                 v-window(v-model="otpStep")
                     v-window-item(:value="1")
@@ -146,7 +146,7 @@
 </template>
 
 <script>
-// import QRCode from "qrcode";
+import QRCode from "qrcode";
 import textFieldRules from "../utils/textFieldRules.js";
 import { mapMutations } from "vuex";
 
@@ -182,7 +182,10 @@ export default {
                 .dispatch("account/getProfile")
                 .then(
                     function(result) {
+                        // console.log(result.data);
                         this.user = this.$store.getters["account/account"]();
+                        // console.log(this.user, "this.user");
+
                         this.user.google2fa.filter(
                             function(el) {
                                 if (el.key == process.env.VUE_APP_PLATFORM_KEY)

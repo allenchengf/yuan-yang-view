@@ -119,8 +119,14 @@ export default {
                 .dispatch("crawlers/getScanProvider")
                 .then(
                     function(result) {
-                        this.crawlerGroup = result.data;
-                        this.selectedCrawler = this.crawlerGroup[1].id;
+                        this.crawlerGroup = [];
+                        result.data.forEach((o, i) => {
+                            if (o.status == "active") {
+                                this.crawlerGroup.push(o);
+                            }
+                        });
+                        // this.crawlerGroup = result.data;
+                        this.selectedCrawler = this.crawlerGroup[0].id;
 
                         // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -128,10 +134,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -154,10 +160,10 @@ export default {
                 .catch(
                     function(error) {
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarError",
-                        //     error.message
-                        // );
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -185,11 +191,12 @@ export default {
                     )
                     .catch(
                         function(error) {
-                            // this.$store.dispatch("global/finishLoading");
-                            // this.$store.dispatch(
-                            //     "global/showSnackbarError",
-                            //     error.message
-                            // );
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            console.log(error.message);
                         }.bind(this)
                     );
             });
