@@ -91,7 +91,7 @@
                 //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                 //-                             v-icon(small) delete
 
-            v-dialog.edit-dialog(v-model="dialog.editDomain" max-width="660" persistent)
+            v-dialog.edit-dialog(v-model="dialog.editDomain" max-width="960" persistent)
                 v-card
                     v-card-title.title Add Domain to {{groupInfo.name}}
                     v-card-text
@@ -115,7 +115,7 @@
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                         v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')") Save
-            v-dialog.delete-dialog(v-model="dialog.delete" max-width="660" persistent)
+            v-dialog.delete-dialog(v-model="dialog.delete" max-width="960" persistent)
                 v-card
                     v-card-title.title Delete Domain from {{groupInfo.name}}
                     v-card-text Are you sure want to delete "{{domainInfo.name}}" from {{groupInfo.name}} ?
@@ -123,7 +123,7 @@
                         v-spacer
                         v-btn(color="error" flat="flat" @click="updateDomain('deleteDomain')") Delete
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-            v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="660" persistent)
+            v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="960" persistent)
                     v-card
                         v-card-title.title Batch Delete Domain from {{groupInfo.name}}
                         v-card-text Are you sure want to delete 
@@ -133,14 +133,14 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-            v-dialog.alert-dialog(v-model="dialog.alert" width= "660" persistent)
+            v-dialog.alert-dialog(v-model="dialog.alert" max-width="960" persistent)
                 v-card 
                     v-card-title.title Batch delete domain from this group
                     v-card-text Please at least choose one domain to batch delete.
                     v-card-actions  
                         v-spacer
                         v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
-            v-dialog.check-dialog(v-model="dialog.check" width= "660" persistent)
+            v-dialog.check-dialog(v-model="dialog.check" max-width="960" persistent)
                 v-card 
                     v-card-title.title Detail info of domains
                     v-card-text 
@@ -244,26 +244,26 @@ export default {
             headers: [
                 {
                     text: "#",
-                    align: "center",
+                    align: "left",
                     sortable: false,
                     width: "80px",
                     value: "index"
                 },
                 {
                     text: "Domain Name",
-                    align: "center",
+                    align: "left",
                     sortable: true,
                     value: "name"
                 },
                 {
                     text: "CDNs",
-                    align: "center",
+                    align: "left",
                     sortable: false,
                     value: "cdnArray"
                 },
                 {
                     text: "Actions",
-                    align: "center",
+                    align: "left",
                     sortable: false,
                     width: "150px"
                 }
