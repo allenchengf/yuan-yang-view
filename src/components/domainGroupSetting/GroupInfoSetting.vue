@@ -95,14 +95,15 @@
                 v-card
                     v-card-title.title Add Domain to {{groupInfo.name}}
                     v-card-text
-                        v-text-field(v-model="innerSearchText" append-icon="search" label="Search" single-line hide-details)
+                        v-flex(xs12 sm6 md4)
+                            v-text-field(v-model="innerSearchText" append-icon="search" label="Search" single-line hide-details)
                         h7-selectable-data-table(:headers="domainListHeaders" :items="domainList" :loading="$store.state.global.isLoading" :search-text="innerSearchText" :per-page="10" single-line @childMethod="parentMethod")
                             template(slot="items" slot-scope="{props, index}")
                                 tr 
                                     td
                                         v-checkbox(v-model="props.selected" primary hide-details)
-                                    td {{props.index + 1}}
-                                    td {{props.item.name}}
+                                    td.text-xs-center {{props.index + 1}}
+                                    td.text-xs-center {{props.item.name}}
                         //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
                         //-     template(v-slot:items="props")
                         //-         td 
