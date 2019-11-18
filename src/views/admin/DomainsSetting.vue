@@ -10,12 +10,15 @@
                         v-spacer
                         v-btn.my-0(color="primary" @click="clearBtn") Clear Filter
                         v-btn.my-0(color="primary" @click="addItem") Add Domain
-                        v-btn(color="error" dark @click="batchDelete") Batch Delete Domain
                         v-menu(offset-y left) 
                             template(v-slot:activator="{on}")
                                 v-btn.ma-0(flat icon small color="primary" v-on="on")
                                     v-icon( small) more_vert
                             v-list
+                                v-list-tile(@click="batchDeleteDomainCdns")
+                                    v-list-tile-title Quick delete CDN
+                                v-list-tile(@click="batchDelete")
+                                    v-list-tile-title Batch Delete Domain
                                 v-list-tile(@click="pickFile")
                                     v-list-tile-title Import domain's info
                                         input.d-none(ref="file" type="file" @change="handleFileUpload()")
@@ -33,7 +36,6 @@
                     v-card-text(v-if="batchStatus")
                         span Progress of Batch Add Domains 
                         v-progress-linear(color="warning" height="20" :value="progress") {{progressData.done}} / {{progressData.all}}
-                    //- v-progress-circular(:rotate="-90" :size="100" :width="15" :value="progress" color="red") {{progress}}
                     h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
@@ -41,7 +43,7 @@
                                     v-checkbox(v-model="props.selected" primary hide-details)
                                 td {{ index }}
                                 td {{ props.item.name }}
-                                td {{ props.item.cname }}.{{dnsPodDomain}}
+                                td {{ props.item.cname }}
                                 td
                                     span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
                                     span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
@@ -51,22 +53,7 @@
                                         v-icon(small) edit
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                         v-icon(small) delete
-                    //- h7-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
-                    //-     template(slot="items" slot-scope="{props, index}")
-                    //-         tr
-                    //-             td {{ index }}
-                    //-             td {{ props.item.name }}
-                    //-             td {{ props.item.cname }}.{{dnsPodDomain}}
-                    //-             td
-                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
-                    //-                 span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
-                    //-             td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
-                    //-             td
-                    //-                 v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
-                    //-                     v-icon(small) edit
-                    //-                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
-                    //-                     v-icon(small) delete
-                v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
+                v-dialog.edit-dialog(v-model="dialog.edit" max-width="960" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
                         v-card-text
@@ -79,7 +66,7 @@
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                             v-btn(color="primary" flat="flat" @click="updateDomain('add')") Save
-                v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
+                v-dialog.delete-dialog(v-model="dialog.delete" max-width="960" persistent)
                     v-card
                         v-card-title.title Delete Domain
                         v-card-text Are you sure want to delete "{{domain.name}}" ?
@@ -87,7 +74,7 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="updateDomain('delete')") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
+                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="960" persistent)
                     v-card
                         v-card-title.title Batch Delete Domain
                         v-card-text Are you sure want to delete 
@@ -97,14 +84,14 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                v-dialog.alert-dialog(v-model="dialog.alert" width= "600")
+                v-dialog.alert-dialog(v-model="dialog.alert" max-width="960")
                     v-card 
                         v-card-title.title Batch delete domain
                         v-card-text Please at least choose one domain to batch delete.
                         v-card-actions  
                             v-spacer
                             v-btn(color="primary" flat="flat" @click="closeAlertDialog") OK
-                v-dialog.check-dialog(v-model="dialog.check" width= "660" persistent)
+                v-dialog.check-dialog(v-model="dialog.check" max-width="960" persistent)
                     v-card 
                         v-card-title.title Detail info of domains
                         v-card-text 
@@ -117,6 +104,42 @@
                         v-card-actions  
                             v-spacer
                             v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
+                v-dialog.check-dialog(v-model="dialog.batchDeleteCdn" max-width="960" persistent)
+                    v-card
+                        v-window(v-model="step")
+                            v-window-item(:value="1")
+                                v-card-title.title Please choose a CDN
+                                v-card-text
+                                    v-flex(xs12 sm6 md3)
+                                        v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="id" v-model="wantDeleteCdn")
+                                v-card-actions  
+                                    v-spacer
+                                    v-btn(color="grey" flat="flat" @click="closeDialog") Cancel
+                                    v-btn(color="primary" flat="flat" @click="chooseDomains") Next
+                            v-window-item(:value="2")
+                                v-card-title.title Please choose domains
+
+                                v-card-text 
+                                    v-flex(xs12 sm6 md4)
+                                        v-text-field(v-model="innerSearchText" append-icon="search" label="Search" single-line hide-details)
+                                    h7-selectable-data-table(:headers="domainListHeaders" :items="domainList" :loading="$store.state.global.isLoading" :search-text="innerSearchText" :per-page="10" single-line @childMethod="parentMethod")
+                                        template(slot="items" slot-scope="{props, index}")
+                                            tr 
+                                                td
+                                                    v-checkbox(v-model="props.selected" primary hide-details)
+                                                td {{ index }}
+                                                td {{ props.item.name }}
+                                                td {{ props.item.cname }}
+                                                td
+                                                    span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
+                                                    span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
+                                v-card-actions 
+                                    v-btn(color="grey" flat="flat" @click="step = 1") Back
+                                    v-spacer
+                                    v-btn(color="grey" flat="flat" @click="closeDialog") Cancel
+                                    v-btn(color="primary" flat="flat" @click="batchDeleteCdnAction") Yes
+
+                            
 </template>
 <script>
 import textFieldRules from "../../utils/textFieldRules.js";
@@ -130,6 +153,8 @@ export default {
 
     data() {
         return {
+            step: 1,
+            wantDeleteCdn: "",
             infoHeaders: [
                 {
                     text: "#",
@@ -167,13 +192,15 @@ export default {
             editedIndex: -1,
             domain: {},
             searchText: "",
+            innerSearchText: "",
             dialog: {
                 edit: false,
                 changeStatus: false,
                 delete: false,
                 batchDelete: false,
                 alert: false,
-                check: false
+                check: false,
+                batchDeleteCdn: false
             },
             dnsPodDomain: "shiftcdn.com",
             form: [],
@@ -183,6 +210,33 @@ export default {
             filteredItems: [],
             filterData: [],
             rawData: [],
+            domainListHeaders: [
+                {
+                    text: "#",
+                    align: "left",
+                    sortable: false,
+                    width: "80px",
+                    value: "index"
+                },
+                {
+                    text: "Name",
+                    align: "left",
+                    sortable: true,
+                    value: "name"
+                },
+                {
+                    text: "CNAME",
+                    align: "left",
+                    sortable: true,
+                    value: "cname"
+                },
+                {
+                    text: "CDNs",
+                    align: "left",
+                    sortable: false,
+                    value: "cdnArrayName"
+                }
+            ],
             headers: [
                 {
                     text: "#",
@@ -207,7 +261,7 @@ export default {
                     text: "CDNs",
                     align: "left",
                     sortable: false,
-                    value: ""
+                    value: "cdnArrayName"
                 },
                 {
                     text: "Group",
@@ -218,14 +272,15 @@ export default {
                 {
                     text: "Actions",
                     align: "left",
-                    value: "",
+                    value: "cdnArrayCname",
                     sortable: false,
                     width: "150px"
                 }
             ],
             exportData: [],
             cdnProvider: [],
-            cdnProviderMapping: {}
+            cdnProviderMapping: {},
+            domainList: []
         };
     },
     computed: {
@@ -239,6 +294,30 @@ export default {
         // }
     },
     methods: {
+        closeDialog() {
+            this.dialog.batchDeleteCdn = false;
+            this.wantDeleteCdn = "";
+            this.step = 1;
+        },
+        chooseDomains() {
+            // console.log(this.wantDeleteCdn);
+            this.domainList = [];
+            // console.log(this.filteredItems);
+            this.filteredItems.forEach((o, i) => {
+                if (o.cdns.length > 1 && o.domain_group.length == 0) {
+                    o.cdns.forEach((obj, idx) => {
+                        if (
+                            obj.cdn_provider_id == this.wantDeleteCdn &&
+                            obj.default !== true
+                        ) {
+                            this.domainList.push(o);
+                        }
+                    });
+                }
+            });
+            // console.log(this.domainList);
+            this.step = 2;
+        },
         parentMethod(data) {
             // console.log("ccc");
             // console.log(data);
@@ -251,6 +330,49 @@ export default {
             } else {
                 this.dialog.batchDelete = true;
             }
+        },
+        batchDeleteDomainCdns() {
+            this.dialog.batchDeleteCdn = true;
+        },
+        batchDeleteCdnAction() {
+            // console.log(this.selectedArray);
+            // console.log(this.wantDeleteCdn);
+            this.deleteCdn();
+        },
+        deleteCdn() {
+            var domainInfo = {};
+            this.selectedArray.forEach((o, i) => {
+                domainInfo.domain_id = o.id;
+                o.cdns.forEach((obj, idx) => {
+                    if (obj.cdn_provider_id == this.wantDeleteCdn) {
+                        domainInfo.id = obj.id;
+                    }
+                });
+                this.$store.dispatch("global/startLoading");
+                this.$store
+                    .dispatch("cdns/deleteCDN", domainInfo)
+                    .then(
+                        function(result) {
+                            console.log(result.data);
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Quick delete CDN success!"
+                            );
+                            this.initialApis();
+                            this.closeDialog();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                        }.bind(this)
+                    );
+            });
         },
         batchDeleteAction() {
             var selectObject = [];
@@ -301,75 +423,58 @@ export default {
             this.filterAction();
         },
         chooseGroupFilter() {
-            // console.log(this.selectedGroup);
-
             this.filterAction();
         },
         chooseCDN() {},
         filterAction() {
-            // console.log(this.selectedCDN);
-            // this.filteredItems = [];
+            // console.log(this.selectedCDN.length, this.selectedGroup);
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
-                // console.log(this.selectedCDN);
-                var filteredItems = [];
+                this.filteredItems = [];
+                // console.log("type A");
                 this.filterData.forEach((o, i) => {
                     o.cdnArrayName.sort();
-                    this.selectedCDN.forEach((obj, idx) => {
-                        // console.log(_.indexOf(o.cdnArrayName, obj));
-
-                        if (_.indexOf(o.cdnArrayName, obj) !== -1) {
-                            filteredItems.push(this.filterData[i]);
-                        }
-                    });
-                });
-                var filteredData = [];
-                filteredData.push(filteredItems);
-                this.filteredItems = filteredData[0];
-            }
-            if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
-                // console.log("B");
-
-                var filteredItems = [];
-                this.filterData.forEach((o, i) => {
-                    o.cdnArrayName.sort();
-                    this.selectedCDN.forEach((obj, idx) => {
-                        if (
-                            _.indexOf(o.cdnArrayName, obj) !== -1 &&
-                            o.domain_group.length !== 0 &&
-                            o.domain_group[0].name === this.selectedGroup
-                        ) {
-                            // console.log(i);
-                            filteredItems.push(this.filterData[i]);
-                        }
-                    });
-                });
-                var filteredData = [];
-                filteredData.push(filteredItems);
-                this.filteredItems = filteredData[0];
-            }
-            if (
-                this.selectedCDN.length == 0 &&
-                this.selectedGroup == undefined
-            ) {
-                // console.log("c");
-
-                this.filteredItems = this.filterData;
-            }
-            if (this.selectedCDN.length == 0 && this.selectedGroup == "") {
-                // console.log("D");
-
-                this.filteredItems = this.filterData;
-            }
-            if (this.selectedGroup !== "" && this.selectedGroup !== undefined) {
-                // console.log("E");
-
-                this.filteredItems = this.filterData.filter(item => {
-                    if (item.domain_group.length !== 0) {
-                        return item.domain_group[0].name == this.selectedGroup;
+                    if (
+                        o.cdnArrayName
+                            .join()
+                            .includes(this.selectedCDN.join()) == true
+                    ) {
+                        this.filteredItems.push(o);
                     }
                 });
             }
-            // console.log(this.filteredItems);
+            if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
+                // console.log("type B");
+                this.filteredItems = [];
+
+                this.filterData.forEach((o, i) => {
+                    o.cdnArrayName.sort();
+                    if (
+                        o.domain_group.length !== 0 &&
+                        o.cdnArrayName
+                            .join()
+                            .includes(this.selectedCDN.join()) == true &&
+                        o.domain_group[0].name == this.selectedGroup
+                    ) {
+                        this.filteredItems.push(o);
+                    }
+                });
+            }
+            if (this.selectedCDN.length == 0 && this.selectedGroup == "") {
+                // console.log("type C");
+                this.filteredItems = this.filterData;
+            }
+            if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
+                // console.log("type D");
+                this.filteredItems = [];
+                this.filterData.forEach((o, i) => {
+                    if (
+                        o.domain_group.length !== 0 &&
+                        o.domain_group[0].name === this.selectedGroup
+                    ) {
+                        this.filteredItems.push(o);
+                    }
+                });
+            }
         },
         pickFile() {
             this.$refs.file.click();
@@ -577,11 +682,13 @@ export default {
             this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdnArrayName = [];
+                o.cdnArrayCname = [];
 
                 o.cdns.forEach((obj, idx) => {
                     o.cdnArrayName.push(
                         this.cdnProviderMapping[obj.cdn_provider_id]
                     );
+                    o.cdnArrayCname.push(obj.cname);
                     var cdn = {};
                     cdn.default = obj.default;
                     cdn.name = this.cdnProviderMapping[obj.cdn_provider_id];
@@ -594,9 +701,9 @@ export default {
                 if (o.domain_group.length !== 0) {
                     this.groupArray.push(o.domain_group[0].name);
                 }
-                o.cdnArray.forEach((obj, idx) => {
-                    this.cdnArray.push(obj.name);
-                });
+                // o.cdnArray.forEach((obj, idx) => {
+                //     this.cdnArray.push(obj.name);
+                // });
             });
             // console.log(this.cdnArray);
             // console.log(this.filterData, "mm");
@@ -608,6 +715,9 @@ export default {
                     function(result) {
                         this.rawData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
+                        this.rawData.forEach((o, i) => {
+                            o.cname = o.cname + "." + this.dnsPodDomain;
+                        });
                         // console.log(this.rawData);
                         return Promise.resolve();
                     }.bind(this)
@@ -752,7 +862,7 @@ export default {
         clearBtn() {
             this.selectedCDN = [];
             this.selectedGroup = "";
-            this.filteredItems = this.filterData;
+            this.filterAction();
         },
         goToNextPage(data) {
             this.$router.push({
@@ -768,12 +878,37 @@ export default {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
             this.initialApis();
+        },
+        getAllCdnProviders: function() {
+            // console.log(this.filterData);
+
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/getAllCdnProvider")
+                .then(
+                    function(result) {
+                        // console.log(result.data);
+                        this.cdnArray = result.data;
+                        // console.log(this.filterData);
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         }
     },
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
         this.getProgress();
+        this.getAllCdnProviders();
     }
 };
 </script>
