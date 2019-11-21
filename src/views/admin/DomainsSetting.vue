@@ -30,7 +30,7 @@
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-flex(xs12 sm6 md3)
-                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN")
+                                v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN" :item-disabled="['disable', 'status']")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
                     v-card-text(v-if="batchStatus")
@@ -289,9 +289,40 @@ export default {
         }
     },
     watch: {
-        // selected: function() {
-        //     console.log(this.selected);
-        // }
+        selectedCDN: function() {
+            if (this.selectedCDN.join() == "Null") {
+                this.cdnArray.forEach((o, i) => {
+                    if (o.name !== "Null") {
+                        o.disable.status = true;
+                    }
+                });
+            } else {
+                this.cdnArray.forEach((o, i) => {
+                    if (o.name !== "Null") {
+                        o.disable.status = false;
+                    }
+                });
+            }
+            if (this.selectedCDN.join().includes("Null") == false) {
+                this.cdnArray.forEach((o, i) => {
+                    if (o.name == "Null") {
+                        o.disable.status = true;
+                    }
+                });
+            } else {
+                // console.log(this.selectedCDN.join());
+                this.cdnArray.forEach((o, i) => {
+                    if (o.name == "Null") {
+                        o.disable.status = false;
+                    }
+                });
+            }
+            if (this.selectedCDN.length == 0) {
+                this.cdnArray.forEach((o, i) => {
+                    o.disable.status = false;
+                });
+            }
+        }
     },
     methods: {
         closeDialog() {
@@ -353,7 +384,7 @@ export default {
                     .dispatch("cdns/deleteCDN", domainInfo)
                     .then(
                         function(result) {
-                            console.log(result.data);
+                            // console.log(result.data);
                             this.$store.dispatch("global/finishLoading");
                             this.$store.dispatch(
                                 "global/showSnackbarSuccess",
@@ -423,6 +454,8 @@ export default {
             this.filterAction();
         },
         chooseGroupFilter() {
+            // console.log(this.selectedGroup);
+
             this.filterAction();
         },
         chooseCDN() {},
@@ -431,33 +464,66 @@ export default {
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 this.filteredItems = [];
                 // console.log("type A");
-                this.filterData.forEach((o, i) => {
-                    o.cdnArrayName.sort();
-                    if (
-                        o.cdnArrayName
-                            .join()
-                            .includes(this.selectedCDN.join()) == true
-                    ) {
-                        this.filteredItems.push(o);
-                    }
-                });
+                if (this.selectedCDN.join() == "Null") {
+                    this.filterData.forEach((o, i) => {
+                        if (o.cdns.length == 0) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                } else {
+                    this.filterData.forEach((o, i) => {
+                        o.cdnArrayName.sort();
+                        if (
+                            o.cdnArrayName
+                                .join()
+                                .includes(this.selectedCDN.join()) == true
+                        ) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                }
             }
             if (this.selectedCDN.length !== 0 && this.selectedGroup !== "") {
                 // console.log("type B");
                 this.filteredItems = [];
 
-                this.filterData.forEach((o, i) => {
-                    o.cdnArrayName.sort();
-                    if (
-                        o.domain_group.length !== 0 &&
-                        o.cdnArrayName
-                            .join()
-                            .includes(this.selectedCDN.join()) == true &&
-                        o.domain_group[0].name == this.selectedGroup
-                    ) {
-                        this.filteredItems.push(o);
-                    }
-                });
+                if (
+                    this.selectedCDN.join() == "Null" &&
+                    this.selectedGroup == "Null"
+                ) {
+                    this.filterData.forEach((o, i) => {
+                        if (o.cdns.length == 0 && o.domain_group.length == 0) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                } else if (
+                    this.selectedCDN.join() !== "Null" &&
+                    this.selectedGroup == "Null"
+                ) {
+                    this.filterData.forEach((o, i) => {
+                        if (
+                            o.domain_group.length == 0 &&
+                            o.cdnArrayName
+                                .join()
+                                .includes(this.selectedCDN.join()) == true
+                        ) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                } else {
+                    this.filterData.forEach((o, i) => {
+                        o.cdnArrayName.sort();
+                        if (
+                            o.domain_group.length !== 0 &&
+                            o.cdnArrayName
+                                .join()
+                                .includes(this.selectedCDN.join()) == true &&
+                            o.domain_group[0].name == this.selectedGroup
+                        ) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                }
             }
             if (this.selectedCDN.length == 0 && this.selectedGroup == "") {
                 // console.log("type C");
@@ -466,14 +532,23 @@ export default {
             if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
                 // console.log("type D");
                 this.filteredItems = [];
-                this.filterData.forEach((o, i) => {
-                    if (
-                        o.domain_group.length !== 0 &&
-                        o.domain_group[0].name === this.selectedGroup
-                    ) {
-                        this.filteredItems.push(o);
-                    }
-                });
+                if (this.selectedGroup == "Null") {
+                    // console.log("null");
+                    this.filterData.forEach((o, i) => {
+                        if (o.domain_group.length == 0) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                } else {
+                    this.filterData.forEach((o, i) => {
+                        if (
+                            o.domain_group.length !== 0 &&
+                            o.domain_group[0].name === this.selectedGroup
+                        ) {
+                            this.filteredItems.push(o);
+                        }
+                    });
+                }
             }
         },
         pickFile() {
@@ -705,6 +780,10 @@ export default {
                 //     this.cdnArray.push(obj.name);
                 // });
             });
+            var nullArray = {
+                name: "Null"
+            };
+            this.groupArray.push(nullArray);
             // console.log(this.cdnArray);
             // console.log(this.filterData, "mm");
         },
@@ -873,7 +952,6 @@ export default {
                 }
             });
         },
-
         closeCheckDialog() {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
@@ -889,7 +967,16 @@ export default {
                     function(result) {
                         // console.log(result.data);
                         this.cdnArray = result.data;
-                        // console.log(this.filterData);
+                        var nullArray = {
+                            name: "Null"
+                        };
+                        this.cdnArray.push(nullArray);
+                        this.cdnArray.forEach((o, i) => {
+                            o.disable = {};
+                            o.disable.status = false;
+                        });
+
+                        console.log(this.cdnArray);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
