@@ -53,7 +53,7 @@
                                         v-icon(small) edit
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                         v-icon(small) delete
-                v-dialog.edit-dialog(v-model="dialog.edit" max-width="960" persistent)
+                v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                     v-card
                         v-card-title.title {{formTitle}}
                         v-card-text
@@ -66,7 +66,7 @@
                             v-spacer
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                             v-btn(color="primary" flat="flat" @click="updateDomain('add')") Save
-                v-dialog.delete-dialog(v-model="dialog.delete" max-width="960" persistent)
+                v-dialog.delete-dialog(v-model="dialog.delete" max-width="460" persistent)
                     v-card
                         v-card-title.title Delete Domain
                         v-card-text Are you sure want to delete "{{domain.name}}" ?
@@ -74,7 +74,7 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="updateDomain('delete')") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="960" persistent)
+                v-dialog.delete-dialog(v-model="dialog.batchDelete" max-width="460" persistent)
                     v-card
                         v-card-title.title Batch Delete Domain
                         v-card-text Are you sure want to delete 
@@ -84,7 +84,7 @@
                             v-spacer
                             v-btn(color="error" flat="flat" @click="batchDeleteAction") Delete
                             v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                v-dialog.alert-dialog(v-model="dialog.alert" max-width="960")
+                v-dialog.alert-dialog(v-model="dialog.alert" max-width="460")
                     v-card 
                         v-card-title.title Batch delete domain
                         v-card-text Please at least choose one domain to batch delete.
@@ -976,7 +976,7 @@ export default {
                             o.disable.status = false;
                         });
 
-                        console.log(this.cdnArray);
+                        // console.log(this.cdnArray);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
