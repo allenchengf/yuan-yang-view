@@ -295,29 +295,29 @@ export default {
     },
     watch: {
         selectedCDN: function() {
-            if (this.selectedCDN.join() == "Null") {
+            if (this.selectedCDN.join() == "Not Set") {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name !== "Null") {
+                    if (o.name !== "Not Set") {
                         o.disable.status = true;
                     }
                 });
             } else {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name !== "Null") {
+                    if (o.name !== "Not Set") {
                         o.disable.status = false;
                     }
                 });
             }
-            if (this.selectedCDN.join().includes("Null") == false) {
+            if (this.selectedCDN.join().includes("Not Set") == false) {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name == "Null") {
+                    if (o.name == "Not Set") {
                         o.disable.status = true;
                     }
                 });
             } else {
                 // console.log(this.selectedCDN.join());
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name == "Null") {
+                    if (o.name == "Not Set") {
                         o.disable.status = false;
                     }
                 });
@@ -469,7 +469,7 @@ export default {
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 this.filteredItems = [];
                 // console.log("type A");
-                if (this.selectedCDN.join() == "Null") {
+                if (this.selectedCDN.join() == "Not Set") {
                     this.filterData.forEach((o, i) => {
                         if (o.cdns.length == 0) {
                             this.filteredItems.push(o);
@@ -493,8 +493,8 @@ export default {
                 this.filteredItems = [];
 
                 if (
-                    this.selectedCDN.join() == "Null" &&
-                    this.selectedGroup == "Null"
+                    this.selectedCDN.join() == "Not Set" &&
+                    this.selectedGroup == "Not Set"
                 ) {
                     this.filterData.forEach((o, i) => {
                         if (o.cdns.length == 0 && o.domain_group.length == 0) {
@@ -502,8 +502,8 @@ export default {
                         }
                     });
                 } else if (
-                    this.selectedCDN.join() !== "Null" &&
-                    this.selectedGroup == "Null"
+                    this.selectedCDN.join() !== "Not Set" &&
+                    this.selectedGroup == "Not Set"
                 ) {
                     this.filterData.forEach((o, i) => {
                         if (
@@ -537,7 +537,7 @@ export default {
             if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
                 // console.log("type D");
                 this.filteredItems = [];
-                if (this.selectedGroup == "Null") {
+                if (this.selectedGroup == "Not Set") {
                     // console.log("null");
                     this.filterData.forEach((o, i) => {
                         if (o.domain_group.length == 0) {
@@ -835,7 +835,7 @@ export default {
                 // });
             });
             var nullArray = {
-                name: "Null"
+                name: "Not Set"
             };
             this.groupArray.push(nullArray);
             // console.log(this.cdnArray);
@@ -1025,7 +1025,7 @@ export default {
                         // console.log(result.data);
                         this.cdnArray = result.data;
                         var nullArray = {
-                            name: "Null"
+                            name: "Not Set"
                         };
                         this.cdnArray.push(nullArray);
                         this.cdnArray.forEach((o, i) => {
