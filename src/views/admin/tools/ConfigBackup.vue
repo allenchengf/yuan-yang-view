@@ -9,7 +9,7 @@
                         v-spacer
                         v-btn.my-0(color="primary" @click="getData") Backup 
                             v-icon(small right) backup
-                        v-btn.my-0(color="primary" @click="importData" :disabled="authLevel == 0") Restore 
+                        v-btn.my-0(color="primary" @click="importData" :disabled="action == false") Restore 
                             v-icon(small right) settings_backup_restore
                             input.d-none(ref="file" type="file" @change="handleFileUpload()")
 </template>
@@ -23,13 +23,12 @@ export default {
         return {
             importJsonData: [],
             rawData: [],
-            authLevel: ""
+            accountPermission: [],
+            action: false
         };
     },
     methods: {
         getData() {
-            // console.log(this.rawData);
-
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("config/getConfigData")
@@ -127,11 +126,22 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        actionControl() {
+            var actions = this.accountPermission.filter(item => {
+                return item.permission.name == "Config Backup";
+            });
+            if (actions.create == 1) {
+                this.action = true;
+            } else {
+                this.action = false;
+            }
         }
     },
     mounted() {
-        this.authLevel = this.$store.getters["account/accountAuth"]();
-        // console.log(this.authLevel);
+        this.accountPermission = this.$store.getters["permission/permission"]();
+        console.log(this.accountPermission);
+        this.actionControl();
     }
 };
 </script>
