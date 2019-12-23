@@ -30,25 +30,26 @@ export default {
             var user = JSON.parse(localStorage.getItem("user"));
             return user.uid;
         },
-        accountAuth: state => () => {
-            var user = JSON.parse(localStorage.getItem("auth"));
-            // console.log(user, "user");
-            if (user.user_group_mapping.user_group_id == 1) {
-                user["user_type"] = "hiero7";
-            } else if (
-                user.user_group_mapping.user_group_id != 1 &&
-                user.user_group_mapping.level == 1
-            ) {
-                user["user_type"] = "admin";
-            } else {
-                user["user_type"] = "user";
-            }
-            var type = user.user_type;
-            return state.userType[type].auth;
-        },
+        // accountAuth: state => () => {
+        //     var user = JSON.parse(localStorage.getItem("auth"));
+        //     // console.log(user, "user");
+        //     if (user.user_group_mapping.user_group_id == 1) {
+        //         user["user_type"] = "hiero7";
+        //     } else if (
+        //         user.user_group_mapping.user_group_id != 1 &&
+        //         user.user_group_mapping.level == 1
+        //     ) {
+        //         user["user_type"] = "admin";
+        //     } else {
+        //         user["user_type"] = "user";
+        //     }
+        //     var type = user.user_type;
+        //     return state.userType[type].auth;
+        // },
         accountGroupId: state => () => {
             var user = JSON.parse(localStorage.getItem("auth"));
-            return user.user_group_mapping.user_group_id;
+            // return user.user_group_mapping.user_group_id;
+            return user.user_role_mapping.user_group_id;
         }
     },
     // -----------------------------------------------------------------
@@ -72,19 +73,7 @@ export default {
             return axios
                 .post("yuanyang_user_module/login", account)
                 .then(function(response) {
-                    // console.log(response.data, "ss");
-
                     if (!response.data.data.google2fa) {
-                        // response.data.data.user.user_group_mapping.name =
-                        //     response.data.data.user.name;
-                        // context.commit(
-                        //     "updateAccountInfo",
-                        //     response.data.data.user.user_group_mapping
-                        // );
-                        // context.commit(
-                        //     "updateAccountToken",
-                        //     response.data.data.token
-                        // );
                         context.commit(
                             "updateAccountInfo",
                             response.data.data.user
@@ -137,15 +126,6 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
-            // return axios
-            //     .get("yuanyang_user_module/users/self")
-            //     .then(function(response) {
-            //         context.commit("updateAccountInfo", response.data.data);
-            //         return Promise.resolve(response.data);
-            //     })
-            //     .catch(function(error) {
-            //         return Promise.reject(error.response.data);
-            //     });
         },
         forgotPassword: (context, email) => {
             return axios

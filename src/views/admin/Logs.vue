@@ -16,17 +16,26 @@
                     h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line must-sort) 
                         template(slot="items" slot-scope="{props, index}")
                             td.text-xs-left {{props.item.time}}
+                            td.text-xs-left {{props.item.ip}}
+                            td.text-xs-left {{props.item.name}}
+                            td.text-xs-left {{props.item.change_type !== null ? props.item.change_type : ""}}
                             td.text-xs-left 
                                 v-chip {{props.item.category}}
-                            td.text-xs-left {{props.item.message}}
+                            //- td.text-xs-left {{props.item.changed_from}}
+                            td.text-xs-left {{props.item.changed_from.name !== undefined ? props.item.changed_from.name : "" }}
+                            td.text-xs-left 
+                                span(v-if="props.item.change_type !== 'Update'") {{props.item.changed_to.name !== undefined ? props.item.changed_to.name : "" }}
+                                span(v-else v-for="item in props.item.changed_to") {{item + " . "}} 
 </template>
 <script>
 export default {
     data() {
         return {
+            usersMapping: {},
+            users: [],
             searchText: "",
             category: "all",
-            categoryList: ["all", "user", "domain", "cdn", "iroute"],
+            categoryList: [],
             filterData: [],
             rawData: [],
             headers: [
@@ -37,16 +46,41 @@ export default {
                     value: "time"
                 },
                 {
+                    text: "IP",
+                    align: "left",
+                    sortable: true,
+                    value: "ip"
+                },
+                {
+                    text: "Operator",
+                    align: "left",
+                    sortable: true,
+                    value: "name"
+                },
+                {
+                    text: "Action",
+                    align: "left",
+                    sortable: true,
+                    value: "change_type"
+                },
+                {
                     text: "Category",
                     align: "left",
                     sortable: true,
                     value: "category"
                 },
+
                 {
-                    text: "Message",
+                    text: "Change from",
                     align: "left",
                     sortable: true,
-                    value: "message"
+                    value: "change_from"
+                },
+                {
+                    text: "Change to",
+                    align: "left",
+                    sortable: true,
+                    value: "change_to"
                 }
             ]
         };
@@ -58,8 +92,11 @@ export default {
                 .dispatch("logs/getLogsData")
                 .then(
                     function(result) {
-                        this.rawData = result.data;
-                        this.filterData = this.rawData;
+                        this.rawData = result.data.filter(
+                            item => item.change_type !== null
+                        );
+                        // this.rawData = result.data;
+                        this.transformMessage();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -73,22 +110,114 @@ export default {
                     }.bind(this)
                 );
         },
+        mappingUsers() {
+            this.users.forEach((o, i) => {
+                this.usersMapping[o.uid] = o.name + "(" + o.email + ")";
+            });
+            // console.log(this.usersMapping);
+        },
+        transformMessage() {
+            // console.log(this.rawData, "transformMessage");
 
+            this.rawData.forEach((o, i) => {
+                o.name = this.usersMapping[o.uid];
+                if (o.change_type !== null) {
+                    switch (o.change_type) {
+                        case "Create":
+                            if (o.changed_to.domain !== undefined) {
+                                o.changed_to["name"] = o.changed_to.domain;
+                            }
+
+                            break;
+                        case "Update":
+                            var changedTo = [];
+                            changedTo = Object.keys(o.changed_to);
+                            changedTo.forEach((obj, idx) => {
+                                o.changed_to[obj] =
+                                    obj + " : " + o.changed_to[obj];
+                            });
+                            if (o.changed_from.domain !== undefined) {
+                                o.changed_from["name"] = o.changed_from.domain;
+                            }
+                            break;
+                        case "Delete":
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+            this.filterData = this.rawData;
+        },
         filterDataAction: function() {
-            if (this.category != "all")
+            // console.log(this.category, "category");
+            if (this.category !== "all")
                 this.filterData = this.rawData.filter(data => {
-                    return data.category.toLowerCase().includes(this.category);
+                    return (
+                        data.category.toLowerCase() ===
+                        this.category.toLowerCase()
+                    );
+                    // .includes(this.category.toLowerCase());
                 });
             else this.filterData = this.rawData;
+            // console.log(this.filterData, "filterData");
+        },
+        getCategoryList: function() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("logs/getCategoryList")
+                .then(
+                    function(result) {
+                        this.categoryList = result.data;
+                        this.categoryList.unshift("all");
+                        // console.log(result.data);
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getUsers: function() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("users/getUsers")
+                .then(
+                    function(result) {
+                        this.users = result.data;
+                        // console.log(result.data, "users");
+                        this.mappingUsers();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         }
     },
     watch: {
         category: function(value) {
+            // console.log(value);
+            this.category = value;
             this.filterDataAction();
         }
     },
     created() {
         this.getLogsData();
+        this.getCategoryList();
+        this.getUsers();
     }
 };
 </script>

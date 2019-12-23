@@ -36,6 +36,7 @@ export default {
     },
     data() {
         return {
+            permission: [],
             passwordShow: false,
             step: 1,
             rules: {
@@ -65,6 +66,7 @@ export default {
                     .dispatch("account/login", this.user)
                     .then(
                         (result => {
+                            this.getSelfPermission();
                             if (result.data.google2fa) {
                                 this.step = 2;
                                 this.otpToken = result.data.token;
@@ -82,6 +84,24 @@ export default {
                         }).bind(this)
                     );
             }
+        },
+        getSelfPermission: function() {
+            this.$store
+                .dispatch("permission/getSelfPermission")
+                .then(
+                    function(result) {
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
         },
         checkOTPCode: function() {
             if (this.$refs.otpForm.validate()) {
@@ -128,6 +148,9 @@ export default {
     },
     created() {
         this.user.key = process.env.VUE_APP_PLATFORM_KEY;
+    },
+    beforeCreate() {
+        console.log(JSON.parse(localStorage.getItem("permission")), "berfor");
     }
 };
 </script>

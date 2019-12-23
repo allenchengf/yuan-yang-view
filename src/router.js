@@ -25,6 +25,7 @@ import AutoScan from "./views/admin/tools/AutoScan.vue";
 import AutoScanList from "./views/admin/tools/AutoScanList.vue";
 import ConfigBackup from "./views/admin/tools/ConfigBackup.vue";
 import NetworkSetting from "./views/h7admin/NetworkSetting.vue";
+import RoleSetting from "./views/h7admin/RoleSetting.vue";
 
 Vue.use(Router);
 
@@ -115,6 +116,7 @@ export default new Router({
                 },
                 {
                     path: "cdn-providers",
+                    name: "CDN Providers",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -123,6 +125,7 @@ export default new Router({
                 },
                 {
                     path: "domains",
+                    name: "Domains",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -143,7 +146,7 @@ export default new Router({
                 },
 
                 {
-                    name: "grouping",
+                    name: "Grouping",
                     path: "grouping",
                     meta: {
                         requireAuth: true,
@@ -186,6 +189,7 @@ export default new Router({
                 },
                 {
                     path: "logs",
+                    name: "Logs",
                     meta: {
                         requireAuth: true,
                         auth: 1
@@ -194,6 +198,7 @@ export default new Router({
                 },
                 {
                     path: "auto-scan",
+                    name: "Auto Scan",
                     meta: {
                         requireAuth: true,
                         auth: 0
@@ -214,14 +219,16 @@ export default new Router({
                 },
                 {
                     path: "config-backup",
+                    name: "Config Backup",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
                     component: ConfigBackup
                 },
+
                 {
-                    path: "networks",
+                    path: "Networks",
                     name: "networks",
                     meta: {
                         requireAuth: true,
@@ -231,6 +238,7 @@ export default new Router({
                 },
                 {
                     path: "users",
+                    name: "Users",
                     meta: {
                         requireAuth: true,
                         auth: 2
@@ -238,7 +246,17 @@ export default new Router({
                     component: Users
                 },
                 {
+                    path: "roles",
+                    name: "roles",
+                    meta: {
+                        requireAuth: true,
+                        auth: 2
+                    },
+                    component: RoleSetting
+                },
+                {
                     path: "user-groups",
+                    name: "UserGroups",
                     meta: {
                         requireAuth: true,
                         auth: 2

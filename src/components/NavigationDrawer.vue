@@ -1,16 +1,16 @@
 <template lang="pug">
-    v-navigation-drawer(v-model="drawer" clipped fixed app :mini-variant="mini" light)
+    v-navigation-drawer(v-model="drawer" clipped fixed app :mini-variant="mini" light :accountPermission="accountPermission")
         v-list(dense)
             template(v-for="item, index in items")
-                v-subheader(v-if="item.header && authLevel >= item.auth" :key="item.header") {{ item.header }}
+                v-subheader(v-if="item.header" :key="item.header") {{ item.header }}
                 v-divider(v-else-if="item.divider" :key="index" :inset="item.inset")
-                .menu-item(v-else-if="$store.getters['account/accountAuth']() >= item.auth")
+                .menu-item(v-else-if="item.show == true")
                     v-list-group(v-if="item.children" v-model="item.model" :prepend-icon="item.icon" value="true" no-action)
-                        v-list-tile(slot="activator" active-class="activePrimary")
+                        v-list-tile(slot="activator" active-class="activePrimary" )
                             v-list-tile-content
                                 v-list-tile-title {{item.title}}
-                        v-list-tile(v-for="(child, i) in item.children" :key="child.title" :to="child.router")
-                            v-list-tile-content(v-if="$store.getters['account/accountAuth']() >= child.auth")
+                        v-list-tile(v-for="(child, i) in item.children" :key="child.title" :to="child.router" v-if="child.show == true")
+                            v-list-tile-content
                                 v-list-tile-title {{child.title}}
                     v-list-tile(v-else :key="item.title" :to="item.router" active-class="activePrimary")
                         v-list-tile-action
@@ -21,8 +21,14 @@
 
 <script>
 export default {
+    props: {
+        accountPermission: {
+            type: Array
+        }
+    },
     data() {
         return {
+            userGroupId: "",
             drawer: true,
             mini: false,
             menu: false,
@@ -89,10 +95,23 @@ export default {
                     auth: 2
                 },
                 {
-                    title: "Users",
+                    title: "Users Setting",
                     icon: "account_circle",
-                    router: "/admin/users",
-                    auth: 2
+                    auth: 0,
+                    children: [
+                        {
+                            title: "Users",
+                            icon: "list",
+                            router: "/admin/users",
+                            auth: 0
+                        },
+                        {
+                            title: "Roles",
+                            icon: "list",
+                            router: "/admin/roles",
+                            auth: 0
+                        }
+                    ]
                 },
                 {
                     title: "Groups",
@@ -101,12 +120,80 @@ export default {
                     auth: 2
                 }
             ],
-            right: null
+            right: null,
+            permission: []
         };
     },
+    methods: {
+        adjustPermission() {
+            // console.log(this.permission, "prtimvikirn");
+            var rolesPermission = {};
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == "Users") {
+                    rolesPermission.actions = o.actions;
+                    rolesPermission.permission = {
+                        name: "Roles"
+                    };
+                }
+                // console.log(rolesPermission);
+            });
+            this.permission.push(rolesPermission);
+        },
+        permissionControl() {
+            if (this.userGroupId == 1) {
+                this.items.forEach((o, i) => {
+                    if (o.auth == 2) {
+                        o.show = true;
+                    } else {
+                        o.show = false;
+                    }
+                });
+            }
+            // console.log(this.permission, "permission");
+            this.permission.forEach((o, i) => {
+                this.items.forEach((obj, idx) => {
+                    if (obj.children !== undefined) {
+                        obj.children.forEach((object, index) => {
+                            if (
+                                object.title == o.permission.name &&
+                                o.actions.read == 1
+                            ) {
+                                object.show = true;
+                                obj.show = true;
+                            } else if (
+                                object.title == o.permission.name &&
+                                o.actions.read == 0
+                            ) {
+                                object.show = false;
+                            }
+                        });
+                    } else {
+                        if (
+                            o.permission.name == obj.title &&
+                            o.actions.read == 1
+                        ) {
+                            obj.show = true;
+                        } else if (
+                            o.permission.name == obj.title &&
+                            o.actions.read == 0
+                        ) {
+                            obj.show = false;
+                        }
+                    }
+                });
+            });
+            // console.log(this.items, "items");
+            if (this.permission !== null) {
+                this.$store.dispatch("global/finishLoading");
+            }
+        }
+    },
     created() {
-        this.authLevel = this.$store.getters["account/accountAuth"]();
-        // console.log(this.authLevel);
+        this.$store.dispatch("global/startLoading");
+        this.userGroupId = this.$store.getters["account/accountGroupId"]();
+        this.permission = this.accountPermission;
+        this.adjustPermission();
+        this.permissionControl();
     }
 };
 </script>
