@@ -44,6 +44,9 @@ export default {
             return axios
                 .get("yuanyang_user_module/users?user_group_id=" + groupId)
                 .then(function(response) {
+                    response.data.data.forEach((obj, idx) => {
+                        obj.status = obj.deleted_at == null ? true : false;
+                    });
                     return Promise.resolve(response.data);
                 })
                 .catch(function(error) {
@@ -74,11 +77,28 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        newUserRole: (context, data) => {
+            return axios
+                .post(
+                    "yuanyang_user_module/user/" +
+                        data.uid +
+                        "/role/" +
+                        data.chooseRoleId
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         updateUserRole: (context, data) => {
             return axios
                 .patch(
-                    "yuanyang_user_module/users/" + data.uid + "/level",
-                    data
+                    "yuanyang_user_module/user/" +
+                        data.uid +
+                        "/role/" +
+                        data.chooseRoleId
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);

@@ -16,6 +16,16 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
+        },
+        getCategoryList: context => {
+            return axios
+                .get("yuanyang/operation_log/category-list")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
         }
     }
 };

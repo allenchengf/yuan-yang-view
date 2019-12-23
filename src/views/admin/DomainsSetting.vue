@@ -34,8 +34,12 @@
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="groupArray" label="Select Group" item-text="name" item-value="name" @change="chooseGroupFilter(selectedGroup)" v-model="selectedGroup")
                     v-card-text(v-if="batchStatus")
-                        span Progress of Batch Add Domains 
-                        v-progress-linear(color="warning" height="20" :value="progress") {{progressData.done}} / {{progressData.all}}
+                        span Progress of Batch Add Domains
+                        v-layout(wrap)
+                            v-flex(xs10 md10)
+                                v-progress-linear(color="warning" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
+                            v-flex(xs2 md2)
+                                v-btn.my-0(v-show="showGetResultBtn" color="primary" @click="getProcessResult") Get Result
                     h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
@@ -153,6 +157,7 @@ export default {
 
     data() {
         return {
+            showGetResultBtn: false,
             step: 1,
             wantDeleteCdn: "",
             infoHeaders: [
@@ -290,29 +295,29 @@ export default {
     },
     watch: {
         selectedCDN: function() {
-            if (this.selectedCDN.join() == "Null") {
+            if (this.selectedCDN.join() == "Not Set") {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name !== "Null") {
+                    if (o.name !== "Not Set") {
                         o.disable.status = true;
                     }
                 });
             } else {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name !== "Null") {
+                    if (o.name !== "Not Set") {
                         o.disable.status = false;
                     }
                 });
             }
-            if (this.selectedCDN.join().includes("Null") == false) {
+            if (this.selectedCDN.join().includes("Not Set") == false) {
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name == "Null") {
+                    if (o.name == "Not Set") {
                         o.disable.status = true;
                     }
                 });
             } else {
                 // console.log(this.selectedCDN.join());
                 this.cdnArray.forEach((o, i) => {
-                    if (o.name == "Null") {
+                    if (o.name == "Not Set") {
                         o.disable.status = false;
                     }
                 });
@@ -464,7 +469,7 @@ export default {
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 this.filteredItems = [];
                 // console.log("type A");
-                if (this.selectedCDN.join() == "Null") {
+                if (this.selectedCDN.join() == "Not Set") {
                     this.filterData.forEach((o, i) => {
                         if (o.cdns.length == 0) {
                             this.filteredItems.push(o);
@@ -488,8 +493,8 @@ export default {
                 this.filteredItems = [];
 
                 if (
-                    this.selectedCDN.join() == "Null" &&
-                    this.selectedGroup == "Null"
+                    this.selectedCDN.join() == "Not Set" &&
+                    this.selectedGroup == "Not Set"
                 ) {
                     this.filterData.forEach((o, i) => {
                         if (o.cdns.length == 0 && o.domain_group.length == 0) {
@@ -497,8 +502,8 @@ export default {
                         }
                     });
                 } else if (
-                    this.selectedCDN.join() !== "Null" &&
-                    this.selectedGroup == "Null"
+                    this.selectedCDN.join() !== "Not Set" &&
+                    this.selectedGroup == "Not Set"
                 ) {
                     this.filterData.forEach((o, i) => {
                         if (
@@ -532,7 +537,7 @@ export default {
             if (this.selectedCDN.length == 0 && this.selectedGroup !== "") {
                 // console.log("type D");
                 this.filteredItems = [];
-                if (this.selectedGroup == "Null") {
+                if (this.selectedGroup == "Not Set") {
                     // console.log("null");
                     this.filterData.forEach((o, i) => {
                         if (o.domain_group.length == 0) {
@@ -628,14 +633,9 @@ export default {
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
                 .then(
                     function(result) {
-                        // this.$refs.file = "";
                         this.initialApis();
-                        this.getProgress();
+                        this.getProcess();
                         this.$store.dispatch("global/finishLoading");
-                        // this.$store.dispatch(
-                        //     "global/showSnackbarSuccess",
-                        //     "Batch add domains & cdns success!"
-                        // );
                     }.bind(this)
                 )
                 .catch(
@@ -647,16 +647,21 @@ export default {
                         );
                     }.bind(this)
                 );
-            // this.getProgress();
         },
-        getProgress() {
-            // this.$store.dispatch("global/startLoading");
-
+        getProcess() {
             this.$store
-                .dispatch("progress/getProgress", this.user_group_id)
+                .dispatch("process/getProcess", this.user_group_id)
                 .then(
                     function(result) {
                         // console.log(result.data);
+                        // var fakeResult = {
+                        //     all: 5,
+                        //     done: 5,
+                        //     process: 0
+                        // };
+                        // result.data = fakeResult;
+                        // console.log(result.data);
+
                         this.progressData = result.data;
                         this.progress =
                             (result.data.done / result.data.all) * 100;
@@ -664,17 +669,21 @@ export default {
                         var vm = this;
                         if (result.data.done !== result.data.all) {
                             this.batchStatus = true;
-
-                            // console.log(
-                            //     this.progressData.done,
-                            //     this.progressData.all
-                            // );
+                            this.showGetResultBtn = false;
                             setTimeout(function() {
-                                vm.getProgress();
+                                vm.getProcess();
                             }, 5000);
+                        } else if (
+                            result.data.done == result.data.all &&
+                            result.data.done !== 0 &&
+                            result.data.all !== 0
+                        ) {
+                            //result按鈕
+                            this.batchStatus = true;
+                            this.showGetResultBtn = true;
                         } else {
                             this.batchStatus = false;
-                            // this.$store.dispatch("global/finishLoading");
+                            this.showGetResultBtn = false;
                             this.initialApis();
                         }
                         this.$store.dispatch("global/finishLoading");
@@ -690,12 +699,57 @@ export default {
                     }.bind(this)
                 );
         },
+        getProcessResult() {
+            this.dialog.check = true;
+            this.info = [];
+            this.detailInfo = [];
+            var domainName = [];
+            console.log("getResult");
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("process/getProcessResult")
+                .then(
+                    function(result) {
+                        result.data.success.domain.forEach((o, i) => {
+                            o.message = "Success";
+                            var detail = {};
+                            detail.domain_name = o.name;
+                            detail.status = o.message;
+                            domainName.push(detail);
+                        });
+                        result.data.failure.domain.forEach((o, i) => {
+                            if (o.message == null) {
+                                var msg = [];
+                                o.cdn.forEach((obj, idx) => {
+                                    msg.push(obj.message);
+                                });
+                                o.message = msg.join();
+                            }
+                            var detail = {};
+                            detail.domain_name = o.name;
+                            detail.status = o.message;
+                            domainName.push(detail);
+                        });
+                        console.log(domainName, "domainName");
+                        this.info = domainName;
+                        if (this.dialog.check == true) {
+                            this.detailInfo = this.info;
+                        }
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         exportFile() {
-            // console.log(this.cdnProvider, "cc");
-            // this.getAllDomains();
             this.exportData = [];
-            // console.log(this.filterData, "ff");
-            // this.exportData = this.filterData;
             this.filterData.forEach((o, i) => {
                 var exportData = {};
                 exportData.Domain = o.name;
@@ -781,7 +835,7 @@ export default {
                 // });
             });
             var nullArray = {
-                name: "Null"
+                name: "Not Set"
             };
             this.groupArray.push(nullArray);
             // console.log(this.cdnArray);
@@ -955,6 +1009,9 @@ export default {
         closeCheckDialog() {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
+            this.batchStatus = false;
+            this.info = [];
+            this.detailInfo = [];
             this.initialApis();
         },
         getAllCdnProviders: function() {
@@ -968,7 +1025,7 @@ export default {
                         // console.log(result.data);
                         this.cdnArray = result.data;
                         var nullArray = {
-                            name: "Null"
+                            name: "Not Set"
                         };
                         this.cdnArray.push(nullArray);
                         this.cdnArray.forEach((o, i) => {
@@ -994,7 +1051,7 @@ export default {
     created() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
-        this.getProgress();
+        this.getProcess();
         this.getAllCdnProviders();
     }
 };

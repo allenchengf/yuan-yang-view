@@ -15,7 +15,9 @@ import logs from "./modules/logs";
 import crawlers from "./modules/crawlers";
 import users from "./modules/users";
 import userGroup from "./modules/userGroup";
-import progress from "./modules/progress";
+import process from "./modules/process";
+import permission from "./modules/permission";
+import roles from "./modules/roles";
 
 Vue.use(Vuex);
 
@@ -35,6 +37,8 @@ export default new Vuex.Store({
         crawlers,
         users,
         userGroup,
-        progress
+        process,
+        permission,
+        roles
     }
 });

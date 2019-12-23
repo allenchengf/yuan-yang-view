@@ -75,29 +75,10 @@ export default {
         newUserToGroup: (context, data) => {
             return axios
                 .post(
-                    "yuanyang_user_module/users/" +
+                    "yuanyang_user_module/user/" +
                         data.uid +
-                        "/group/" +
-                        data.groupId,
-                    { level: data.level }
-                )
-                .then(function(response) {
-                    return Promise.resolve(response.data);
-                })
-                .catch(function(error) {
-                    return Promise.reject(error.response.data);
-                });
-        },
-        updateUserLevel: (context, data) => {
-            return axios
-                .patch(
-                    "yuanyang_user_module/users/" +
-                        data.uid +
-                        "/group/" +
-                        data.user_group_mapping.user_group_id,
-                    {
-                        level: data.level
-                    }
+                        "/role/" +
+                        data.chooseRoleId
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -109,10 +90,10 @@ export default {
         removeUserFromGroup: (context, data) => {
             return axios
                 .delete(
-                    "yuanyang_user_module/users/" +
+                    "yuanyang_user_module/user/" +
                         data.uid +
-                        "/group/" +
-                        data.groupId
+                        "/role/" +
+                        data.role.id
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);

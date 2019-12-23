@@ -1,7 +1,7 @@
 <template lang="pug">
     #user-module
         Loading
-        NavigationDrawer(ref="drawer")
+        NavigationDrawer(ref="drawer" :accountPermission="accountPermission")
         v-toolbar(fixed clipped-left app color="primary" dark)
             v-toolbar-side-icon(@click.stop="$refs.drawer.drawer = !$refs.drawer.drawer")
             v-toolbar-title.mr-5.align-center.site-logo
@@ -50,7 +50,8 @@ export default {
                 name: "James Bond"
             },
             user: "",
-            portalUrl: ""
+            portalUrl: "",
+            accountPermission: []
         };
     },
     methods: {
@@ -82,6 +83,7 @@ export default {
     },
     created() {
         this.user = this.$store.getters["account/account"]();
+        this.accountPermission = JSON.parse(localStorage.getItem("permission"));
     }
 };
 </script>
