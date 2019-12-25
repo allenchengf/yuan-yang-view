@@ -140,7 +140,6 @@ export default {
     },
     mounted() {
         this.accountPermission = this.$store.getters["permission/permission"]();
-        console.log(this.accountPermission);
         this.actionControl();
     }
 };
