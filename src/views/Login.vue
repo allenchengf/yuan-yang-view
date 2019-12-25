@@ -148,10 +148,10 @@ export default {
     },
     created() {
         this.user.key = process.env.VUE_APP_PLATFORM_KEY;
-    },
-    beforeCreate() {
-        console.log(JSON.parse(localStorage.getItem("permission")), "berfor");
     }
+    // beforeCreate() {
+    //     console.log(JSON.parse(localStorage.getItem("permission")), "berfor");
+    // }
 };
 </script>
 

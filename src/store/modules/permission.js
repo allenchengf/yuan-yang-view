@@ -22,7 +22,6 @@ export default {
                 await axios
                     .get("yuanyang/roles/self/permissions")
                     .then(function(response) {
-                        console.log(response.data.data, "axios");
                         var permission = response.data.data;
                         localStorage.setItem(
                             "permission",
