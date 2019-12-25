@@ -52,6 +52,7 @@
                                     span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
                                     span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
                                 td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
+                                td {{props.item.label}}
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
                                         v-icon(small) edit
@@ -273,6 +274,12 @@ export default {
                     align: "left",
                     sortable: false,
                     value: "domain_group[0].name"
+                },
+                {
+                    text: "Note",
+                    align: "left",
+                    sortable: false,
+                    value: "label"
                 },
                 {
                     text: "Actions",
