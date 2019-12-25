@@ -41,6 +41,14 @@
                         v-form(ref="editForm")
                             v-text-field(v-model="editedGroup.name" label="Name" name="name" :rules="[rules.required]")
                             v-text-field(v-model="editedGroup.unique_id" label="Client ID" name="client id" :rules="[rules.required]")
+                            v-text-field(v-model="editedRoleSetting.name" label="Role Name" type="text" name="name" :rules="[rules.required]")
+                            v-flex Permission Setting
+                            v-layout(row v-for="item in permissionSetting" style="display: space-between;align-items: center;justify-content: space-between" )
+                                span.px-2 {{item.permission.name}}
+                                .checkbox
+                                    v-layout(row)
+                                        v-checkbox(label="Read Only" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
+                                        v-checkbox(label="Full Access" v-model="item.actions.create" @change="fullAccessStatusChange(item.permission.name,item.actions.create)") 
                     v-card-actions
                         v-spacer
                         v-btn(color="grey" flat @click="closeDialog()") CANCEL
@@ -95,10 +103,143 @@ export default {
             editedGroup: {},
             dialog: {
                 add: false
-            }
+            },
+            permissionSetting: [],
+            editedRoleSetting: {},
+            newRolePermission: {}
         };
     },
     methods: {
+        readOnlyStatusChange(permissionName, readStatus) {
+            // console.log(permissionName, readStatus);
+            if (readStatus == false) {
+                this.permissionSetting.forEach((o, i) => {
+                    if (o.permission.name == permissionName) {
+                        o.actions.create = 0;
+                        o.actions.update = 0;
+                        o.actions.delete = 0;
+                        o.actions.read = 0;
+                    }
+                });
+            }
+            // console.log(this.permissionSetting);
+        },
+        fullAccessStatusChange(permissionName, fullAccessStatus) {
+            // console.log(permissionName, fullAccessStatus);
+            if (fullAccessStatus == true) {
+                this.permissionSetting.forEach((o, i) => {
+                    if (o.permission.name == permissionName) {
+                        o.actions.read = 1;
+                        o.actions.update = 1;
+                        o.actions.delete = 1;
+                    }
+                });
+            } else {
+                this.permissionSetting.forEach((o, i) => {
+                    if (o.permission.name == permissionName) {
+                        o.actions.read = 0;
+                        o.actions.update = 0;
+                        o.actions.delete = 0;
+                    }
+                });
+            }
+            // console.log(this.permissionSetting);
+        },
+        getAllPermission() {
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("permission/getAllPermission")
+                .then(
+                    function(result) {
+                        // console.log(result.data);
+                        result.data.forEach((o, i) => {
+                            var permission = {};
+                            permission["permission"] = {
+                                name: o.name,
+                                id: o.id
+                            };
+                            permission.permission_id = o.id;
+                            permission["actions"] = {
+                                read: 0,
+                                create: 0,
+                                update: 0,
+                                delete: 0
+                            };
+                            this.permissionSetting.push(permission);
+                        });
+                        // console.log(this.permissionSetting, "all");
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        newRole() {
+            // console.log(this.editedRoleSetting);
+            // console.log(this.permissionSetting);
+            // this.editedRoleSetting.user_group_id = this.userGroupId;
+            var permissions = [];
+            this.permissionSetting.forEach((o, i) => {
+                var permissionObject = {
+                    permission_id: o.permission_id,
+                    actions: o.actions
+                };
+                permissions.push(permissionObject);
+            });
+            // console.log(permissions, "permission");
+            this.newRolePermission.permissions = permissions;
+            // console.log(this.newRolePermission, "role");
+            // this.updateRolePermission(this.newRolePermission);
+
+            this.$store
+                .dispatch("roles/newRole", this.editedRoleSetting)
+                .then(
+                    function(result) {
+                        var newRoleId = result.data.id;
+                        this.newRolePermission.roleId = newRoleId;
+                        this.updateRolePermission(this.newRolePermission);
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+            // console.log(this.permissionSetting);
+        },
+        updateRolePermission(permission) {
+            // console.log(permission, "permission");
+            this.$store
+                .dispatch("permission/updateRolePermission", permission)
+                .then(
+                    function(result) {
+                        // console.log(result.data);
+                        this.$store.dispatch("global/finishLoading");
+                        this.closeDialog();
+                        this.getUserGroups();
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
         getUserGroups: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -123,19 +264,23 @@ export default {
             this.dialog.add = true;
         },
         updateGroup() {
+            // console.log(this.editedGroup, "group");
+            // this.newRole();
+
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
                     .dispatch("userGroup/newUserGroup", this.editedGroup)
                     .then(
                         function(result) {
+                            this.editedRoleSetting.user_group_id =
+                                result.data.id;
+                            this.newRole();
                             this.$store.dispatch(
                                 "global/showSnackbarSuccess",
                                 "Update user success!"
                             );
-                            this.getUserGroups();
-                            this.$store.dispatch("global/finishLoading");
-                            this.closeDialog();
+                            // this.getUserGroups();
                         }.bind(this)
                     )
                     .catch(
@@ -193,6 +338,7 @@ export default {
     },
     created() {
         this.getUserGroups();
+        this.getAllPermission();
     }
 };
 </script>
