@@ -9,10 +9,10 @@
                         v-container
                             v-text-field(v-model="user.unique_id" label="Client Id" type="text" name="unique_id" :rules="[rules.required]")
                             v-text-field(v-model="user.email" label="Email" type="text" name="email" :rules="[rules.required, rules.email]")
-                            v-text-field(v-model="user.password" label="Password" name="password" :append-icon="passwordShow ? 'visibility' : 'visibility_off'" :type="passwordShow ? 'text' : 'password'" @click:append="passwordShow = !passwordShow" :rules="[rules.required]" @keyup.native.enter="signIn")
+                            v-text-field(v-model="user.password" label="Password" name="password" :append-icon="passwordShow ? 'visibility' : 'visibility_off'" :type="passwordShow ? 'text' : 'password'" @click:append="passwordShow = !passwordShow" :rules="[rules.required]" @keyup.native.enter="initialApis")
                             v-alert.text-md-left(:value="loginError" color="error" icon="warning" outline transition="scale-transition") {{loginErrorMessage}}
                             //- v-checkbox(label="Remember me" color="primary")
-                            v-btn(color="primary" block @click="signIn") Sign in
+                            v-btn(color="primary" block @click="initialApis") Sign in
                             router-link(to="/forgot") Forgot your password?
                 v-window-item(:value="2")
                     v-form(ref="otpForm" lazy-validation valid onsubmit="return false;")
@@ -66,13 +66,8 @@ export default {
                     .dispatch("account/login", this.user)
                     .then(
                         (result => {
-                            this.getSelfPermission();
-                            if (result.data.google2fa) {
-                                this.step = 2;
-                                this.otpToken = result.data.token;
-                            } else {
-                                this.loginSuccess();
-                            }
+                            this.getSelfPermission(result.data);
+
                             this.$store.dispatch("global/finishLoading");
                         }).bind(this)
                     )
@@ -85,11 +80,17 @@ export default {
                     );
             }
         },
-        getSelfPermission: function() {
+        getSelfPermission(accountData) {
             this.$store
                 .dispatch("permission/getSelfPermission")
                 .then(
                     function(result) {
+                        if (accountData.google2fa) {
+                            this.step = 2;
+                            this.otpToken = accountData.token;
+                        } else {
+                            this.loginSuccess();
+                        }
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -102,6 +103,9 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        initialApis: function() {
+            this.signIn();
         },
         checkOTPCode: function() {
             if (this.$refs.otpForm.validate()) {
