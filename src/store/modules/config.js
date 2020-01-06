@@ -10,7 +10,7 @@ export default {
         getConfigData: (context, permission_id) => {
             return axios
                 .get("yuanyang/config", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -22,7 +22,7 @@ export default {
         importConfigData: (context, data) => {
             return axios
                 .post("yuanyang/config", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);

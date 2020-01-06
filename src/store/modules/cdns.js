@@ -10,7 +10,7 @@ export default {
         getCDNsByDomainId: (context, data) => {
             return axios
                 .get("yuanyang/domains/" + data.id + "/cdn", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -29,7 +29,7 @@ export default {
                         "/default",
                     { default: data.default },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -49,7 +49,7 @@ export default {
                         "/cname",
                     { cname: data.cname },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -68,7 +68,7 @@ export default {
                         cname: data.cname
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -83,7 +83,7 @@ export default {
                 .delete(
                     "yuanyang/domains/" + data.domain_id + "/cdn/" + data.id,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {

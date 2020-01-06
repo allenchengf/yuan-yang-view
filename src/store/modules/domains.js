@@ -16,7 +16,7 @@ export default {
         getAllDomains: (context, data) => {
             return axios
                 .get("yuanyang/domains?user_group_id=" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -43,7 +43,7 @@ export default {
         getDomainById: (context, data) => {
             return axios
                 .get("yuanyang/domains/" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -56,7 +56,7 @@ export default {
             // console.log(data);
             return axios
                 .get("yuanyang/domains?domain_group_id=" + data.ugid, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -68,7 +68,7 @@ export default {
         updateDomain: (context, data) => {
             return axios
                 .put("yuanyang/domains/" + data.id, data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -80,7 +80,7 @@ export default {
         batchNewDomainsAndCdns: (context, data) => {
             return axios
                 .post("yuanyang/domains/batch", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -92,7 +92,7 @@ export default {
         newDomain: (context, data) => {
             return axios
                 .post("yuanyang/domains", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -104,7 +104,7 @@ export default {
         deleteDomain: (context, data) => {
             return axios
                 .delete("yuanyang/domains/" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);

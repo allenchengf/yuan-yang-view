@@ -10,7 +10,7 @@ export default {
         getScanProvider: (context, permission_id) => {
             return axios
                 .get("yuanyang/scan-platform", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -37,7 +37,7 @@ export default {
         getLastTimeScanData: (context, permission_id) => {
             return axios
                 .get("yuanyang/scan-platform/scanned-data", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -57,7 +57,7 @@ export default {
                         scanned_at: data.scanned_at
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -76,7 +76,7 @@ export default {
                         new_cdn_provider_id: data.new_cdn_provider_id
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -92,7 +92,7 @@ export default {
                     "yuanyang/scan-platform/change-all",
                     {},
                     {
-                        headers: { permission_id: permission_id }
+                        headers: { "permission-id": permission_id }
                     }
                 )
                 .then(function(response) {

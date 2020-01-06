@@ -10,7 +10,7 @@ export default {
         getLogsData: (context, permission_id) => {
             return axios
                 .get("yuanyang/operation_log", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -22,7 +22,7 @@ export default {
         getCategoryList: (context, permission_id) => {
             return axios
                 .get("yuanyang/operation_log/category-list", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);

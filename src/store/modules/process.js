@@ -13,7 +13,7 @@ export default {
                     "yuanyang/process?function_name=batchCreateDomainAndCdn&user_group_id=" +
                         data.ugid,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -28,7 +28,7 @@ export default {
                 .get(
                     "yuanyang/process/result?function_name=batchCreateDomainAndCdn",
                     {
-                        headers: { permission_id: permission_id }
+                        headers: { "permission-id": permission_id }
                     }
                 )
                 .then(function(response) {

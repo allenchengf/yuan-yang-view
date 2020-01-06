@@ -45,7 +45,7 @@ export default {
                 .get(
                     "yuanyang_user_module/users?user_group_id=" + data.groupId,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -75,7 +75,7 @@ export default {
                     "yuanyang_user_module/users/" + data.uid + "/profile",
                     data,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -121,7 +121,7 @@ export default {
                     "yuanyang_user_module/users/" + data.uid + "/status",
                     data,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -134,7 +134,7 @@ export default {
         newUser: (context, data) => {
             return axios
                 .post("yuanyang_user_module/users", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -149,7 +149,7 @@ export default {
                     "yuanyang_user_module/password/email",
                     { email: data.email },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {

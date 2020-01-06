@@ -10,7 +10,7 @@ export default {
         getAllGroups: (context, permission_id) => {
             return axios
                 .get("yuanyang/groups", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -22,7 +22,7 @@ export default {
         getGroupById: (context, data) => {
             return axios
                 .get("yuanyang/groups/" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -34,7 +34,7 @@ export default {
         getGroupIRouteCdn: (context, data) => {
             return axios
                 .get("yuanyang/groups/" + data.id + "/routing-rules", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -46,7 +46,7 @@ export default {
         updateGroup: (context, data) => {
             return axios
                 .put("yuanyang/groups/" + data.id, data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -63,7 +63,7 @@ export default {
                         cdn_provider_id: data.defaultCdnId
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -76,7 +76,7 @@ export default {
         newGroup: (context, data) => {
             return axios
                 .post("yuanyang/groups", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -93,7 +93,7 @@ export default {
                         domain_id: data.domainId
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -106,7 +106,7 @@ export default {
         batchNewDomainByGroupId: (context, data) => {
             return axios
                 .post("yuanyang/groups/" + data.groupId + "/batch", data.data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -118,7 +118,7 @@ export default {
         deleteGroup: (context, data) => {
             return axios
                 .delete("yuanyang/groups/" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -132,7 +132,7 @@ export default {
                 .delete(
                     "yuanyang/groups/" + data.groupId + "/domain/" + data.id,
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {

@@ -11,7 +11,7 @@ export default {
             // console.log(data);
             return axios
                 .get("yuanyang/domains/" + data.id + "/routing-rules", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -23,7 +23,7 @@ export default {
         getIRouteCdnList: (context, permission_id) => {
             return axios
                 .get("yuanyang/routing-rules/lists", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -35,7 +35,7 @@ export default {
         getAllIRouteCdn: (context, permission_id) => {
             return axios
                 .get("yuanyang/routing-rules/all", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -86,7 +86,7 @@ export default {
                         cdn_provider_id: data.cdn.cdn_provider_id
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -107,7 +107,7 @@ export default {
                         cdn_provider_id: data.cdn.cdn_provider_id
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {

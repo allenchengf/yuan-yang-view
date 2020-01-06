@@ -11,7 +11,7 @@ export default {
             return axios
                 .get("yuanyang/cdn_providers", {
                     headers: {
-                        permission_id: permission_id
+                        "permission-id": permission_id
                     }
                 })
                 .then(function(response) {
@@ -29,7 +29,7 @@ export default {
                         status: data.status
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -47,7 +47,7 @@ export default {
                         scannable: data.scannable
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -60,7 +60,7 @@ export default {
         changeCdnProviderDefault: (context, data) => {
             return axios
                 .patch("yuanyang/cdn_providers/" + data.id + "/change", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -72,7 +72,7 @@ export default {
         updateCdnProvider: (context, data) => {
             return axios
                 .patch("yuanyang/cdn_providers/" + data.id, data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -84,7 +84,7 @@ export default {
         newCdnProvider: (context, data) => {
             return axios
                 .post("yuanyang/cdn_providers", data, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -96,7 +96,7 @@ export default {
         checkCdnProvider: (context, data) => {
             return axios
                 .get("yuanyang/cdn_providers/" + data.id + "/check", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -108,7 +108,7 @@ export default {
         deleteCdnProvider: (context, data) => {
             return axios
                 .delete("yuanyang/cdn_providers/" + data.id, {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);

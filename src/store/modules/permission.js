@@ -41,7 +41,7 @@ export default {
         getAllPermission: (context, permission_id) => {
             return axios
                 .get("yuanyang/permissions", {
-                    headers: { permission_id: permission_id }
+                    headers: { "permission-id": permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -53,7 +53,7 @@ export default {
         getRolePermissionByRoleId: (context, data) => {
             return axios
                 .get("yuanyang/roles/" + data.roleId + "/permissions", {
-                    headers: { permission_id: data.permission_id }
+                    headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -70,7 +70,7 @@ export default {
                         permissions: data.permissions
                     },
                     {
-                        headers: { permission_id: data.permission_id }
+                        headers: { "permission-id": data.permission_id }
                     }
                 )
                 .then(function(response) {
