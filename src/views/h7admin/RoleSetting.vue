@@ -26,7 +26,7 @@
                                         v-icon(small) delete
 
         //- Dialogs
-        v-dialog.edit-dialog(v-model="dialog.add" max-width="460" persistent)
+        v-dialog.edit-dialog(v-model="dialog.add" max-width="660" persistent)
             v-card
                 v-card-title.title Add Role
                 v-card-text 
@@ -37,13 +37,14 @@
                             span.px-2 {{item.permission.name}}
                             .checkbox
                                 v-layout(row)
-                                    v-checkbox(label="Read Only" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
-                                    v-checkbox(label="Full Access" v-model="item.actions.create" @change="fullAccessStatusChange(item.permission.name,item.actions.create)") 
+                                    v-checkbox(label="Read" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
+                                    v-checkbox(label="Create / Update" v-model="item.actions.create" @change="createUpdateStatusChange(item.permission.name,item.actions.create)") 
+                                    v-checkbox(label="Delete" v-model="item.actions.delete" @change="deleteStatusChange(item.permission.name,item.actions.delete)") 
                 v-card-actions  
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="dialog.add = false") Cancel
                     v-btn(color="primary" flat="flat" @click="newRole") Save
-        v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
+        v-dialog.edit-dialog(v-model="dialog.edit" max-width="660" persistent)
             v-card
                 v-card-title.title Edit Role: {{ editedRoleSetting.name }}
                 v-card-text 
@@ -54,7 +55,8 @@
                         .checkbox
                             v-layout(row)
                                 v-checkbox(label="Read" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
-                                v-checkbox(label="Full Access" v-model="item.actions.create" @change="fullAccessStatusChange(item.permission.name,item.actions.create)") 
+                                v-checkbox(label="Create / Update" v-model="item.actions.create" @change="createUpdateStatusChange(item.permission.name,item.actions.create)") 
+                                v-checkbox(label="Delete" v-model="item.actions.delete" @change="deleteStatusChange(item.permission.name,item.actions.delete)") 
                 v-card-actions  
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="dialog.edit = false") Cancel
@@ -150,7 +152,9 @@ export default {
             },
             permissionSetting: [],
             newRolePermission: {},
-            editedRolePermission: {}
+            editedRolePermission: {},
+            permission: [],
+            permission_id: 0
         };
     },
     watch: {},
@@ -169,13 +173,35 @@ export default {
             }
             // console.log(this.permissionSetting);
         },
-        fullAccessStatusChange(permissionName, fullAccessStatus) {
+        createUpdateStatusChange(permissionName, createUpdateStatus) {
             // console.log(permissionName, fullAccessStatus);
-            if (fullAccessStatus == true) {
+            if (createUpdateStatus == true) {
                 this.permissionSetting.forEach((o, i) => {
                     if (o.permission.name == permissionName) {
                         o.actions.read = 1;
                         o.actions.update = 1;
+                        o.actions.create = 1;
+                    }
+                });
+            } else {
+                this.permissionSetting.forEach((o, i) => {
+                    if (o.permission.name == permissionName) {
+                        o.actions.read = 0;
+                        o.actions.update = 0;
+                        o.actions.create = 0;
+                        o.actions.delete = 0;
+                    }
+                });
+            }
+            // console.log(this.permissionSetting);
+        },
+        deleteStatusChange(permissionName, deleteStatus) {
+            if (deleteStatus == true) {
+                this.permissionSetting.forEach((o, i) => {
+                    if (o.permission.name == permissionName) {
+                        o.actions.read = 1;
+                        o.actions.update = 1;
+                        o.actions.create = 1;
                         o.actions.delete = 1;
                     }
                 });
@@ -184,16 +210,16 @@ export default {
                     if (o.permission.name == permissionName) {
                         o.actions.read = 0;
                         o.actions.update = 0;
+                        o.actions.create = 0;
                         o.actions.delete = 0;
                     }
                 });
             }
-            // console.log(this.permissionSetting);
         },
         getAllPermission() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("permission/getAllPermission")
+                .dispatch("permission/getAllPermission", this.permission_id)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -227,8 +253,6 @@ export default {
                 );
         },
         getRolesByGroupId() {
-            // console.log(this.roleList);
-            // this.items = this.roleList;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("roles/getRolesByGroupId", this.userGroupId)
@@ -250,12 +274,13 @@ export default {
                 );
         },
         getRolePermissionByRoleId() {
+            var role = {
+                roleId: this.editedRolePermission.roleId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch(
-                    "permission/getRolePermissionByRoleId",
-                    this.editedRolePermission.roleId
-                )
+                .dispatch("permission/getRolePermissionByRoleId", role)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -297,7 +322,6 @@ export default {
             });
             // console.log(permissions);
             this.newRolePermission.permissions = permissions;
-            // console.log(this.newRolePermission);
             this.$store
                 .dispatch("roles/newRole", this.editedRoleSetting)
                 .then(
@@ -320,11 +344,11 @@ export default {
             // console.log(this.permissionSetting);
         },
         updateRolePermission(permission) {
+            permission.permission_id = this.permission_id;
             this.$store
                 .dispatch("permission/updateRolePermission", permission)
                 .then(
                     function(result) {
-                        // console.log(result.data);
                         this.dialog.edit = false;
                         this.dialog.add = false;
                     }.bind(this)
@@ -349,8 +373,6 @@ export default {
         },
         updateRole() {
             this.editedRoleSetting["id"] = this.editedRolePermission.roleId;
-            // console.log(this.editedRoleSetting);
-
             this.$store
                 .dispatch("roles/updateRole", this.editedRoleSetting)
                 .then(
@@ -408,9 +430,19 @@ export default {
                     }.bind(this)
                 );
             this.dialog.delete = false;
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     created() {
+        this.checkPagePermission();
         this.userGroupId = this.$store.getters["account/accountGroupId"]();
         this.getRolesByGroupId();
         this.getAllPermission();
