@@ -38,9 +38,11 @@ export default {
                     });
             } catch (err) {}
         },
-        getAllPermission: context => {
+        getAllPermission: (context, permission_id) => {
             return axios
-                .get("yuanyang/permissions")
+                .get("yuanyang/permissions", {
+                    headers: { permission_id: permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -48,9 +50,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getRolePermissionByRoleId: (context, roleId) => {
+        getRolePermissionByRoleId: (context, data) => {
             return axios
-                .get("yuanyang/roles/" + roleId + "/permissions")
+                .get("yuanyang/roles/" + data.roleId + "/permissions", {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -60,9 +64,15 @@ export default {
         },
         updateRolePermission: (context, data) => {
             return axios
-                .post("yuanyang/roles/" + data.roleId + "/permissions", {
-                    permissions: data.permissions
-                })
+                .post(
+                    "yuanyang/roles/" + data.roleId + "/permissions",
+                    {
+                        permissions: data.permissions
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

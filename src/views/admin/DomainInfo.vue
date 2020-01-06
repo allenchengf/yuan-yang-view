@@ -84,8 +84,12 @@ export default {
             this.currentTab = value;
         },
         getDomainInfo() {
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("domains/getDomainById", this.domain_id)
+                .dispatch("domains/getDomainById", domain)
                 .then(
                     function(result) {
                         this.domainInfo = result.data.domain;

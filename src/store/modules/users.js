@@ -40,9 +40,14 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getUsersByGroup: (context, groupId) => {
+        getUsersByGroup: (context, data) => {
             return axios
-                .get("yuanyang_user_module/users?user_group_id=" + groupId)
+                .get(
+                    "yuanyang_user_module/users?user_group_id=" + data.groupId,
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     response.data.data.forEach((obj, idx) => {
                         obj.status = obj.deleted_at == null ? true : false;
@@ -68,7 +73,10 @@ export default {
             return axios
                 .put(
                     "yuanyang_user_module/users/" + data.uid + "/profile",
-                    data
+                    data,
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -109,7 +117,13 @@ export default {
         },
         updateUserStatus: (context, data) => {
             return axios
-                .put("yuanyang_user_module/users/" + data.uid + "/status", data)
+                .put(
+                    "yuanyang_user_module/users/" + data.uid + "/status",
+                    data,
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -119,7 +133,9 @@ export default {
         },
         newUser: (context, data) => {
             return axios
-                .post("yuanyang_user_module/users", data)
+                .post("yuanyang_user_module/users", data, {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -127,9 +143,15 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        forgotPassword: (context, email) => {
+        forgotPassword: (context, data) => {
             return axios
-                .post("yuanyang_user_module/password/email", { email: email })
+                .post(
+                    "yuanyang_user_module/password/email",
+                    { email: data.email },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

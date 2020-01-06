@@ -184,6 +184,8 @@ export default {
             context.commit("updateAccountInfo", null);
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            localStorage.removeItem("auth");
+            localStorage.removeItem("permission");
             // router push to login page
             router.push(
                 "/login?message=" + "sign in success." + "&type=success"

@@ -336,7 +336,7 @@ export default {
         getAllCdnProvider() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -356,9 +356,13 @@ export default {
                 );
         },
         getAlliRouteCDNs() {
+            var group = {
+                id: this.groupId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("grouping/getGroupIRouteCdn", this.groupId)
+                .dispatch("grouping/getGroupIRouteCdn", group)
                 .then(
                     function(result) {
                         this.filterData = result.data.location_network;

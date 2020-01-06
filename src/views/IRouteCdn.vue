@@ -133,7 +133,9 @@ export default {
                     value: "",
                     sortable: false
                 }
-            ]
+            ],
+            permission: [],
+            permission_id: 0
         };
     },
     methods: {
@@ -142,7 +144,7 @@ export default {
 
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getIRouteCdnList")
+                .dispatch("iRouteCdn/getIRouteCdnList", this.permission_id)
                 .then(
                     function(result) {
                         this.rawData = result.data;
@@ -192,6 +194,16 @@ export default {
                     }
                 });
             }
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
@@ -201,6 +213,7 @@ export default {
         if (this.$route.query !== "") {
             this.$router.push("/admin/iroutecdn");
         }
+        this.checkPagePermission();
     }
 };
 </script>

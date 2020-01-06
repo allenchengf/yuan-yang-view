@@ -135,7 +135,6 @@ export default {
                         name: "Roles"
                     };
                 }
-                // console.log(rolesPermission);
             });
             this.permission.push(rolesPermission);
         },

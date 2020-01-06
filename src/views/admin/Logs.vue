@@ -82,14 +82,16 @@ export default {
                     sortable: true,
                     value: "change_to"
                 }
-            ]
+            ],
+            permission: [],
+            permission_id: 0
         };
     },
     methods: {
         getLogsData() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("logs/getLogsData")
+                .dispatch("logs/getLogsData", this.permission_id)
                 .then(
                     function(result) {
                         this.rawData = result.data.filter(
@@ -165,7 +167,7 @@ export default {
         getCategoryList: function() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("logs/getCategoryList")
+                .dispatch("logs/getCategoryList", this.permission_id)
                 .then(
                     function(result) {
                         this.categoryList = result.data;
@@ -205,6 +207,16 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     watch: {
@@ -215,6 +227,7 @@ export default {
         }
     },
     created() {
+        this.checkPagePermission();
         this.getLogsData();
         this.getCategoryList();
         this.getUsers();

@@ -174,7 +174,7 @@ export default {
     },
     watch: {
         perPage: function() {
-            console.log(this.perPage);
+            // console.log(this.perPage);
         }
     },
     methods: {
@@ -186,7 +186,7 @@ export default {
             } else {
                 this.perPage = data;
             }
-            console.log(this.perPage);
+            // console.log(this.perPage);
         },
         getNetworks: function() {
             // var id = this.tabs[this.currentTab].id;

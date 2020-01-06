@@ -7,9 +7,11 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getLogsData: context => {
+        getLogsData: (context, permission_id) => {
             return axios
-                .get("yuanyang/operation_log")
+                .get("yuanyang/operation_log", {
+                    headers: { permission_id: permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -17,9 +19,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getCategoryList: context => {
+        getCategoryList: (context, permission_id) => {
             return axios
-                .get("yuanyang/operation_log/category-list")
+                .get("yuanyang/operation_log/category-list", {
+                    headers: { permission_id: permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

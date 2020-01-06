@@ -7,9 +7,13 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getAllCdnProvider: context => {
+        getAllCdnProvider: (context, permission_id) => {
             return axios
-                .get("yuanyang/cdn_providers")
+                .get("yuanyang/cdn_providers", {
+                    headers: {
+                        permission_id: permission_id
+                    }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -19,9 +23,15 @@ export default {
         },
         changeCdnProviderStatus: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/status", {
-                    status: data.status
-                })
+                .patch(
+                    "yuanyang/cdn_providers/" + data.id + "/status",
+                    {
+                        status: data.status
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -31,9 +41,15 @@ export default {
         },
         changeCdnProviderScannable: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/scannable", {
-                    scannable: data.scannable
-                })
+                .patch(
+                    "yuanyang/cdn_providers/" + data.id + "/scannable",
+                    {
+                        scannable: data.scannable
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -43,7 +59,9 @@ export default {
         },
         changeCdnProviderDefault: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id + "/change")
+                .patch("yuanyang/cdn_providers/" + data.id + "/change", {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -53,7 +71,9 @@ export default {
         },
         updateCdnProvider: (context, data) => {
             return axios
-                .patch("yuanyang/cdn_providers/" + data.id, data)
+                .patch("yuanyang/cdn_providers/" + data.id, data, {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -63,7 +83,9 @@ export default {
         },
         newCdnProvider: (context, data) => {
             return axios
-                .post("yuanyang/cdn_providers", data)
+                .post("yuanyang/cdn_providers", data, {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -71,9 +93,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        checkCdnProvider: (context, id) => {
+        checkCdnProvider: (context, data) => {
             return axios
-                .get("yuanyang/cdn_providers/" + id + "/check")
+                .get("yuanyang/cdn_providers/" + data.id + "/check", {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -81,9 +105,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        deleteCdnProvider: (context, id) => {
+        deleteCdnProvider: (context, data) => {
             return axios
-                .delete("yuanyang/cdn_providers/" + id)
+                .delete("yuanyang/cdn_providers/" + data.id, {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

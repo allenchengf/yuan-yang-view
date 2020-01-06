@@ -7,9 +7,11 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getScanProvider: context => {
+        getScanProvider: (context, permission_id) => {
             return axios
-                .get("yuanyang/scan-platform")
+                .get("yuanyang/scan-platform", {
+                    headers: { permission_id: permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -32,9 +34,11 @@ export default {
         //             return Promise.reject(error.response.data);
         //         });
         // },
-        getLastTimeScanData: context => {
+        getLastTimeScanData: (context, permission_id) => {
             return axios
-                .get("yuanyang/scan-platform/scanned-data")
+                .get("yuanyang/scan-platform/scanned-data", {
+                    headers: { permission_id: permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -51,6 +55,9 @@ export default {
                     {
                         cdn_provider_id: data.cdn_provider_id,
                         scanned_at: data.scanned_at
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
                     }
                 )
                 .then(function(response) {
@@ -62,10 +69,16 @@ export default {
         },
         updateRoutingRules: (context, data) => {
             return axios
-                .put("yuanyang/scan-platform/routing-rules/" + data.id, {
-                    old_cdn_provider_id: data.old_cdn_provider_id,
-                    new_cdn_provider_id: data.new_cdn_provider_id
-                })
+                .put(
+                    "yuanyang/scan-platform/routing-rules/" + data.id,
+                    {
+                        old_cdn_provider_id: data.old_cdn_provider_id,
+                        new_cdn_provider_id: data.new_cdn_provider_id
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -73,9 +86,15 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        changeAllCdnProvider: context => {
+        changeAllCdnProvider: (context, permission_id) => {
             return axios
-                .put("yuanyang/scan-platform/change-all")
+                .put(
+                    "yuanyang/scan-platform/change-all",
+                    {},
+                    {
+                        headers: { permission_id: permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

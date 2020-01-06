@@ -152,7 +152,8 @@ export default {
                 be_used: []
             },
             scannableInfo: {},
-            type: ""
+            type: "",
+            permission_id: 0
         };
     },
     computed: {
@@ -189,9 +190,10 @@ export default {
         },
         checkCdnProvider() {
             // console.log(this.type, "check api");
+            this.switchItem.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/checkCdnProvider", this.switchItem.id)
+                .dispatch("cdnProviders/checkCdnProvider", this.switchItem)
                 .then(
                     function(result) {
                         this.checkData = result.data;
@@ -233,6 +235,7 @@ export default {
                 );
         },
         changeScannableAction() {
+            this.scannableInfo.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch(
@@ -274,6 +277,7 @@ export default {
             } else {
                 this.switchItem.status = 0;
             }
+            this.switchItem.permission_id = this.permission_id;
             // console.log(this.switchItem, "status");
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -299,15 +303,12 @@ export default {
                 );
         },
         getAllCDNs: function() {
-            // console.log(this.filterData);
-
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.filterData = result.data;
-                        // console.log(this.filterData);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -344,6 +345,7 @@ export default {
                 this.addNewCDN();
             } else {
                 // console.log(this.cdn, "edit");
+                this.cdn.permission_id = this.permission_id;
                 this.$store.dispatch("global/startLoading");
                 if (this.$refs.editForm.validate()) {
                     this.$store
@@ -372,6 +374,7 @@ export default {
 
         addNewCDN: function() {
             // console.log(this.cdn, "add");
+            this.cdn.permission_id = this.permission_id;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -401,9 +404,10 @@ export default {
             }
         },
         deleteCDN() {
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/deleteCdnProvider", this.cdn.id)
+                .dispatch("cdnProviders/deleteCdnProvider", this.cdn)
                 .then(
                     function(result) {
                         this.$store.dispatch(
@@ -434,6 +438,17 @@ export default {
             this.getAllCDNs();
             this.step = 1;
             this.type = "";
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+
+            // console.log(this.permission_id);
         }
     },
     mounted() {
@@ -441,6 +456,9 @@ export default {
             "account/accountGroupId"
         ]();
         this.getAllCDNs();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

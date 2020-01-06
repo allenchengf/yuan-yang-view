@@ -7,9 +7,11 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getCDNsByDomainId: (context, id) => {
+        getCDNsByDomainId: (context, data) => {
             return axios
-                .get("yuanyang/domains/" + id + "/cdn")
+                .get("yuanyang/domains/" + data.id + "/cdn", {
+                    headers: { permission_id: data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -25,7 +27,10 @@ export default {
                         "/cdn/" +
                         data.id +
                         "/default",
-                    { default: data.default }
+                    { default: data.default },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -42,7 +47,10 @@ export default {
                         "/cdn/" +
                         data.id +
                         "/cname",
-                    { cname: data.cname }
+                    { cname: data.cname },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
@@ -53,10 +61,16 @@ export default {
         },
         newCDN: (context, data) => {
             return axios
-                .post("yuanyang/domains/" + data.domain_id + "/cdn", {
-                    cdn_provider_id: data.cdn_provider_id,
-                    cname: data.cname
-                })
+                .post(
+                    "yuanyang/domains/" + data.domain_id + "/cdn",
+                    {
+                        cdn_provider_id: data.cdn_provider_id,
+                        cname: data.cname
+                    },
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -67,7 +81,10 @@ export default {
         deleteCDN: (context, data) => {
             return axios
                 .delete(
-                    "yuanyang/domains/" + data.domain_id + "/cdn/" + data.id
+                    "yuanyang/domains/" + data.domain_id + "/cdn/" + data.id,
+                    {
+                        headers: { permission_id: data.permission_id }
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);

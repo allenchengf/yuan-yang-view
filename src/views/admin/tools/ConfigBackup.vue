@@ -24,14 +24,16 @@ export default {
             importJsonData: [],
             rawData: [],
             accountPermission: [],
-            action: false
+            action: false,
+            permission: [],
+            permission_id: 0
         };
     },
     methods: {
         getData() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("config/getConfigData")
+                .dispatch("config/getConfigData", this.permission_id)
                 .then(
                     function(result) {
                         this.rawData = result.data;
@@ -101,13 +103,11 @@ export default {
         },
         uploadData(data) {
             // console.log(data);
-            this.importJsonData = data;
+            this.importJsonData = JSON.parse(data);
+            this.importJsonData.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch(
-                    "config/importConfigData",
-                    JSON.parse(this.importJsonData)
-                )
+                .dispatch("config/importConfigData", this.importJsonData)
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
@@ -131,16 +131,32 @@ export default {
             var actions = this.accountPermission.filter(item => {
                 return item.permission.name == "Config Backup";
             });
-            if (actions.create == 1) {
+            // console.log(actions);
+
+            if (actions[0].actions.create == 1) {
                 this.action = true;
             } else {
                 this.action = false;
             }
+            // console.log(this.action);
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
         this.accountPermission = this.$store.getters["permission/permission"]();
         this.actionControl();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

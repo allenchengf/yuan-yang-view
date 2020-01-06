@@ -225,7 +225,9 @@ export default {
             allListMapping: {},
             user_group_id: "",
             domainList: [],
-            domainInGroupMsg: ""
+            domainInGroupMsg: "",
+            permission: [],
+            permission_id: 0
         };
     },
     computed: {
@@ -291,9 +293,9 @@ export default {
     },
     methods: {
         parentMethod(data) {
-            console.log(data);
+            // console.log(data);
             this.selected = data;
-            console.log(this.selected);
+            // console.log(this.selected);
         },
         filterAction() {
             if (this.continentFilter !== "All") {
@@ -548,8 +550,12 @@ export default {
             // console.log(this.iRouteCDN, "iRouteCDN");
         },
         getDomainList() {
+            var domain = {
+                id: this.user_group_id,
+                permission_id: this.permission_id
+            };
             this.$store
-                .dispatch("domains/getAllDomains", this.user_group_id)
+                .dispatch("domains/getAllDomains", domain)
                 .then(
                     function(result) {
                         this.domainList = result.data.domains;
@@ -564,13 +570,18 @@ export default {
                 );
         },
         getDomainInfo() {
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getDomainById", this.domainId)
+                .dispatch("domains/getDomainById", domain)
                 .then(
                     function(result) {
                         this.infoData = result.data.domain;
-                        // this.mapping();
+                        // console.log(this.infoData);
+                        this.mapping();
                         this.breadcrumbsItems[1].text = this.infoData.name;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -586,9 +597,13 @@ export default {
                 );
         },
         getDomainIRouteInfo() {
+            var domain = {
+                id: this.domainId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getDomainIRouteCDNs", this.domainId)
+                .dispatch("iRouteCdn/getDomainIRouteCDNs", domain)
                 .then(
                     function(result) {
                         this.filterData = result.data;
@@ -615,9 +630,13 @@ export default {
                 );
         },
         getGroupInfo() {
+            var group = {
+                id: this.groupId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("grouping/getGroupById", this.groupId)
+                .dispatch("grouping/getGroupById", group)
                 .then(
                     function(result) {
                         this.infoData = result.data;
@@ -657,9 +676,13 @@ export default {
                 );
         },
         getGroupIRouteInfo() {
+            var group = {
+                id: this.groupId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("grouping/getGroupIRouteCdn", this.groupId)
+                .dispatch("grouping/getGroupIRouteCdn", group)
                 .then(
                     function(result) {
                         this.filterData = result.data.location_network;
@@ -688,7 +711,7 @@ export default {
         getAllCdnProvider() {
             // this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         var cdnProvider = result.data;
@@ -702,7 +725,8 @@ export default {
                                 this.cdnProviderIdMapping[item.id] = item.name;
                             }).bind(this)
                         );
-                        this.mapping();
+                        // console.log(this.cdnProviderIdMapping);
+                        // this.mapping();
                         return Promise.resolve();
                     }.bind(this)
                 )
@@ -714,25 +738,31 @@ export default {
         },
         mapping() {
             // console.log(this.cdnProviderIdMapping, "cdnProviderIdMapping");
-            // console.log(this.infoData.cdns, "ccc");
+            // console.log(this.infoData, "ccc");
             if (this.breadcrumbsItems[1].text !== "All") {
-                this.infoData.cdns.forEach((o, i) => {
-                    o.name = this.cdnProviderIdMapping[o.cdn_provider_id];
-                });
-                this.cdnProvider = this.infoData.cdns;
+                if (this.infoData.cdns !== undefined) {
+                    this.infoData.cdns.forEach((o, i) => {
+                        o.name = this.cdnProviderIdMapping[o.cdn_provider_id];
+                    });
+                    this.cdnProvider = this.infoData.cdns;
+                }
             }
+            // console.log(this.cdnProvider);
 
             // this.cdnProviderItems = this.cdnProvider;
-            this.cdnProvider.forEach((o, i) => {
-                this.cdnProviderItems.push(o.name);
-            });
-            this.cdnProviderItems.unshift("All");
+            if (this.cdnProvider !== undefined) {
+                this.cdnProvider.forEach((o, i) => {
+                    this.cdnProviderItems.push(o.name);
+                });
+                this.cdnProviderItems.unshift("All");
+            }
+
             // console.log(this.cdnProviderItems, "cdnProviderItems");
         },
         getList() {
             // this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getIRouteCdnList")
+                .dispatch("iRouteCdn/getIRouteCdnList", this.permission_id)
                 .then(
                     function(result) {
                         var data = result.data;
@@ -766,7 +796,7 @@ export default {
         getAllIRouteInfo() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getAllIRouteCdn")
+                .dispatch("iRouteCdn/getAllIRouteCdn", this.permission_id)
                 .then(
                     function(result) {
                         this.filterData = [];
@@ -958,6 +988,7 @@ export default {
             return arr3;
         },
         updateGroupIRouteCDN() {
+            this.iRouteCDN.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("iRouteCdn/updateGroupIRouteCDN", this.iRouteCDN)
@@ -986,6 +1017,7 @@ export default {
         },
         updateDomainIRouteCDN() {
             // console.log(this.iRouteCDN);
+            this.iRouteCDN.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("iRouteCdn/updateDomainIRouteCDN", this.iRouteCDN)
@@ -1032,6 +1064,7 @@ export default {
             this.$store.dispatch("global/startLoading");
 
             this.selected.forEach((o, i) => {
+                o.permission_id = this.permission_id;
                 if (o.groupId !== undefined) {
                     this.$store
                         .dispatch("iRouteCdn/updateGroupIRouteCDN", o)
@@ -1092,13 +1125,24 @@ export default {
         },
         closeAlertDialog() {
             this.dialog.alert = false;
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
-    created() {
+    mounted() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.pagination.rowsPerPage = this.perPage;
         this.pagination.page = this.currentPage;
         this.getAllCdnProvider();
+
         if (this.$route.query.group_id !== undefined) {
             this.headers = this.groupsDomainsHeaders;
             this.groupId = this.$route.query.group_id;
@@ -1119,6 +1163,10 @@ export default {
         this.getContinentList();
         this.getCountriesList();
         this.getDomainList();
+    },
+    created() {
+        this.checkPagePermission();
+        // console.log(this.permission_id);
     }
 };
 </script>

@@ -121,6 +121,7 @@ export default {
     props: ["domain_id"],
     data() {
         return {
+            domain: {},
             searchText: "",
             dnsPodDomain: "",
             headers: [
@@ -179,7 +180,8 @@ export default {
             cdnProviderMapping: {},
             type: "",
             editedIndex: -1,
-            filteredCdnProvider: []
+            filteredCdnProvider: [],
+            permission_id: 0
         };
     },
     computed: {
@@ -197,6 +199,7 @@ export default {
         },
         removeFromGroup() {
             this.domainInfo.groupId = this.domainInfo.domain_group[0].id;
+            this.domainInfo.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("grouping/deleteDomainFromGroup", this.domainInfo)
@@ -225,10 +228,14 @@ export default {
                 );
         },
         getDomainInfo() {
-            // this.domainInfo = this.filterData[0];
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
+            // console.log(domain);
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getDomainById", this.domain_id)
+                .dispatch("domains/getDomainById", domain)
                 .then(
                     function(result) {
                         this.domainInfo = result.data.domain;
@@ -250,7 +257,7 @@ export default {
         },
         getAllCdnProvider() {
             return this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -266,8 +273,10 @@ export default {
                 );
         },
         getCdnData() {
+            this.domainInfo.id = this.domain_id;
+            this.domainInfo.permission_id = this.permission_id;
             return this.$store
-                .dispatch("cdns/getCDNsByDomainId", this.domain_id)
+                .dispatch("cdns/getCDNsByDomainId", this.domainInfo)
                 .then(
                     function(result) {
                         this.cdnData = result.data;
@@ -343,6 +352,7 @@ export default {
         },
         updateDomain: function() {
             // console.log(this.domainInfo, "edit");
+            this.domainEditedInfo.permission_id = this.permission_id;
             if (this.$refs.editDomainForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -387,6 +397,7 @@ export default {
         },
         addNewCdn() {
             // console.log(this.cdn);
+            this.cdn.permission_id = this.permission_id;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -414,6 +425,7 @@ export default {
             }
         },
         changeCdnCname() {
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/updateCdnCname", this.cdn)
@@ -441,7 +453,7 @@ export default {
         changeDefaultCdnProvider() {
             this.cdn.default = !this.cdn.default;
             // console.log(this.cdn);
-
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/updateDefaultCDN", this.cdn)
@@ -469,6 +481,7 @@ export default {
         },
         deleteCdn() {
             // console.log(this.cdn);
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/deleteCDN", this.cdn)
@@ -510,11 +523,23 @@ export default {
                     }
                 };
             }
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     mounted() {
-        this.getDomainInfo();
         this.initialApis();
+        this.getDomainInfo();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

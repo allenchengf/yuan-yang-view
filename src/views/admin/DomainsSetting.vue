@@ -158,6 +158,7 @@ export default {
 
     data() {
         return {
+            permission_id: 0,
             showGetResultBtn: false,
             step: 1,
             wantDeleteCdn: "",
@@ -386,6 +387,7 @@ export default {
             var domainInfo = {};
             this.selectedArray.forEach((o, i) => {
                 domainInfo.domain_id = o.id;
+                domainInfo.permission_id = this.permission_id;
                 o.cdns.forEach((obj, idx) => {
                     if (obj.cdn_provider_id == this.wantDeleteCdn) {
                         domainInfo.id = obj.id;
@@ -426,8 +428,11 @@ export default {
             this.info = [];
             this.detailInfo = [];
             this.selectedArray.forEach((o, i) => {
+                var data = {};
+                data.id = o.id;
+                data.permission_id = this.permission_id;
                 this.$store
-                    .dispatch("domains/deleteDomain", o.id)
+                    .dispatch("domains/deleteDomain", data)
                     .then(
                         function(result) {
                             var detail = {};
@@ -635,6 +640,7 @@ export default {
         },
         batchAddDomains() {
             // console.log(this.batchData, "ccc");
+            this.batchData.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
@@ -656,8 +662,12 @@ export default {
                 );
         },
         getProcess() {
+            var info = {
+                ugid: this.user_group_id,
+                permission_id: this.permission_id
+            };
             this.$store
-                .dispatch("process/getProcess", this.user_group_id)
+                .dispatch("process/getProcess", info)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -711,10 +721,10 @@ export default {
             this.info = [];
             this.detailInfo = [];
             var domainName = [];
-            console.log("getResult");
+            // console.log("getResult");
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("process/getProcessResult")
+                .dispatch("process/getProcessResult", this.permission_id)
                 .then(
                     function(result) {
                         result.data.success.domain.forEach((o, i) => {
@@ -737,7 +747,7 @@ export default {
                             detail.status = o.message;
                             domainName.push(detail);
                         });
-                        console.log(domainName, "domainName");
+                        // console.log(domainName, "domainName");
                         this.info = domainName;
                         if (this.dialog.check == true) {
                             this.detailInfo = this.info;
@@ -795,7 +805,7 @@ export default {
         },
         getAllCdnProvider() {
             return this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -834,6 +844,7 @@ export default {
             this.filterData = this.rawData;
             this.filteredItems = this.filterData;
             this.filterData.forEach((o, i) => {
+                o.permission_id = this.permission_id;
                 if (o.domain_group.length !== 0) {
                     this.groupArray.push(o.domain_group[0].name);
                 }
@@ -849,8 +860,12 @@ export default {
             // console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
+            var domain = {
+                id: this.user_group_id,
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("domains/getAllDomains", this.user_group_id)
+                .dispatch("domains/getAllDomains", domain)
                 .then(
                     function(result) {
                         this.rawData = result.data.domains;
@@ -915,6 +930,7 @@ export default {
                 "account/accountGroupId"
             ]();
             this.domain.cname = this.domain.name;
+            this.domain.permission_id = this.permission_id;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -945,6 +961,7 @@ export default {
         },
         addNewCdn(domain_id) {
             this.cdn.domain_id = domain_id;
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/newCDN", this.cdn)
@@ -968,7 +985,7 @@ export default {
             // console.log(this.domain, "deleteApi");
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/deleteDomain", this.domain.id)
+                .dispatch("domains/deleteDomain", this.domain)
                 .then(
                     function(result) {
                         this.$store.dispatch(
@@ -1005,8 +1022,9 @@ export default {
             this.filterAction();
         },
         goToNextPage(data) {
+            // console.log(data);
             this.$router.push({
-                name: "domainInfo",
+                name: "DomainInfo",
                 params: {
                     domain_id: data.id,
                     info: data
@@ -1026,7 +1044,7 @@ export default {
 
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -1053,9 +1071,19 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     created() {
+        this.checkPagePermission();
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
         this.getProcess();

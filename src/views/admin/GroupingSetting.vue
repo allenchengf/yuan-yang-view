@@ -107,7 +107,9 @@ export default {
             },
             editedIndex: -1,
             domainsData: [],
-            user_group_id: ""
+            user_group_id: "",
+            permission: [],
+            permission_id: 0
         };
     },
     methods: {
@@ -118,7 +120,7 @@ export default {
             // this.filterData = this.filterData;
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("grouping/getAllGroups")
+                .dispatch("grouping/getAllGroups", this.permission_id)
                 .then(
                     function(result) {
                         this.filterData = result.data;
@@ -161,6 +163,7 @@ export default {
             // console.log(this.group, type);
         },
         addNewGroup() {
+            this.group.permission_id = this.permission_id;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -189,9 +192,10 @@ export default {
             }
         },
         deleteGroup() {
+            this.group.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("grouping/deleteGroup", this.group.id)
+                .dispatch("grouping/deleteGroup", this.group)
                 .then(
                     function(result) {
                         this.$store.dispatch(
@@ -220,13 +224,18 @@ export default {
             this.dialog.edit = false;
         },
         getAllDomains: function() {
+            var domain = {
+                id: this.user_group_id,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getDomainsByNullGroup")
+                .dispatch("domains/getAllDomains", domain)
                 .then(
                     function(result) {
-                        this.domainsData = result.data.domains;
-                        // console.log(this.domainsData);
+                        this.domainsData = result.data.domains.filter(i => {
+                            return i.domain_group.length == 0;
+                        });
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -248,12 +257,25 @@ export default {
                     // info: data
                 }
             });
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.getGroupData();
         this.getAllDomains();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>
