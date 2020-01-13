@@ -173,7 +173,7 @@ export default {
                         this.categoryList = result.data;
                         this.categoryList.unshift("all");
                         // console.log(result.data);
-                        this.$store.dispatch("global/finishLoading");
+                        // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
@@ -195,7 +195,7 @@ export default {
                         this.users = result.data;
                         // console.log(result.data, "users");
                         this.mappingUsers();
-                        this.$store.dispatch("global/finishLoading");
+                        // this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(

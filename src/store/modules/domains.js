@@ -55,7 +55,7 @@ export default {
         getDomainsByNullGroup: (context, data) => {
             // console.log(data);
             return axios
-                .get("yuanyang/domains?domain_group_id=" + data.ugid, {
+                .get("yuanyang/domains?domain_group_id=0", {
                     headers: { "permission-id": data.permission_id }
                 })
                 .then(function(response) {
