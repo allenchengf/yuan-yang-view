@@ -92,10 +92,10 @@ export default new Router({
                 },
                 {
                     path: "",
-                    redirect: "cdn-providers",
+                    redirect: "dashboard",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 0
                     }
                 },
                 {

@@ -21,6 +21,20 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        getCdnProviderDetailInfo: (context, permission_id) => {
+            return axios
+                .get("yuanyang/cdn_providers/detailed-info", {
+                    headers: {
+                        "permission-id": permission_id
+                    }
+                })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
         changeCdnProviderStatus: (context, data) => {
             return axios
                 .patch(
