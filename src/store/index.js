@@ -11,6 +11,7 @@ import iRouteCdn from "./modules/iRouteCdn";
 import locationInfo from "./modules/locationInfo";
 import grouping from "./modules/grouping";
 import config from "./modules/config";
+import backup from "./modules/backup";
 import logs from "./modules/logs";
 import crawlers from "./modules/crawlers";
 import users from "./modules/users";
@@ -33,6 +34,7 @@ export default new Vuex.Store({
         locationInfo,
         grouping,
         config,
+        backup,
         logs,
         crawlers,
         users,
