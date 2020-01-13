@@ -60,7 +60,9 @@ export default {
             dnsPodDomain: "shiftcdn.com",
             domainInfo: {},
             currentTab: "",
-            reloadPage: ""
+            reloadPage: "",
+            permission_id: 0,
+            permission: []
         };
     },
     watch: {
@@ -88,6 +90,8 @@ export default {
                 id: this.domain_id,
                 permission_id: this.permission_id
             };
+            // console.log(domain);
+
             return this.$store
                 .dispatch("domains/getDomainById", domain)
                 .then(
@@ -124,9 +128,19 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     created() {
+        this.checkPagePermission();
         this.domain_id = this.$route.params.domain_id;
         this.initialApis();
         var query = this.$route.query;

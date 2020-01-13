@@ -569,11 +569,12 @@ export default {
                     }.bind(this)
                 );
         },
-        getDomainInfo() {
+        getDomainInfo(id) {
             var domain = {
-                id: this.domain_id,
+                id: id,
                 permission_id: this.permission_id
             };
+
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/getDomainById", domain)
@@ -1158,7 +1159,7 @@ export default {
             this.headers = this.groupsDomainsHeaders;
             this.domainId = this.$route.query.domain_id;
             this.getDomainIRouteInfo();
-            this.getDomainInfo();
+            this.getDomainInfo(this.domainId);
         }
         this.getContinentList();
         this.getCountriesList();

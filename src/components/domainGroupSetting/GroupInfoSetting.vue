@@ -524,8 +524,12 @@ export default {
             });
         },
         getAllDomains: function() {
+            var domain = {
+                ugid: this.$store.getters["account/accountGroupId"](),
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("domains/getDomainsByNullGroup", this.permission_id)
+                .dispatch("domains/getDomainsByNullGroup", domain)
                 .then(
                     function(result) {
                         this.allDomainsData = result.data.domains;

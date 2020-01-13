@@ -48,7 +48,7 @@
                                 span.px-2 {{item.permission.name}}
                                 .checkbox
                                     v-layout(row)
-                                        v-checkbox(label="Read Only" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
+                                        v-checkbox(label="Read" v-model="item.actions.read" @change="readOnlyStatusChange(item.permission.name,item.actions.read)")
                                         v-checkbox(label="Create / Update" v-model="item.actions.create" @change="createUpdateStatusChange(item.permission.name,item.actions.create)") 
                                         v-checkbox(label="Delete" v-model="item.actions.delete" @change="deleteStatusChange(item.permission.name,item.actions.delete)") 
                     v-card-actions
@@ -176,6 +176,7 @@ export default {
                 .then(
                     function(result) {
                         // console.log(result.data);
+                        result.data.pop();
                         result.data.forEach((o, i) => {
                             var permission = {};
                             permission["permission"] = {

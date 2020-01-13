@@ -223,6 +223,7 @@ export default {
                 .then(
                     function(result) {
                         // console.log(result.data);
+                        result.data.pop();
                         result.data.forEach((o, i) => {
                             var permission = {};
                             permission["permission"] = {
@@ -283,6 +284,7 @@ export default {
                 .dispatch("permission/getRolePermissionByRoleId", role)
                 .then(
                     function(result) {
+                        result.data.pop();
                         // console.log(result.data);
                         this.permissionSetting = result.data;
                         this.$store.dispatch("global/finishLoading");

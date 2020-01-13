@@ -70,7 +70,9 @@ export default {
                     value: "CDN Provider"
                 }
             ],
-            groupId: ""
+            groupId: "",
+            permission_id: 0,
+            permission: []
         };
     },
     watch: {
@@ -397,6 +399,16 @@ export default {
                     group_id: this.groupId
                 }
             });
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
@@ -405,6 +417,9 @@ export default {
         this.getContinentList();
         this.getCountriesList();
         this.getAllCdnProvider();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

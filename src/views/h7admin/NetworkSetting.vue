@@ -179,8 +179,6 @@ export default {
     },
     methods: {
         parentMethod(data) {
-            // console.log("ccc");
-            // console.log(data);
             if (data > 25) {
                 this.perPage = "All";
             } else {

@@ -35,7 +35,7 @@ export default {
                     email: this.email
                 };
                 this.$store
-                    .dispatch("account/forgotPassword", email)
+                    .dispatch("account/forgotPassword", this.email)
                     .then(
                         function(result) {
                             // this.success = true;

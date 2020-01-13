@@ -232,7 +232,6 @@ export default {
                 id: this.domain_id,
                 permission_id: this.permission_id
             };
-            // console.log(domain);
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/getDomainById", domain)

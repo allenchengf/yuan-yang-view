@@ -466,6 +466,8 @@ export default {
         closeDialog() {
             this.dialog.addUser = false;
             this.dialog.edit = false;
+            this.addingStep = 1;
+            this.$refs.addEmailForm.reset();
             this.$refs.editForm.reset();
         },
         checkPagePermission() {
