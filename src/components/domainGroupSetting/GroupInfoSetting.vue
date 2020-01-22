@@ -75,7 +75,7 @@
                         tr 
                             td
                                 v-checkbox(v-model="props.selected" primary hide-details)
-                            td {{index}}
+                            td {{props.item.index}}
                             td {{props.item.name}}
                             td {{cdnArray.join(', ')}}
                             td
@@ -102,7 +102,7 @@
                                 tr 
                                     td
                                         v-checkbox(v-model="props.selected" primary hide-details)
-                                    td.text-xs-center {{props.index + 1}}
+                                    td.text-xs-center {{props.item.index}}
                                     td.text-xs-center {{props.item.name}}
                         //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
                         //-     template(v-slot:items="props")
@@ -500,6 +500,9 @@ export default {
                     function(result) {
                         this.groupInfo = result.data;
                         this.filterData = this.groupInfo.domains;
+                        this.filterData.forEach((o, i) => {
+                            o.index = i + 1;
+                        });
                         this.groupCdnProvider = this.groupInfo.domains[0].cdn_provider;
                         this.groupCdnProvider.forEach((o, i) => {
                             o.disable = {};
@@ -634,6 +637,9 @@ export default {
                 });
             });
             this.domainList = _.compact(this.domainList);
+            this.domainList.forEach((o, i) => {
+                o.index = i + 1;
+            });
             // console.log(this.domainList, "domainList");
         },
         addItem: function() {
@@ -689,6 +695,7 @@ export default {
             }
         },
         updateGroupCdnProvider() {
+            this.dialog.changeDefault = false;
             var defaultCdnData = [];
             defaultCdnData.groupId = this.groupId;
             defaultCdnData.defaultCdnId = this.selectedCdnProvider;

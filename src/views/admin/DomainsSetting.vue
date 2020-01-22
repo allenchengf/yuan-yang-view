@@ -37,7 +37,7 @@
                         span Progress of Batch Add Domains
                         v-layout(wrap)
                             v-flex(xs10 md10)
-                                v-progress-linear(color="warning" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
+                                v-progress-linear(color="brown lighten-4" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
                             v-flex(xs2 md2)
                                 v-btn.my-0(v-show="showGetResultBtn" color="primary" @click="getProcessResult") Get Result
                     h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
@@ -45,7 +45,7 @@
                             tr 
                                 td
                                     v-checkbox(v-model="props.selected" primary hide-details)
-                                td {{ index }}
+                                td {{ props.item.index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}
                                 td
@@ -105,7 +105,7 @@
                                     td.text-xs-center {{index}}
                                     td.text-xs-center {{props.item.domain_name}}
                                     td.text-xs-center
-                                        span(style="color: green;font-weight:600" :style="props.item.status === 'Success' ? 'color:green;font-weight: 600' : 'color: red'") {{props.item.status}}
+                                        span(style="color: green;font-weight:600" :style="props.item.status[0] === 'Success'  ? 'color:green;font-weight: 600' : 'color: red'" v-for="item in props.item.status") {{item}} </br>
                         v-card-actions  
                             v-spacer
                             v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
@@ -248,7 +248,7 @@ export default {
                 {
                     text: "#",
                     align: "left",
-                    sortable: false,
+                    sortable: true,
                     width: "80px",
                     value: "index"
                 },
@@ -437,13 +437,14 @@ export default {
                         function(result) {
                             var detail = {};
                             detail.domain_name = result.data.domain_name;
-                            detail.status = "Success";
+                            var msg = [];
+                            msg.push("Success");
+                            detail.status = msg;
                             domainName.push(detail);
                             this.info = domainName;
                             if (this.dialog.check == true) {
                                 this.detailInfo = this.info;
                             }
-
                             var selectArrayLength = 0;
                             selectArrayLength = selectObject.length;
                             // console.log(selectArrayLength, this.info.length);
@@ -727,8 +728,11 @@ export default {
                 .dispatch("process/getProcessResult", this.permission_id)
                 .then(
                     function(result) {
+                        // console.log(result.data);
                         result.data.success.domain.forEach((o, i) => {
-                            o.message = "Success";
+                            var msg = [];
+                            msg.push("Success");
+                            o.message = msg;
                             var detail = {};
                             detail.domain_name = o.name;
                             detail.status = o.message;
@@ -740,18 +744,33 @@ export default {
                                 o.cdn.forEach((obj, idx) => {
                                     msg.push(obj.message);
                                 });
-                                o.message = msg.join();
+                                o.message = msg;
+                            } else if (
+                                o.message == "Domain Already Existed." &&
+                                o.cdn.length !== 0
+                            ) {
+                                var msg = [];
+                                o.cdn.forEach((obj, idx) => {
+                                    msg.push(obj.message);
+                                });
+                                o.message = msg;
+                                // console.log(o.message);
+                            } else {
+                                var msg = [];
+                                msg.push(o.message);
+                                o.message = msg;
                             }
                             var detail = {};
                             detail.domain_name = o.name;
                             detail.status = o.message;
                             domainName.push(detail);
                         });
-                        // console.log(domainName, "domainName");
                         this.info = domainName;
                         if (this.dialog.check == true) {
                             this.detailInfo = this.info;
                         }
+                        // console.log(this.info, "domainName");
+
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -872,6 +891,7 @@ export default {
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         this.rawData.forEach((o, i) => {
                             o.cname = o.cname + "." + this.dnsPodDomain;
+                            o.index = i + 1;
                         });
                         // console.log(this.rawData);
                         return Promise.resolve();
@@ -1038,6 +1058,7 @@ export default {
             this.info = [];
             this.detailInfo = [];
             this.initialApis();
+            this.selectedArray = [];
         },
         getAllCdnProviders: function() {
             // console.log(this.filterData);

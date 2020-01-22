@@ -1,6 +1,6 @@
 <template lang="pug">
     #datatable
-        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination" hide-actions select-all v-model="selected")
+        v-data-table.elevation-1(:headers="headers" :items="items" :loading="loading" :search="searchText" :pagination.sync="pagination" hide-actions select-all v-model="selected" :item-key="'index'" v-on:childMethod="parentMethod")
             template(v-slot:items='props')
                 tr
                     th 
@@ -45,6 +45,7 @@ export default {
         sortBy: {
             type: String
         }
+
         // selected: {
         //     type: Array
         // }
@@ -56,13 +57,16 @@ export default {
             page: [5, 10, 25, "All"],
             pagination: {
                 rowsPerPage: this.perPage,
-                sortBy: "name", // The field that you're sorting by
-                descending: true
+                sortBy: "index", // The field that you're sorting by
+                descending: false
             },
             pages: 0
         };
     },
     methods: {
+        parentMethod() {
+            this.selected = [];
+        },
         changeSort(column) {
             if (this.pagination.sortBy === column) {
                 this.pagination.descending = !this.pagination.descending;
@@ -100,6 +104,7 @@ export default {
     watch: {
         selected: function() {
             this.$emit("childMethod", this.selected);
+            // console.log(this.selected, "selected component");
         },
         pagination: function(value) {
             // console.log(value, "watchPagination");
