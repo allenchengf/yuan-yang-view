@@ -204,6 +204,8 @@ export default {
                             ) {
                                 this.updateStatus();
                             } else {
+                                this.dialog.changeStatus = true;
+
                                 this.step = 2;
                             }
                         }
@@ -235,6 +237,7 @@ export default {
                 );
         },
         changeScannableAction() {
+            this.dialog.changeScannable = false;
             this.scannableInfo.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -272,6 +275,8 @@ export default {
             }
         },
         updateStatus() {
+            this.dialog.changeStatus = false;
+
             if (this.switchItem.status == true) {
                 this.switchItem.status = 1;
             } else {
@@ -346,8 +351,8 @@ export default {
             } else {
                 // console.log(this.cdn, "edit");
                 this.cdn.permission_id = this.permission_id;
-                this.$store.dispatch("global/startLoading");
                 if (this.$refs.editForm.validate()) {
+                    this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("cdnProviders/updateCdnProvider", this.cdn)
                         .then(

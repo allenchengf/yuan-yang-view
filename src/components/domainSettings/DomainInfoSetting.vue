@@ -31,7 +31,7 @@
                             v-card-title.title Edit Domain
                             v-card-text
                                 v-form(ref="editDomainForm")
-                                    v-text-field(v-model="domainEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]")
+                                    v-text-field(v-model="domainEditedInfo.name" label="Domain" type="text" name="name" :rules="[rules.required]" readonly=true)
                                     v-text-field(v-model="domainEditedInfo.label" label="Note" type="text" name="label")
                             v-card-actions  
                                 v-spacer
@@ -450,8 +450,8 @@ export default {
                 );
         },
         changeDefaultCdnProvider() {
-            this.cdn.default = !this.cdn.default;
-            // console.log(this.cdn);
+            this.cdn.default = true;
+            this.dialog.changeDefault = false;
             this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -464,7 +464,6 @@ export default {
                             "Change default CDN provider success!"
                         );
                         this.initialApis();
-
                         this.closeEditDialog();
                     }.bind(this)
                 )

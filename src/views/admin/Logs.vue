@@ -94,10 +94,10 @@ export default {
                 .dispatch("logs/getLogsData", this.permission_id)
                 .then(
                     function(result) {
-                        this.rawData = result.data.filter(
-                            item => item.change_type !== null
-                        );
-                        // this.rawData = result.data;
+                        // this.rawData = result.data.filter(
+                        //     item => item.change_type !== null
+                        // );
+                        this.rawData = result.data;
                         this.transformMessage();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -147,6 +147,11 @@ export default {
                         default:
                             break;
                     }
+                } else {
+                    o.change_type = "";
+                    o.changed_from = {};
+                    o.changed_from["name"] = o.message;
+                    o.changed_to = "";
                 }
             });
             this.filterData = this.rawData;

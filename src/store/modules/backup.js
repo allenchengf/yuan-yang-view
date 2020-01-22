@@ -23,7 +23,7 @@ export default {
         },
         updateBackup: (context, data) => {
             return axios
-                .put("yuanyang/backups/" + data.id, data, {
+                .put("yuanyang/backups", data, {
                     headers: {
                         "permission-id": data.permission_id
                     }
