@@ -66,8 +66,13 @@ export default {
                     .dispatch("account/login", this.user)
                     .then(
                         (result => {
-                            this.getSelfPermission(result.data);
-
+                            // console.log(result.data, "no2fa");
+                            if (!result.data.google2fa) {
+                                this.getSelfPermission(result.data);
+                            } else {
+                                this.step = 2;
+                                this.otpToken = result.data.token;
+                            }
                             this.$store.dispatch("global/finishLoading");
                         }).bind(this)
                     )
@@ -85,12 +90,13 @@ export default {
                 .dispatch("permission/getSelfPermission")
                 .then(
                     function(result) {
-                        if (accountData.google2fa) {
-                            this.step = 2;
-                            this.otpToken = accountData.token;
-                        } else {
-                            this.loginSuccess();
-                        }
+                        this.loginSuccess();
+                        // if (accountData.google2fa) {
+                        //     this.step = 2;
+                        //     this.otpToken = accountData.token;
+                        // } else {
+                        //     this.loginSuccess();
+                        // }
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -105,6 +111,7 @@ export default {
                 );
         },
         initialApis: function() {
+            this.$store.dispatch("global/startLoading");
             this.signIn();
         },
         checkOTPCode: function() {
@@ -117,7 +124,9 @@ export default {
                     })
                     .then(
                         function(result) {
-                            this.loginSuccess();
+                            // console.log(result.data, "2fa");
+                            this.getSelfPermission(result.data.user);
+                            // this.loginSuccess();
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -130,7 +139,7 @@ export default {
             }
         },
         loginSuccess: function() {
-            this.$router.push("/admin/");
+            this.$router.push("/");
             // var redirect = this.$route.query.redirect;
             // if (redirect != null) {
             //     location.replace(redirect + "?token=" + localStorage.getItem("token"));

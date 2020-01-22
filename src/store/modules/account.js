@@ -105,6 +105,10 @@ export default {
                         "updateAccountToken",
                         response.data.data.token
                     );
+                    context.commit(
+                        "updateAccountAuth",
+                        response.data.data.user
+                    );
                     return Promise.resolve(response.data);
                 })
                 .catch(function(error) {
