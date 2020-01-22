@@ -211,7 +211,7 @@ export default {
     },
     created() {
         if (this.$route.query !== "") {
-            this.$router.push("/admin/iroutecdn");
+            this.$router.push("/iroutecdn");
         }
         this.checkPagePermission();
     }

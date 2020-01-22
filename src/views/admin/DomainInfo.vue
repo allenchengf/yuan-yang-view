@@ -13,9 +13,6 @@
                     v-tabs-items(v-model="tabsModel")
                         v-tab-item(v-for="item in tabItems" :key="item.key")
                             component(:is="item.component" :domain_id="domain_id" :currentTab="reloadPage" v-on:childMethod="parentMethod")
-                        
-                            
-            
 </template>
 <script>
 import DomainInfoSetting from "../../components/domainSettings/DomainInfoSetting";
@@ -32,7 +29,7 @@ export default {
                     text: "Domains",
                     disabled: false,
                     exact: true,
-                    to: "/admin/domains"
+                    to: "/domains"
                 },
                 {
                     text: "",
@@ -101,7 +98,7 @@ export default {
                         // console.log(this.domainInfo, "data");
                         this.breadcrumbsItems[1].text = this.domainInfo.name;
                         this.breadcrumbsItems[1].to =
-                            "/admin/domains/" + this.domain_id;
+                            "/domains/" + this.domain_id;
                         return Promise.resolve();
                     }.bind(this)
                 )

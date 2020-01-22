@@ -28,7 +28,7 @@ export default {
                     text: "Grouping",
                     disabled: false,
                     exact: true,
-                    to: "/admin/grouping"
+                    to: "/grouping"
                 },
                 {
                     text: "",
@@ -94,7 +94,7 @@ export default {
                         this.groupInfo = result.data;
                         this.breadcrumbsItems[1].text = this.groupInfo.name;
                         this.breadcrumbsItems[1].to =
-                            "/admin/grouping/" + this.groupId;
+                            "/grouping/" + this.groupId;
                         // console.log(this.groupInfo);
                         return Promise.resolve();
                     }.bind(this)

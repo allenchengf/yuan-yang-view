@@ -29,7 +29,7 @@
                                 v-text-field(v-model="searchText" append-icon="search" label="Search Domain/Group" single-line hide-details)
                             v-flex(xs12 sm12 md12)
                                 v-alert(:value="alert" type="warning" outline icon="warning" ) {{searchText}} is in {{domainInGroupMsg}}
-                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line v-on:childMethod="parentMethod")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
                                 td
@@ -193,7 +193,7 @@ export default {
                     text: "iRouteCDN",
                     disabled: false,
                     exact: true,
-                    to: "/admin/iroutecdn"
+                    to: "/iroutecdn"
                 },
                 {
                     text: "",
@@ -295,7 +295,6 @@ export default {
         parentMethod(data) {
             // console.log(data);
             this.selected = data;
-            // console.log(this.selected);
         },
         filterAction() {
             if (this.continentFilter !== "All") {
@@ -989,6 +988,7 @@ export default {
             return arr3;
         },
         updateGroupIRouteCDN() {
+            // console.log("updateGroupIRouteCDN");
             this.iRouteCDN.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -999,6 +999,7 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change CDN provider success!"
                         );
+                        this.closeEditDialog();
                         if (this.$route.query.id !== undefined) {
                             this.getAllIRouteInfo();
                         } else {
@@ -1017,7 +1018,7 @@ export default {
                 );
         },
         updateDomainIRouteCDN() {
-            // console.log(this.iRouteCDN);
+            // console.log("updateDomainIRouteCDN");
             this.iRouteCDN.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -1029,6 +1030,7 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change CDN provider success!"
                         );
+                        this.closeEditDialog();
                         if (this.$route.query.id !== undefined) {
                             this.getAllIRouteInfo();
                         } else {
@@ -1047,29 +1049,38 @@ export default {
                 );
         },
         changeCdnProvider() {
+            // console.log("changeCdnProvider");
+            // this.$store.dispatch("global/startLoading");
+
             if (this.editedIndex == -1) {
                 this.batchChangeCdnProvider();
             } else {
                 if (this.iRouteCDN.groupId !== undefined) {
                     // updateGroupIRouteCDN
                     this.updateGroupIRouteCDN();
-                    this.closeEditDialog();
+                    // this.closeEditDialog();
                 } else {
                     // updateDomainIRouteCDN
                     this.updateDomainIRouteCDN();
-                    this.closeEditDialog();
+                    // this.closeEditDialog();
                 }
             }
         },
         batchChangeCdnProvider() {
-            this.$store.dispatch("global/startLoading");
+            // console.log("batchChangeCdnProvider");
 
+            this.$store.dispatch("global/startLoading");
             this.selected.forEach((o, i) => {
                 o.permission_id = this.permission_id;
                 if (o.groupId !== undefined) {
                     this.$store
                         .dispatch("iRouteCdn/updateGroupIRouteCDN", o)
-                        .then(function(result) {}.bind(this))
+                        .then(
+                            function(result) {
+                                this.closeEditDialog();
+                                // this.$store.dispatch("global/startLoading");
+                            }.bind(this)
+                        )
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
@@ -1082,7 +1093,12 @@ export default {
                 } else {
                     this.$store
                         .dispatch("iRouteCdn/updateDomainIRouteCDN", o)
-                        .then(function(result) {}.bind(this))
+                        .then(
+                            function(result) {
+                                this.closeEditDialog();
+                                // this.$store.dispatch("global/startLoading");
+                            }.bind(this)
+                        )
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
@@ -1102,27 +1118,27 @@ export default {
                 }, 5000);
             } else if (this.$route.query.group_id !== undefined) {
                 var vm = this;
-
                 setTimeout(function() {
                     vm.getGroupIRouteInfo();
                     // console.log(vm.filteredItems);
                 }, 5000);
             } else {
                 var vm = this;
-
                 setTimeout(function() {
                     vm.getDomainIRouteInfo();
                     // console.log(vm.filteredItems);
                 }, 5000);
             }
+            // console.log(this.selected);
             this.selected = [];
-            this.parentMethod(this.selected);
-            this.closeEditDialog();
-            this.$store.dispatch("global/finishLoading");
+            this.$emit("childMethod");
+            // this.parentMethod(this.selected);
+            // this.closeEditDialog();
         },
         closeEditDialog() {
             this.dialog.edit = false;
             this.selected = [];
+            this.$store.dispatch("global/finishLoading");
         },
         closeAlertDialog() {
             this.dialog.alert = false;

@@ -43,31 +43,31 @@ export default {
                 {
                     title: "CDN Providers",
                     icon: "settings_input_component",
-                    router: "/admin/cdn-providers",
+                    router: "/cdn-providers",
                     auth: 1
                 },
                 {
                     title: "Domains",
                     icon: "domain",
-                    router: "/admin/domains",
+                    router: "/domains",
                     auth: 1
                 },
                 {
                     title: "Grouping",
                     icon: "group",
-                    router: "/admin/grouping",
+                    router: "/grouping",
                     auth: 1
                 },
                 {
                     title: "iRouteCDN",
                     icon: "dns",
-                    router: "/admin/iroutecdn",
+                    router: "/iroutecdn",
                     auth: 0
                 },
                 {
                     title: "Logs",
                     icon: "description",
-                    router: "/admin/logs",
+                    router: "/logs",
                     auth: 1
                 },
                 {
@@ -77,12 +77,12 @@ export default {
                     children: [
                         {
                             title: "Auto Scan",
-                            router: "/admin/auto-scan",
+                            router: "/auto-scan",
                             auth: 0
                         },
                         {
                             title: "Config Backup",
-                            router: "/admin/config-backup",
+                            router: "/config-backup",
                             auth: 0
                         }
                     ]
@@ -124,6 +124,11 @@ export default {
             permission: []
         };
     },
+    watch: {
+        drawer: function(val) {
+            this.drawerFlag = val;
+        }
+    },
     methods: {
         adjustPermission() {
             // console.log(this.permission, "prtimvikirn");
@@ -149,11 +154,11 @@ export default {
                     }
                 });
             }
-            this.items.forEach((o, i) => {
-                if (o.title === "Dashboard") {
-                    o.show = true;
-                }
-            });
+            // this.items.forEach((o, i) => {
+            //     if (o.title === "Dashboard") {
+            //         o.show = true;
+            //     }
+            // });
             this.permission.forEach((o, i) => {
                 this.items.forEach((obj, idx) => {
                     if (obj.children !== undefined) {

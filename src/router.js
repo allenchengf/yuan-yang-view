@@ -74,22 +74,14 @@ export default new Router({
             },
             component: ResetPassword
         },
-        { path: "*", redirect: "/admin" },
+        { path: "*", redirect: "/" },
         {
-            path: "/admin",
+            path: "/",
             meta: {
                 requireAuth: true
             },
             component: AdminLayout,
             children: [
-                {
-                    path: "settings",
-                    meta: {
-                        requireAuth: true,
-                        auth: 0
-                    },
-                    component: Settings
-                },
                 {
                     path: "",
                     redirect: "dashboard",
@@ -107,12 +99,12 @@ export default new Router({
                     component: Dashboard
                 },
                 {
-                    path: "dashboard",
+                    path: "settings",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: Dashboard
+                    component: Settings
                 },
                 {
                     path: "cdn-providers",
@@ -239,7 +231,7 @@ export default new Router({
                 },
 
                 {
-                    path: "networks",
+                    path: "/admin/networks",
                     name: "Networks",
                     meta: {
                         requireAuth: true,
@@ -249,7 +241,7 @@ export default new Router({
                     component: NetworkSetting
                 },
                 {
-                    path: "users",
+                    path: "/admin/users",
                     name: "Users",
                     meta: {
                         requireAuth: true,
@@ -259,7 +251,7 @@ export default new Router({
                     component: Users
                 },
                 {
-                    path: "roles",
+                    path: "/admin/roles",
                     name: "roles",
                     meta: {
                         requireAuth: true,
@@ -269,7 +261,7 @@ export default new Router({
                     component: RoleSetting
                 },
                 {
-                    path: "user-groups",
+                    path: "/admin/user-groups",
                     name: "UserGroups",
                     meta: {
                         requireAuth: true,
@@ -279,7 +271,7 @@ export default new Router({
                     component: UserGroups
                 },
                 {
-                    path: "user-groups/:group_id",
+                    path: "/admin/user-groups/:group_id",
                     name: "userGroupInfo",
                     meta: {
                         requireAuth: true,

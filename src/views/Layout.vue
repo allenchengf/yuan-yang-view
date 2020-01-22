@@ -6,7 +6,7 @@
             v-toolbar-side-icon(@click.stop="$refs.drawer.drawer = !$refs.drawer.drawer")
             v-toolbar-title.mr-5.align-center.site-logo
                 span.title
-                    router-link(to="/admin")
+                    router-link(to="/")
                         v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="150" )
             v-spacer
             //- v-btn(icon)
@@ -17,7 +17,7 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    v-list-tile(to="/admin/settings")
+                    v-list-tile(to="/settings")
                         v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
@@ -56,7 +56,7 @@ export default {
     },
     methods: {
         gotoSettings: function() {
-            window.open(this.portalUrl + "/admin/settings", "_blank");
+            window.open(this.portalUrl + "/settings", "_blank");
         },
         signout: function() {
             this.$store.dispatch("global/startLoading");
