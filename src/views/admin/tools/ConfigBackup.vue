@@ -46,6 +46,15 @@
                     v-spacer
                     v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
                     v-btn(color="primary" flat="flat" @click="updateSchedule") Save
+        v-dialog.alert-dialog(v-model="dialog.alert" max-width="460" persistent)
+                v-card 
+                    v-card-title.title Restore Config 
+                    v-card-text Are you sure want to restore config data of {{ restoreInfo.created_at }}? It will spend sometime completing this action.
+                    v-card-actions  
+                        v-spacer
+                        v-btn(color="error" flat="flat" @click="restoreAction") Yes
+                        v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
+
 
 </template>
 <script>
@@ -60,7 +69,8 @@ export default {
             scheduleTimeMenu: false,
             scheduleTime: "15:35",
             dialog: {
-                edit: false
+                edit: false,
+                alert: false
             },
             items: [],
             searchText: "",
@@ -104,7 +114,8 @@ export default {
                     sortable: true
                 }
             ],
-            scheduleId: 0
+            scheduleId: 0,
+            restoreInfo: {}
         };
     },
     watch: {
@@ -141,7 +152,7 @@ export default {
                     function(result) {
                         // console.log(result.data);
                         this.scheduleTime = result.data.backedup_at;
-                        this.scheduleId = result.data.id;
+                        // this.scheduleId = result.data.id;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -162,7 +173,7 @@ export default {
                 backedup_minute: 0
             };
             scheduleData.permission_id = this.permission_id;
-            scheduleData.id = this.scheduleId;
+            // scheduleData.id = this.scheduleId;
             scheduleData.backedup_hour = parseInt(
                 this.scheduleTime.split(":")[0]
             );
@@ -195,7 +206,6 @@ export default {
                 );
         },
         downloadData(data) {
-            // console.log(data);
             data.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -203,8 +213,7 @@ export default {
                 .then(
                     function(result) {
                         this.rawData = result.data;
-                        this.exportData();
-                        // this.getConfigList();
+                        this.exportData(data.created_at);
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -219,18 +228,24 @@ export default {
                 );
         },
         restoreData(data) {
-            // console.log(data);
             data.permission_id = this.permission_id;
+            this.restoreInfo = data;
+            // console.log(this.restoreInfo);
+            this.dialog.alert = true;
+        },
+        restoreAction() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("config/importConfigDataByKey", data)
+                .dispatch("config/importConfigDataByKey", this.restoreInfo)
                 .then(
                     function(result) {
+                        this.closeEditDialog();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
+                        this.closeEditDialog();
                         this.$store.dispatch("global/finishLoading");
                         this.$store.dispatch(
                             "global/showSnackbarError",
@@ -246,7 +261,26 @@ export default {
                 .then(
                     function(result) {
                         this.rawData = result.data;
+                        this.createConfigData();
                         this.exportData();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        createConfigData() {
+            this.$store
+                .dispatch("config/createConfig", this.permission_id)
+                .then(
+                    function(result) {
                         this.getConfigList();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -261,13 +295,13 @@ export default {
                     }.bind(this)
                 );
         },
-        exportData() {
-            var fileName =
-                "configData" +
-                timeUtils.methods.timestampToString(
+        exportData(time) {
+            if (time == undefined) {
+                var time = timeUtils.methods.timestampToString(
                     new Date().getTime() / 1000
-                ) +
-                ".json";
+                );
+            }
+            var fileName = "configData" + time + ".json";
             var fileToSave = new Blob([JSON.stringify(this.rawData)], {
                 type: "application/json",
                 name: fileName
@@ -362,6 +396,7 @@ export default {
         },
         closeEditDialog: function() {
             this.dialog.edit = false;
+            this.dialog.alert = false;
         }
     },
     mounted() {

@@ -70,6 +70,22 @@ export default {
                 .catch(function(error) {
                     return Promise.reject(error.response.data);
                 });
+        },
+        createConfig: (context, permission_id) => {
+            return axios
+                .post(
+                    "yuanyang/config/s3",
+                    {},
+                    {
+                        headers: { "permission-id": permission_id }
+                    }
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
         }
     }
 };
