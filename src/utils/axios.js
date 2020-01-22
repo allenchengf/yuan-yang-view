@@ -32,6 +32,11 @@ axios.interceptors.response.use(
             case 401:
                 store.dispatch("account/logout");
                 break;
+            case 403:
+                store.dispatch(
+                    "global/showSnackbarError",
+                    "Please contact iRoute Admin."
+                );
             case 404:
                 router.push({ path: "/" });
                 break;
