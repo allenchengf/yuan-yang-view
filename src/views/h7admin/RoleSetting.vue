@@ -8,7 +8,7 @@
                     v-card-title
                         .subheading Roles
                         v-spacer
-                        v-btn.my-0(color="primary" @click="addItem") Add Role
+                        v-btn.my-0(color="primary" @click="addItem" v-if="userGroupId !== 1") Add Role
                     v-divider                    
                     v-card-text
                         v-layout(wrap)
