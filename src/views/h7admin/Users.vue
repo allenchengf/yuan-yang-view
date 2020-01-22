@@ -31,9 +31,11 @@
                                             v-btn.ma-0(flat icon small color="primary" v-on="on")
                                                 v-icon( small) more_vert
                                         v-list
-                                            v-list-tile(@click="updateUserStatus(props.item, !props.item.status)")
-                                                v-list-tile-title(v-if="props.item.status") inactive user
-                                                v-list-tile-title(v-else) active user
+                                            //- v-list-tile(@click="updateUserStatus(props.item, !props.item.status)")
+                                            //-     v-list-tile-title(v-if="props.item.status") inactive user
+                                            //-     v-list-tile-title(v-else) active user
+                                            v-list-tile(@click="removeUser(props.item)" v-if="deleteAction")
+                                                v-list-tile-title remove user
                                             v-list-tile(@click="resetPassword(props.item)")
                                                 v-list-tile-title reset password
             v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
@@ -149,7 +151,8 @@ export default {
             type: "",
             isReadOnly: true,
             permission: [],
-            permission_id: 0
+            permission_id: 0,
+            deleteAction: Boolean
         };
     },
     methods: {
@@ -239,22 +242,36 @@ export default {
         findUserByEmail: function(email) {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("users/getAll")
+                .dispatch("users/findUserByEmail", email)
                 .then(
                     function(result) {
-                        this.users = result.data;
-                        this.users.find(item => {
-                            if (item.email == email) {
-                                this.userInfo = item;
-                            }
-                        });
-                        if (this.userInfo.uid !== undefined) {
+                        // console.log(result.data);
+                        if (
+                            result.data.length !== 0 &&
+                            result.data.uid !== undefined
+                        ) {
+                            this.userInfo = result.data;
                             this.type = "ExistUser";
                             this.isReadOnly = true;
                         } else {
                             this.type = "NewUser";
                             this.isReadOnly = false;
+                            this.userInfo.passwordType = "2";
                         }
+                        // this.users = result.data;
+                        // this.users.find(item => {
+                        //     if (item.email == email) {
+                        //         this.userInfo = item;
+                        //     }
+                        // });
+                        // if (this.userInfo.uid !== undefined) {
+                        //     this.type = "ExistUser";
+                        //     this.isReadOnly = true;
+                        // } else {
+                        //     this.type = "NewUser";
+                        //     this.isReadOnly = false;
+                        // }
+                        // console.log(this.userInfo);
                         this.addingStep = 2;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -280,6 +297,11 @@ export default {
                 default:
                     break;
             }
+        },
+        backAction() {
+            this.addingStep = 1;
+            this.$refs.addEmailForm.reset();
+            this.$refs.addUserForm.reset();
         },
         addUserAction() {
             this.userInfo.groupId = this.groupId;
@@ -309,10 +331,10 @@ export default {
                         .then(
                             function(result) {
                                 this.updateUserRole();
-                                this.$store.dispatch(
-                                    "global/showSnackbarSuccess",
-                                    "Update user success!"
-                                );
+                                // this.$store.dispatch(
+                                //     "global/showSnackbarSuccess",
+                                //     "Update user success!"
+                                // );
                             }.bind(this)
                         )
                         .catch(
@@ -329,28 +351,34 @@ export default {
             }
         },
         updateUserRole() {
-            this.$store
-                .dispatch("users/updateUserRole", this.userInfo)
-                .then(
-                    function(result) {
-                        this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Update user success!"
-                        );
-                        this.getUsersByGroupId();
-                        this.closeDialog();
-                    }.bind(this)
-                )
-                .catch(
-                    function(error) {
-                        this.closeDialog();
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
-                        this.$store.dispatch("global/finishLoading");
-                    }.bind(this)
-                );
+            // console.log(this.userInfo.chooseRoleId);
+            if (this.userInfo.chooseRoleId !== undefined) {
+                this.$store
+                    .dispatch("users/updateUserRole", this.userInfo)
+                    .then(
+                        function(result) {
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Update user success!"
+                            );
+                            this.getUsersByGroupId();
+                            this.closeDialog();
+                        }.bind(this)
+                    )
+                    .catch(
+                        function(error) {
+                            this.closeDialog();
+                            this.$store.dispatch(
+                                "global/showSnackbarError",
+                                error.message
+                            );
+                            this.$store.dispatch("global/finishLoading");
+                        }.bind(this)
+                    );
+            } else {
+                this.getUsersByGroupId();
+                this.closeDialog();
+            }
         },
         newUserRole(uid) {
             this.userInfo.uid = uid;
@@ -434,6 +462,43 @@ export default {
                     }.bind(this)
                 );
         },
+        removeUser(user) {
+            // this.permission.find(item => {
+            //     if (item.permission_id == this.permission_id) {
+            //         this.deleteAction = item.actions.delete;
+            //     }
+            // });
+
+            // console.log(user);
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("users/removeUser", {
+                    uid: user.uid,
+                    roleId: user.role.id,
+                    permission_id: this.permission_id
+                })
+                .then(
+                    function(result) {
+                        // this.getAllUsers();
+                        this.getUsersByGroupId();
+                        // this.closeDialog();
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Remove user success!"
+                        );
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                        this.closeDialog();
+                    }.bind(this)
+                );
+        },
         resetPassword(user) {
             var userInfo = {
                 email: user.email,
@@ -478,6 +543,12 @@ export default {
                     this.permission_id = o.permission.id;
                 }
             });
+            this.permission.find(item => {
+                if (item.permission_id == this.permission_id) {
+                    this.deleteAction = item.actions.delete;
+                }
+            });
+            // console.log(this.deleteAction);
         }
     },
     computed: {
@@ -488,7 +559,6 @@ export default {
     created() {
         this.checkPagePermission();
         this.userGroupId = this.$store.getters["account/accountGroupId"]();
-        // console.log(this.userGroupId);
         this.getUsersByGroupId();
         this.getRolesByGroupId();
     }

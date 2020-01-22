@@ -58,10 +58,19 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-
         getUserProfile: (context, uid) => {
             return axios
                 .get("yuanyang_user_module/users/" + uid + "/profile")
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        findUserByEmail: (context, email) => {
+            return axios
+                .post("yuanyang_user_module/users/check", { email: email })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -120,6 +129,24 @@ export default {
                 .put(
                     "yuanyang_user_module/users/" + data.uid + "/status",
                     data,
+                    {
+                        headers: { "permission-id": data.permission_id }
+                    }
+                )
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+        removeUser: (context, data) => {
+            return axios
+                .delete(
+                    "yuanyang_user_module/user/" +
+                        data.uid +
+                        "/role/" +
+                        data.roleId,
                     {
                         headers: { "permission-id": data.permission_id }
                     }
