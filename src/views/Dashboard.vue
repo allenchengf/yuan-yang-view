@@ -38,8 +38,8 @@
                     v-flex(xs12 sm6 md6)
                         v-card
                             v-card-title
-                                .subheading Latest logs of FQDN
-                            h7-data-table(:headers="logsHeaders" :items="logData" :loading="$store.state.global.isLoading" single-line :per-page="10")
+                                .subheading 10 Latest log of FQDN
+                            h7-data-table(:headers="logsHeaders" :items="logData" :loading="$store.state.global.isLoading" single-line :per-page="10" :showPerPageRow="false")
                                 template(slot="items" slot-scope="{props, index}")
                                     tr
                                         td {{index}}
