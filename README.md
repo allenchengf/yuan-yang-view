@@ -1,4 +1,4 @@
-# user-module
+# yuan-yang
 
 ## Project setup
 ```
@@ -10,9 +10,19 @@ npm install
 npm run serve
 ```
 
+### Compiles and minifies for dev
+```
+npm run build:dev
+```
+
+### Compiles and minifies for uat
+```
+npm run build:uat
+```
+
 ### Compiles and minifies for production
 ```
-npm run build
+npm run build:production
 ```
 
 ### Lints and fixes files
