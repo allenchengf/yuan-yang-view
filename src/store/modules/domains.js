@@ -13,9 +13,11 @@ export default {
         }
     },
     actions: {
-        getAllDomains: (context, user_group_id) => {
+        getAllDomains: (context, data) => {
             return axios
-                .get("yuanyang/domains?user_group_id=" + user_group_id)
+                .get("yuanyang/domains?user_group_id=" + data.id, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -38,9 +40,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getDomainById: (context, id) => {
+        getDomainById: (context, data) => {
             return axios
-                .get("yuanyang/domains/" + id)
+                .get("yuanyang/domains/" + data.id, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -48,9 +52,12 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getDomainsByNullGroup: context => {
+        getDomainsByNullGroup: (context, data) => {
+            // console.log(data);
             return axios
-                .get("yuanyang/domains?domain_group_id=0")
+                .get("yuanyang/domains?domain_group_id=0", {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -60,7 +67,9 @@ export default {
         },
         updateDomain: (context, data) => {
             return axios
-                .put("yuanyang/domains/" + data.id, data)
+                .put("yuanyang/domains/" + data.id, data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -70,7 +79,9 @@ export default {
         },
         batchNewDomainsAndCdns: (context, data) => {
             return axios
-                .post("yuanyang/domains/batch", data)
+                .post("yuanyang/domains/batch", data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -80,7 +91,9 @@ export default {
         },
         newDomain: (context, data) => {
             return axios
-                .post("yuanyang/domains", data)
+                .post("yuanyang/domains", data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -88,9 +101,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        deleteDomain: (context, id) => {
+        deleteDomain: (context, data) => {
             return axios
-                .delete("yuanyang/domains/" + id)
+                .delete("yuanyang/domains/" + data.id, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

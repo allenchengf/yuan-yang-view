@@ -64,7 +64,7 @@ export default {
                     text: "Auto Scan",
                     disabled: false,
                     exact: true,
-                    to: "/admin/auto-scan"
+                    to: "/auto-scan"
                 },
                 {
                     text: "Auto Scan List",

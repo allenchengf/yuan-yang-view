@@ -4,7 +4,7 @@
             template(slot="items" slot-scope="props")
                 slot(name="items" :props="props" :index="rowIndex(props.index)")
 
-        v-flex.px-2        
+        v-flex.px-2(v-if="showPerPageRow")      
             v-layout.px-2(row align-center)
                 v-flex.text-xs-left
                     v-layout(row align-center)
@@ -12,7 +12,7 @@
                         v-select.px-3.py-3(:items="page" v-model="rowsPerPage" hide-details)
                 //- v-flex.text-xs-left.py-3(xs4)
                 //-     slot(name="actions-left")
-                v-flex.text-xs-right.py-3(xs8)
+                v-flex.text-xs-right.py-3
                     v-pagination(v-model="pagination.page" :length="pages" :total-visible="7")
 </template>
 
@@ -39,6 +39,10 @@ export default {
         },
         sortBy: {
             type: String
+        },
+        showPerPageRow: {
+            type: Boolean,
+            default: true
         }
     },
     data() {

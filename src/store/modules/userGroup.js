@@ -50,6 +50,20 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
+        updateUserGroupPin: (context, data) => {
+            return axios
+                .post("yuanyang/domain-pin", {
+                    user_group_id: data.user_group_id,
+                    name: data.pin
+                })
+                .then(function(response) {
+                    return Promise.resolve(response.data);
+                })
+                .catch(function(error) {
+                    return Promise.reject(error.response.data);
+                });
+        },
+
         updateGroupStatus: (context, data) => {
             return axios
                 .put("yuanyang_user_module/userGroups/" + data.id + "/status", {

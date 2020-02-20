@@ -73,7 +73,9 @@ export default {
                     value: "continent.name",
                     control: false
                 }
-            ]
+            ],
+            permission: [],
+            permission_id: 0
         };
     },
     computed: {
@@ -116,7 +118,7 @@ export default {
         getScanProvider() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("crawlers/getScanProvider")
+                .dispatch("crawlers/getScanProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.crawlerGroup = [];
@@ -144,7 +146,7 @@ export default {
         getCdnProvider() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         result.data.forEach((o, i) => {
@@ -181,6 +183,7 @@ export default {
                 o.scan_platform = this.selectedCrawler;
                 o.cdn_provider_id = o.id;
                 o.scanned_at = this.startScanDate;
+                o.permission_id = this.permission_id;
                 this.$store
                     .dispatch("crawlers/getScanData", o)
                     .then(
@@ -196,7 +199,7 @@ export default {
                                 "global/showSnackbarError",
                                 error.message
                             );
-                            console.log(error.message);
+                            // console.log(error.message);
                         }.bind(this)
                     );
             });
@@ -277,7 +280,7 @@ export default {
         changeAll() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("crawlers/changeAllCdnProvider")
+                .dispatch("crawlers/changeAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
@@ -304,7 +307,7 @@ export default {
         },
         getLastScanData() {
             this.$store
-                .dispatch("crawlers/getLastTimeScanData")
+                .dispatch("crawlers/getLastTimeScanData", this.permission_id)
                 .then(
                     function(result) {
                         this.scanData = result.data.scanneds;
@@ -320,12 +323,25 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
         this.selectedCdnProvider = [];
         this.getScanProvider();
         this.getCdnProvider();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

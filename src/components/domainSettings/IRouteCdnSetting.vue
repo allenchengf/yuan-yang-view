@@ -24,7 +24,7 @@
                         td {{index}}
                         td {{props.item.continent.name}} / {{props.item.country.name}} / {{props.item.location}}
                         td {{props.item.isp}}
-                        td {{props.item.cdn == null ? props.item.cdn : props.item.cdn.cdn_provider.name}}
+                        td {{props.item.cdn.length == 0 ? " " : props.item.cdn.cdn_provider.name}}
 </template>
 <script>
 export default {
@@ -120,7 +120,9 @@ export default {
                     sortable: false,
                     value: "CDN Provider"
                 }
-            ]
+            ],
+            permission: [],
+            permission_id: 0
         };
     },
     watch: {
@@ -386,7 +388,7 @@ export default {
         getAllCdnProvider() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -406,13 +408,18 @@ export default {
                 );
         },
         getAlliRouteCDNs() {
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("iRouteCdn/getDomainIRouteCDNs", this.domain_id)
+                .dispatch("iRouteCdn/getDomainIRouteCDNs", domain)
                 .then(
                     function(result) {
                         this.filterData = result.data;
                         this.filteredItems = this.filterData;
+                        // console.log(this.filteredItems);
                         this.isp.push(
                             ...new Set(this.filterData.map(x => x.isp))
                         );
@@ -430,9 +437,15 @@ export default {
                 );
         },
         getDomainInfo() {
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
+            // console.log(domain);
+
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getDomainById", this.domain_id)
+                .dispatch("domains/getDomainById", domain)
                 .then(
                     function(result) {
                         this.domainInfo = result.data.domain;
@@ -476,6 +489,15 @@ export default {
                     }
                 });
             }
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     mounted() {
@@ -485,6 +507,9 @@ export default {
         this.getCountriesList();
         this.getAllCdnProvider();
         this.getDomainInfo();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

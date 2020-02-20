@@ -75,7 +75,7 @@
                         tr 
                             td
                                 v-checkbox(v-model="props.selected" primary hide-details)
-                            td {{index}}
+                            td {{props.item.index}}
                             td {{props.item.name}}
                             td {{cdnArray.join(', ')}}
                             td
@@ -102,7 +102,7 @@
                                 tr 
                                     td
                                         v-checkbox(v-model="props.selected" primary hide-details)
-                                    td.text-xs-center {{props.index + 1}}
+                                    td.text-xs-center {{props.item.index}}
                                     td.text-xs-center {{props.item.name}}
                         //- v-data-table.elevation-1(v-model="selected" :headers="domainListHeaders" :items="domainList" select-all hide-actions)
                         //-     template(v-slot:items="props")
@@ -296,7 +296,9 @@ export default {
                 domains: []
             },
             defaultCdnProvider: "",
-            groupEditedInfo: {}
+            groupEditedInfo: {},
+            permission: [],
+            permission_id: 0
         };
     },
     methods: {
@@ -330,6 +332,7 @@ export default {
             this.$store.dispatch("global/startLoading");
             this.selectedDomains.forEach((o, i) => {
                 o.groupId = this.groupInfo.id;
+                o.permission_id = this.permission_id;
                 this.$store
                     .dispatch("grouping/deleteDomainFromGroup", o)
                     .then(
@@ -441,6 +444,7 @@ export default {
             var batchData = [];
             batchData.groupId = this.groupId;
             batchData.data = this.batchData;
+            batchData.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("grouping/batchNewDomainByGroupId", batchData)
@@ -486,12 +490,19 @@ export default {
             );
         },
         getGroupInfo() {
+            var group = {
+                id: this.groupId,
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("grouping/getGroupById", this.groupId)
+                .dispatch("grouping/getGroupById", group)
                 .then(
                     function(result) {
                         this.groupInfo = result.data;
                         this.filterData = this.groupInfo.domains;
+                        this.filterData.forEach((o, i) => {
+                            o.index = i + 1;
+                        });
                         this.groupCdnProvider = this.groupInfo.domains[0].cdn_provider;
                         this.groupCdnProvider.forEach((o, i) => {
                             o.disable = {};
@@ -516,8 +527,12 @@ export default {
             });
         },
         getAllDomains: function() {
+            var domain = {
+                ugid: this.$store.getters["account/accountGroupId"](),
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("domains/getDomainsByNullGroup")
+                .dispatch("domains/getDomainsByNullGroup", domain)
                 .then(
                     function(result) {
                         this.allDomainsData = result.data.domains;
@@ -531,8 +546,9 @@ export default {
                 );
         },
         getAllCdnProvider() {
-            return this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -546,12 +562,16 @@ export default {
                                 this.cdnProviderIdMapping[item.id] = item.name;
                             }).bind(this)
                         );
-                        return Promise.resolve();
+                        this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        return Promise.reject(error);
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
                     }.bind(this)
                 );
         },
@@ -617,6 +637,9 @@ export default {
                 });
             });
             this.domainList = _.compact(this.domainList);
+            this.domainList.forEach((o, i) => {
+                o.index = i + 1;
+            });
             // console.log(this.domainList, "domainList");
         },
         addItem: function() {
@@ -642,6 +665,7 @@ export default {
         },
         updateGroup: function() {
             // console.log(this.groupInfo, "edit");
+            this.groupEditedInfo.permission_id = this.permission_id;
             if (this.$refs.editGroupForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -671,9 +695,12 @@ export default {
             }
         },
         updateGroupCdnProvider() {
+            this.dialog.changeDefault = false;
             var defaultCdnData = [];
             defaultCdnData.groupId = this.groupId;
             defaultCdnData.defaultCdnId = this.selectedCdnProvider;
+            defaultCdnData.permission_id = this.permission_id;
+
             // console.log(defaultCdnData, "changeDefault");
             this.$store.dispatch("global/startLoading");
             this.$store
@@ -720,6 +747,7 @@ export default {
             this.$store.dispatch("global/startLoading");
             this.selectedArray.forEach((o, i) => {
                 this.domainInfo.domainId = o.id;
+                this.domainInfo.permission_id = this.permission_id;
                 this.$store
                     .dispatch("grouping/newDomainByGroupId", this.domainInfo)
                     .then(
@@ -756,6 +784,7 @@ export default {
         },
         deleteDomain() {
             // console.log(this.domainInfo, "delete");
+            this.domainInfo.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("grouping/deleteDomainFromGroup", this.domainInfo)
@@ -800,11 +829,24 @@ export default {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
             this.initialApis();
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     mounted() {
         this.groupId = this.$route.params.groupId;
         this.initialApis();
+    },
+    created() {
+        this.checkPagePermission();
     }
 };
 </script>

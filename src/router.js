@@ -74,28 +74,20 @@ export default new Router({
             },
             component: ResetPassword
         },
-        { path: "*", redirect: "/admin" },
+        { path: "*", redirect: "/" },
         {
-            path: "/admin",
+            path: "/",
             meta: {
                 requireAuth: true
             },
             component: AdminLayout,
             children: [
                 {
-                    path: "settings",
+                    path: "",
+                    redirect: "dashboard",
                     meta: {
                         requireAuth: true,
                         auth: 0
-                    },
-                    component: Settings
-                },
-                {
-                    path: "",
-                    redirect: "cdn-providers",
-                    meta: {
-                        requireAuth: true,
-                        auth: 1
                     }
                 },
                 {
@@ -107,19 +99,20 @@ export default new Router({
                     component: Dashboard
                 },
                 {
-                    path: "dashboard",
+                    path: "settings",
                     meta: {
                         requireAuth: true,
                         auth: 0
                     },
-                    component: Dashboard
+                    component: Settings
                 },
                 {
                     path: "cdn-providers",
                     name: "CDN Providers",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "CDN Providers"
                     },
                     component: CdnProvidersSetting
                 },
@@ -128,16 +121,18 @@ export default new Router({
                     name: "Domains",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "Domains"
                     },
                     component: DomainsSetting
                 },
                 {
-                    name: "domainInfo",
+                    name: "DomainInfo",
                     path: "domains/:domain_id",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "Domains"
                     },
                     component: DomainInfo,
                     props: route => ({
@@ -150,7 +145,8 @@ export default new Router({
                     path: "grouping",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "Grouping"
                     },
                     component: GroupingSetting
                 },
@@ -159,7 +155,8 @@ export default new Router({
                     path: "grouping/:groupId",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "Grouping"
                     },
                     component: GroupInfo,
                     props: route => ({
@@ -171,7 +168,8 @@ export default new Router({
                     path: "iroutecdn",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 0,
+                        sideBar: "iRouteCDN"
                     },
                     component: IRouteCdnSetting
                 },
@@ -180,7 +178,8 @@ export default new Router({
                     path: "iroutecdn/rules/",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 0,
+                        sideBar: "iRouteCDN"
                     },
                     component: IRouteCdnSettingById,
                     props: route => ({
@@ -192,7 +191,8 @@ export default new Router({
                     name: "Logs",
                     meta: {
                         requireAuth: true,
-                        auth: 1
+                        auth: 1,
+                        sideBar: "Logs"
                     },
                     component: Logs
                 },
@@ -201,7 +201,8 @@ export default new Router({
                     name: "Auto Scan",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 0,
+                        sideBar: "Auto Scan"
                     },
                     component: AutoScan
                 },
@@ -210,7 +211,8 @@ export default new Router({
                     path: "auto-scan-list",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 0,
+                        sideBar: "Auto Scan"
                     },
                     component: AutoScanList,
                     props: route => ({
@@ -222,53 +224,59 @@ export default new Router({
                     name: "Config Backup",
                     meta: {
                         requireAuth: true,
-                        auth: 0
+                        auth: 0,
+                        sideBar: "Config Backup"
                     },
                     component: ConfigBackup
                 },
 
                 {
-                    path: "Networks",
-                    name: "networks",
+                    path: "/admin/networks",
+                    name: "Networks",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 2,
+                        sideBar: "Networks"
                     },
                     component: NetworkSetting
                 },
                 {
-                    path: "users",
+                    path: "/admin/users",
                     name: "Users",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 2,
+                        sideBar: "Users"
                     },
                     component: Users
                 },
                 {
-                    path: "roles",
+                    path: "/admin/roles",
                     name: "roles",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 2,
+                        sideBar: "Users"
                     },
                     component: RoleSetting
                 },
                 {
-                    path: "user-groups",
+                    path: "/admin/user-groups",
                     name: "UserGroups",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 2,
+                        sideBar: "Users"
                     },
                     component: UserGroups
                 },
                 {
-                    path: "user-groups/:group_id",
+                    path: "/admin/user-groups/:group_id",
                     name: "userGroupInfo",
                     meta: {
                         requireAuth: true,
-                        auth: 2
+                        auth: 2,
+                        sideBar: "Users"
                     },
                     component: UserGroupInfo,
                     props: route => ({

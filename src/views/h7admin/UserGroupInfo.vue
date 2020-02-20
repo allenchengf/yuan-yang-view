@@ -209,7 +209,9 @@ export default {
             type: "",
             isReadOnly: true,
             roleList: [],
-            roleMapping: {}
+            roleMapping: {},
+            permission: [],
+            permission_id: 0
         };
     },
     computed: {
@@ -245,9 +247,13 @@ export default {
                 );
         },
         getGroupUserInfo() {
+            var group = {
+                groupId: this.groupId,
+                permission_id: this.permission_id
+            };
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("users/getUsersByGroup", this.groupId)
+                .dispatch("users/getUsersByGroup", group)
                 .then(
                     function(result) {
                         this.filterData = result.data;
@@ -266,8 +272,6 @@ export default {
                 );
         },
         getRolesByGroupId() {
-            // console.log(this.roleList);
-            // this.items = this.roleList;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("roles/getRolesByGroupId", this.groupId)
@@ -393,6 +397,7 @@ export default {
             userInfo.name = this.userInfo.name;
             userInfo.email = this.userInfo.email;
             userInfo.passwordType = "2";
+            userInfo.permission_id = this.permission_id;
             this.$store
                 .dispatch("users/newUser", userInfo)
                 .then(
@@ -478,6 +483,15 @@ export default {
             this.$refs.editForm.reset();
             this.$refs.addEmailForm.reset();
             this.$refs.addUserForm.reset();
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     watch: {
@@ -495,6 +509,7 @@ export default {
     },
     created() {
         this.groupId = this.$route.params.group_id;
+        this.checkPagePermission();
         if (this.info.id != null) {
             this.groupInfo = this.info;
         } else {

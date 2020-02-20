@@ -22,7 +22,6 @@ export default {
                 await axios
                     .get("yuanyang/roles/self/permissions")
                     .then(function(response) {
-                        console.log(response.data.data, "axios");
                         var permission = response.data.data;
                         localStorage.setItem(
                             "permission",
@@ -39,9 +38,11 @@ export default {
                     });
             } catch (err) {}
         },
-        getAllPermission: context => {
+        getAllPermission: (context, permission_id) => {
             return axios
-                .get("yuanyang/permissions")
+                .get("yuanyang/permissions", {
+                    headers: { "permission-id": permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -49,9 +50,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getRolePermissionByRoleId: (context, roleId) => {
+        getRolePermissionByRoleId: (context, data) => {
             return axios
-                .get("yuanyang/roles/" + roleId + "/permissions")
+                .get("yuanyang/roles/" + data.roleId + "/permissions", {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -61,9 +64,15 @@ export default {
         },
         updateRolePermission: (context, data) => {
             return axios
-                .post("yuanyang/roles/" + data.roleId + "/permissions", {
-                    permissions: data.permissions
-                })
+                .post(
+                    "yuanyang/roles/" + data.roleId + "/permissions",
+                    {
+                        permissions: data.permissions
+                    },
+                    {
+                        headers: { "permission-id": data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })

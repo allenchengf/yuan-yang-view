@@ -7,9 +7,11 @@ export default {
     getters: {},
     mutations: {},
     actions: {
-        getAllGroups: context => {
+        getAllGroups: (context, permission_id) => {
             return axios
-                .get("yuanyang/groups")
+                .get("yuanyang/groups", {
+                    headers: { "permission-id": permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -17,9 +19,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        getGroupById: (context, id) => {
+        getGroupById: (context, data) => {
             return axios
-                .get("yuanyang/groups/" + id)
+                .get("yuanyang/groups/" + data.id, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -27,9 +31,11 @@ export default {
                     return Promise.reject(error.request.status);
                 });
         },
-        getGroupIRouteCdn: (context, id) => {
+        getGroupIRouteCdn: (context, data) => {
             return axios
-                .get("yuanyang/groups/" + id + "/routing-rules")
+                .get("yuanyang/groups/" + data.id + "/routing-rules", {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -39,7 +45,9 @@ export default {
         },
         updateGroup: (context, data) => {
             return axios
-                .put("yuanyang/groups/" + data.id, data)
+                .put("yuanyang/groups/" + data.id, data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -49,9 +57,15 @@ export default {
         },
         changeGroupCdnProvider: (context, data) => {
             return axios
-                .put("yuanyang/groups/" + data.groupId + "/defaultCdn", {
-                    cdn_provider_id: data.defaultCdnId
-                })
+                .put(
+                    "yuanyang/groups/" + data.groupId + "/defaultCdn",
+                    {
+                        cdn_provider_id: data.defaultCdnId
+                    },
+                    {
+                        headers: { "permission-id": data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -61,7 +75,9 @@ export default {
         },
         newGroup: (context, data) => {
             return axios
-                .post("yuanyang/groups", data)
+                .post("yuanyang/groups", data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -71,9 +87,15 @@ export default {
         },
         newDomainByGroupId: (context, data) => {
             return axios
-                .post("yuanyang/groups/" + data.groupId, {
-                    domain_id: data.domainId
-                })
+                .post(
+                    "yuanyang/groups/" + data.groupId,
+                    {
+                        domain_id: data.domainId
+                    },
+                    {
+                        headers: { "permission-id": data.permission_id }
+                    }
+                )
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -83,7 +105,9 @@ export default {
         },
         batchNewDomainByGroupId: (context, data) => {
             return axios
-                .post("yuanyang/groups/" + data.groupId + "/batch", data.data)
+                .post("yuanyang/groups/" + data.groupId + "/batch", data.data, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -91,9 +115,11 @@ export default {
                     return Promise.reject(error.response.data);
                 });
         },
-        deleteGroup: (context, id) => {
+        deleteGroup: (context, data) => {
             return axios
-                .delete("yuanyang/groups/" + id)
+                .delete("yuanyang/groups/" + data.id, {
+                    headers: { "permission-id": data.permission_id }
+                })
                 .then(function(response) {
                     return Promise.resolve(response.data);
                 })
@@ -104,7 +130,10 @@ export default {
         deleteDomainFromGroup: (context, data) => {
             return axios
                 .delete(
-                    "yuanyang/groups/" + data.groupId + "/domain/" + data.id
+                    "yuanyang/groups/" + data.groupId + "/domain/" + data.id,
+                    {
+                        headers: { "permission-id": data.permission_id }
+                    }
                 )
                 .then(function(response) {
                     return Promise.resolve(response.data);
