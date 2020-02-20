@@ -105,6 +105,10 @@ export default {
                         "updateAccountToken",
                         response.data.data.token
                     );
+                    context.commit(
+                        "updateAccountAuth",
+                        response.data.data.user
+                    );
                     return Promise.resolve(response.data);
                 })
                 .catch(function(error) {
@@ -184,6 +188,8 @@ export default {
             context.commit("updateAccountInfo", null);
             localStorage.removeItem("token");
             localStorage.removeItem("user");
+            localStorage.removeItem("auth");
+            localStorage.removeItem("permission");
             // router push to login page
             router.push(
                 "/login?message=" + "sign in success." + "&type=success"

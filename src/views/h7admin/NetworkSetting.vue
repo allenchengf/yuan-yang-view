@@ -174,19 +174,17 @@ export default {
     },
     watch: {
         perPage: function() {
-            console.log(this.perPage);
+            // console.log(this.perPage);
         }
     },
     methods: {
         parentMethod(data) {
-            // console.log("ccc");
-            // console.log(data);
             if (data > 25) {
                 this.perPage = "All";
             } else {
                 this.perPage = data;
             }
-            console.log(this.perPage);
+            // console.log(this.perPage);
         },
         getNetworks: function() {
             // var id = this.tabs[this.currentTab].id;

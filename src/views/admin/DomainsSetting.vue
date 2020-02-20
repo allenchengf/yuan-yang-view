@@ -37,21 +37,22 @@
                         span Progress of Batch Add Domains
                         v-layout(wrap)
                             v-flex(xs10 md10)
-                                v-progress-linear(color="warning" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
+                                v-progress-linear(color="brown lighten-4" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
                             v-flex(xs2 md2)
                                 v-btn.my-0(v-show="showGetResultBtn" color="primary" @click="getProcessResult") Get Result
-                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line v-model="selectedArray" :selectedArray="selectedArray")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
                                 td
                                     v-checkbox(v-model="props.selected" primary hide-details)
-                                td {{ index }}
+                                td {{ props.item.index }}
                                 td {{ props.item.name }}
                                 td {{ props.item.cname }}
                                 td
                                     span(v-for="item in props.item.cdnArray" v-if="item.default == true" :style="item.default == true ? 'color:green;font-weight: 600' : 'color: black'") {{item.name}} 
                                     span(v-for="item in props.item.cdnArray" v-if="item.default !== true" ) {{ " , " + item.name }}
                                 td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
+                                td {{props.item.label}}
                                 td
                                     v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
                                         v-icon(small) edit
@@ -104,7 +105,7 @@
                                     td.text-xs-center {{index}}
                                     td.text-xs-center {{props.item.domain_name}}
                                     td.text-xs-center
-                                        span(style="color: green;font-weight:600" :style="props.item.status === 'Success' ? 'color:green;font-weight: 600' : 'color: red'") {{props.item.status}}
+                                        span(style="color: green;font-weight:600" :style="props.item.status[0] === 'Success'  ? 'color:green;font-weight: 600' : 'color: red'" v-for="item in props.item.status") {{item}} </br>
                         v-card-actions  
                             v-spacer
                             v-btn(color="primary" flat="flat" @click="closeCheckDialog") OK
@@ -157,6 +158,7 @@ export default {
 
     data() {
         return {
+            permission_id: 0,
             showGetResultBtn: false,
             step: 1,
             wantDeleteCdn: "",
@@ -246,7 +248,7 @@ export default {
                 {
                     text: "#",
                     align: "left",
-                    sortable: false,
+                    sortable: true,
                     width: "80px",
                     value: "index"
                 },
@@ -273,6 +275,12 @@ export default {
                     align: "left",
                     sortable: false,
                     value: "domain_group[0].name"
+                },
+                {
+                    text: "Note",
+                    align: "left",
+                    sortable: false,
+                    value: "label"
                 },
                 {
                     text: "Actions",
@@ -379,6 +387,7 @@ export default {
             var domainInfo = {};
             this.selectedArray.forEach((o, i) => {
                 domainInfo.domain_id = o.id;
+                domainInfo.permission_id = this.permission_id;
                 o.cdns.forEach((obj, idx) => {
                     if (obj.cdn_provider_id == this.wantDeleteCdn) {
                         domainInfo.id = obj.id;
@@ -419,24 +428,29 @@ export default {
             this.info = [];
             this.detailInfo = [];
             this.selectedArray.forEach((o, i) => {
+                var data = {};
+                data.id = o.id;
+                data.permission_id = this.permission_id;
                 this.$store
-                    .dispatch("domains/deleteDomain", o.id)
+                    .dispatch("domains/deleteDomain", data)
                     .then(
                         function(result) {
                             var detail = {};
                             detail.domain_name = result.data.domain_name;
-                            detail.status = "Success";
+                            var msg = [];
+                            msg.push("Success");
+                            detail.status = msg;
                             domainName.push(detail);
                             this.info = domainName;
                             if (this.dialog.check == true) {
                                 this.detailInfo = this.info;
                             }
-
                             var selectArrayLength = 0;
                             selectArrayLength = selectObject.length;
-                            // console.log(selectArrayLength, this.info.length);
+
                             if (selectArrayLength == this.info.length) {
                                 this.initialApis();
+                                this.selectedArray = new Array();
                             }
                         }.bind(this)
                     )
@@ -628,6 +642,7 @@ export default {
         },
         batchAddDomains() {
             // console.log(this.batchData, "ccc");
+            this.batchData.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
@@ -649,8 +664,12 @@ export default {
                 );
         },
         getProcess() {
+            var info = {
+                ugid: this.user_group_id,
+                permission_id: this.permission_id
+            };
             this.$store
-                .dispatch("process/getProcess", this.user_group_id)
+                .dispatch("process/getProcess", info)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -704,14 +723,17 @@ export default {
             this.info = [];
             this.detailInfo = [];
             var domainName = [];
-            console.log("getResult");
+            // console.log("getResult");
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("process/getProcessResult")
+                .dispatch("process/getProcessResult", this.permission_id)
                 .then(
                     function(result) {
+                        // console.log(result.data);
                         result.data.success.domain.forEach((o, i) => {
-                            o.message = "Success";
+                            var msg = [];
+                            msg.push("Success");
+                            o.message = msg;
                             var detail = {};
                             detail.domain_name = o.name;
                             detail.status = o.message;
@@ -723,18 +745,33 @@ export default {
                                 o.cdn.forEach((obj, idx) => {
                                     msg.push(obj.message);
                                 });
-                                o.message = msg.join();
+                                o.message = msg;
+                            } else if (
+                                o.message == "Domain Already Existed." &&
+                                o.cdn.length !== 0
+                            ) {
+                                var msg = [];
+                                o.cdn.forEach((obj, idx) => {
+                                    msg.push(obj.message);
+                                });
+                                o.message = msg;
+                                // console.log(o.message);
+                            } else {
+                                var msg = [];
+                                msg.push(o.message);
+                                o.message = msg;
                             }
                             var detail = {};
                             detail.domain_name = o.name;
                             detail.status = o.message;
                             domainName.push(detail);
                         });
-                        console.log(domainName, "domainName");
                         this.info = domainName;
                         if (this.dialog.check == true) {
                             this.detailInfo = this.info;
                         }
+                        // console.log(this.info, "domainName");
+
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -788,7 +825,7 @@ export default {
         },
         getAllCdnProvider() {
             return this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         this.cdnProvider = result.data;
@@ -827,6 +864,7 @@ export default {
             this.filterData = this.rawData;
             this.filteredItems = this.filterData;
             this.filterData.forEach((o, i) => {
+                o.permission_id = this.permission_id;
                 if (o.domain_group.length !== 0) {
                     this.groupArray.push(o.domain_group[0].name);
                 }
@@ -842,14 +880,19 @@ export default {
             // console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
+            var domain = {
+                id: this.user_group_id,
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("domains/getAllDomains", this.user_group_id)
+                .dispatch("domains/getAllDomains", domain)
                 .then(
                     function(result) {
                         this.rawData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         this.rawData.forEach((o, i) => {
                             o.cname = o.cname + "." + this.dnsPodDomain;
+                            o.index = i + 1;
                         });
                         // console.log(this.rawData);
                         return Promise.resolve();
@@ -908,6 +951,7 @@ export default {
                 "account/accountGroupId"
             ]();
             this.domain.cname = this.domain.name;
+            this.domain.permission_id = this.permission_id;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -938,6 +982,7 @@ export default {
         },
         addNewCdn(domain_id) {
             this.cdn.domain_id = domain_id;
+            this.cdn.permission_id = this.permission_id;
             this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("cdns/newCDN", this.cdn)
@@ -961,7 +1006,7 @@ export default {
             // console.log(this.domain, "deleteApi");
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/deleteDomain", this.domain.id)
+                .dispatch("domains/deleteDomain", this.domain)
                 .then(
                     function(result) {
                         this.$store.dispatch(
@@ -998,8 +1043,9 @@ export default {
             this.filterAction();
         },
         goToNextPage(data) {
+            // console.log(data);
             this.$router.push({
-                name: "domainInfo",
+                name: "DomainInfo",
                 params: {
                     domain_id: data.id,
                     info: data
@@ -1013,13 +1059,14 @@ export default {
             this.info = [];
             this.detailInfo = [];
             this.initialApis();
+            this.selectedArray = new Array();
         },
         getAllCdnProviders: function() {
             // console.log(this.filterData);
 
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("cdnProviders/getAllCdnProvider")
+                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
                 .then(
                     function(result) {
                         // console.log(result.data);
@@ -1046,9 +1093,19 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     created() {
+        this.checkPagePermission();
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
         this.getProcess();

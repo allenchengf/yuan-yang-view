@@ -31,6 +31,9 @@ export default {
             );
 
             if (this.$refs.forgotForm.validate()) {
+                var email = {
+                    email: this.email
+                };
                 this.$store
                     .dispatch("account/forgotPassword", this.email)
                     .then(

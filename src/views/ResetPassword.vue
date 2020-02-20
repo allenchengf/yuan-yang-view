@@ -32,7 +32,6 @@ export default {
     },
     methods: {
         submitAction: function() {
-            var vm = this;
             if (this.$refs.resetForm.validate()) {
                 this.$store.dispatch("global/startLoading");
                 this.$store
@@ -43,10 +42,10 @@ export default {
                     })
                     .then(
                         function(result) {
-                            this.$router.push(
-                                "/login?message=" +
-                                    "Reset password success." +
-                                    "&type=success"
+                            this.$router.push("/login");
+                            this.$store.dispatch(
+                                "global/showSnackbarSuccess",
+                                "Reset password success."
                             );
                             this.$store.dispatch("global/finishLoading");
                         }.bind(this)

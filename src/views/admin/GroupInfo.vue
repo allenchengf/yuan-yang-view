@@ -28,7 +28,7 @@ export default {
                     text: "Grouping",
                     disabled: false,
                     exact: true,
-                    to: "/admin/grouping"
+                    to: "/grouping"
                 },
                 {
                     text: "",
@@ -83,14 +83,18 @@ export default {
             this.getGroupInfo();
         },
         getGroupInfo() {
+            var group = {
+                id: this.groupId,
+                permission_id: this.permission_id
+            };
             return this.$store
-                .dispatch("grouping/getGroupById", this.groupId)
+                .dispatch("grouping/getGroupById", group)
                 .then(
                     function(result) {
                         this.groupInfo = result.data;
                         this.breadcrumbsItems[1].text = this.groupInfo.name;
                         this.breadcrumbsItems[1].to =
-                            "/admin/grouping/" + this.groupId;
+                            "/grouping/" + this.groupId;
                         // console.log(this.groupInfo);
                         return Promise.resolve();
                     }.bind(this)
@@ -118,12 +122,22 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
+            // console.log(this.permission_id);
         }
     },
     created() {
         this.groupId = this.$route.params.groupId;
+        this.checkPagePermission();
         this.route = this.$route.path;
-        // console.log(this.route);
         this.getGroupInfo();
         var query = this.$route.query;
         if (query.tab != null) {

@@ -13,9 +13,6 @@
                     v-tabs-items(v-model="tabsModel")
                         v-tab-item(v-for="item in tabItems" :key="item.key")
                             component(:is="item.component" :domain_id="domain_id" :currentTab="reloadPage" v-on:childMethod="parentMethod")
-                        
-                            
-            
 </template>
 <script>
 import DomainInfoSetting from "../../components/domainSettings/DomainInfoSetting";
@@ -32,7 +29,7 @@ export default {
                     text: "Domains",
                     disabled: false,
                     exact: true,
-                    to: "/admin/domains"
+                    to: "/domains"
                 },
                 {
                     text: "",
@@ -60,7 +57,9 @@ export default {
             dnsPodDomain: "shiftcdn.com",
             domainInfo: {},
             currentTab: "",
-            reloadPage: ""
+            reloadPage: "",
+            permission_id: 0,
+            permission: []
         };
     },
     watch: {
@@ -84,8 +83,14 @@ export default {
             this.currentTab = value;
         },
         getDomainInfo() {
+            var domain = {
+                id: this.domain_id,
+                permission_id: this.permission_id
+            };
+            // console.log(domain);
+
             return this.$store
-                .dispatch("domains/getDomainById", this.domain_id)
+                .dispatch("domains/getDomainById", domain)
                 .then(
                     function(result) {
                         this.domainInfo = result.data.domain;
@@ -93,7 +98,7 @@ export default {
                         // console.log(this.domainInfo, "data");
                         this.breadcrumbsItems[1].text = this.domainInfo.name;
                         this.breadcrumbsItems[1].to =
-                            "/admin/domains/" + this.domain_id;
+                            "/domains/" + this.domain_id;
                         return Promise.resolve();
                     }.bind(this)
                 )
@@ -120,9 +125,19 @@ export default {
                         );
                     }.bind(this)
                 );
+        },
+        checkPagePermission() {
+            this.permission = JSON.parse(localStorage.getItem("permission"));
+
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == this.$route.meta.sideBar) {
+                    this.permission_id = o.permission.id;
+                }
+            });
         }
     },
     created() {
+        this.checkPagePermission();
         this.domain_id = this.$route.params.domain_id;
         this.initialApis();
         var query = this.$route.query;
