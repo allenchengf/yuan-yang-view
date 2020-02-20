@@ -68,13 +68,13 @@ export default {
                     text: "CDN Provider",
                     align: "left",
                     sortable: true,
-                    value: "cdnProvider"
+                    value: "name"
                 },
                 {
                     text: "Count",
                     align: "left",
                     sortable: true,
-                    value: "count"
+                    value: "default_domains_count"
                 }
             ],
             logsHeaders: [
@@ -89,19 +89,19 @@ export default {
                     text: "Time",
                     align: "left",
                     sortable: true,
-                    value: "cdnProvider"
+                    value: "time"
                 },
                 {
                     text: "FQDN",
                     align: "left",
                     sortable: true,
-                    value: "cdnProvider"
+                    value: "domain_name"
                 },
                 {
                     text: "Action",
                     align: "left",
                     sortable: true,
-                    value: "count"
+                    value: "change_type"
                 }
             ],
             filterData: [

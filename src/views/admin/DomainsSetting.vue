@@ -40,7 +40,7 @@
                                 v-progress-linear(color="brown lighten-4" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
                             v-flex(xs2 md2)
                                 v-btn.my-0(v-show="showGetResultBtn" color="primary" @click="getProcessResult") Get Result
-                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line @childMethod="parentMethod")
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line v-model="selectedArray" :selectedArray="selectedArray")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
                                 td
@@ -447,9 +447,10 @@ export default {
                             }
                             var selectArrayLength = 0;
                             selectArrayLength = selectObject.length;
-                            // console.log(selectArrayLength, this.info.length);
+
                             if (selectArrayLength == this.info.length) {
                                 this.initialApis();
+                                this.selectedArray = new Array();
                             }
                         }.bind(this)
                     )
@@ -1058,7 +1059,7 @@ export default {
             this.info = [];
             this.detailInfo = [];
             this.initialApis();
-            this.selectedArray = [];
+            this.selectedArray = new Array();
         },
         getAllCdnProviders: function() {
             // console.log(this.filterData);
