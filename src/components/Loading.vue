@@ -1,6 +1,6 @@
 <template lang="pug">
     #loading
-        v-dialog(v-model="isLoading" persistent width="300")
+        v-dialog(v-model="$store.state.global.isLoading" persistent width="300")
             v-card(color="primary" dark)
                 v-card-text
                     v-progress-linear.ma-0(indeterminate color="white")
@@ -9,9 +9,7 @@
 export default {
     props: {},
     data() {
-        return {
-            isLoading: false
-        };
+        return {};
     },
     methods: {},
     created() {}

@@ -1,5 +1,6 @@
 import axios from "axios";
 import store from "../store";
+import router from "../router";
 import errorHandler from "./errorHandler";
 
 axios.defaults.timeout = process.env.VUE_APP_API_TIMEOUT;
@@ -25,15 +26,34 @@ axios.interceptors.response.use(
         return response;
     },
     error => {
+        // console.log(error.response);
+
         switch (error.response.status) {
-            case 403:
+            case 401:
                 store.dispatch("account/logout");
                 break;
+            case 403:
+                store.dispatch(
+                    "global/showSnackbarError",
+                    "Please contact iRoute Admin."
+                );
+            case 404:
+                router.push({ path: "/" });
+                break;
         }
-
-        error.response.data.text = error.response.data.errorCode
-            ? errorHandler[error.response.data.errorCode]
-            : error.response.data.message;
+        switch (error.response.data.errorCode) {
+            case 1001:
+                error.response.data.message =
+                    errorHandler[error.response.data.errorCode];
+                break;
+            case 1002:
+                error.response.data.message =
+                    errorHandler[error.response.data.errorCode];
+                break;
+        }
+        // error.response.data.text = error.response.data.errorCode
+        //     ? errorHandler[error.response.data.errorCode]
+        //     : error.response.data.message;
         return Promise.reject(error);
     }
 );

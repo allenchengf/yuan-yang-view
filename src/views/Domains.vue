@@ -10,7 +10,13 @@
                             v-flex.px-2(xs12 sm6 md3)
                                 v-text-field.pt-0.mt-0(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
                             v-spacer
+                            v-btn(color="warning" dark @click="") Batch Delete Domain
                             v-btn(color="primary" dark @click="addItem") Add Domain
+                            v-btn(color="primary" dark @click="pickFile") Batch Add Domain
+                                v-icon attach_file 
+                                input.d-none(ref="file" type="file" @change="handleFileUpload()")
+                            
+
                     v-data-table.elevation-1(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :pagination.sync="pagination"  hide-actions :search="searchText")
                         v-progress-linear(v-slot:progress color="primary")
                         template(slot="items" slot-scope="props")
@@ -18,11 +24,11 @@
                                 td.text-xs-left {{props.index +1}}
                                 td.text-xs-left() 
                                     .name.font-weight-medium {{props.item.name}}
-                                td.text-xs-left {{props.item.cname}}
+                                td.text-xs-left {{props.item.cname}}.{{dnsPodDomain}}
                                 td.text-xs-left
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 0)" title="edit domain")
                                         v-icon(small) edit
-                                    v-btn(color="primary" dark small outline :to="{ name: 'setting', query :{ data:  props.item } }") More
+                                    v-btn(color="primary" dark small outline :to="{ name: 'domainSettings', query :{ data:  props.item , dnsPodDomain} }") More
                     v-layout.px-2(row align-center)
                         v-flex.text-xs-left.py-3(xs4)
                         v-flex.text-xs-right.py-3(xs8)
@@ -33,8 +39,7 @@
                 v-card-title.title {{formTitle}}
                 v-card-text
                     v-form(ref="editForm")
-                        v-text-field(v-model="domain.name" label="Domain Name" type="text" name="name" :rules="[rules.required]")
-                        v-text-field(v-model="domain.cname" label="CName" type="text" name="cname")
+                        v-text-field(v-model="domain.name" label="Domain Name" type="text" name="name" :rules="[rules.domain]")
                         v-alert.text-md-left(:value="error.status" color="error" icon="warning" outline transition="scale-transition") {{error.message}}
                 v-card-actions  
                     v-spacer
@@ -45,13 +50,14 @@
 
 <script>
 import textFieldRules from "../utils/textFieldRules.js";
-import setting from "./setting";
+import DomainSettings from "./DomainSettings";
+import XLSX from "xlsx";
 
 export default {
     mixins: [textFieldRules],
 
     component: {
-        setting
+        DomainSettings
     },
     data() {
         return {
@@ -76,7 +82,7 @@ export default {
                     value: "name"
                 },
                 {
-                    text: "CName",
+                    text: "CNAME",
                     align: "left",
                     sortable: true,
                     value: "cname"
@@ -105,21 +111,134 @@ export default {
             },
             domain: {},
             editedIndex: -1,
-            // groupData: [],
-            operatorAuth: 0
-            // userGroups: []
+            operatorAuth: 0,
+            dnsPodDomain: "",
+            form: [],
+            batchData: {
+                domains: []
+            },
+            domains: []
         };
     },
     methods: {
-        getAllDomains: function() {
+        pickFile() {
+            this.$refs.file.click();
+            this.$refs.file.value = "";
+        },
+        handleFileUpload() {
+            var vm = this;
+            var fileUpload = this.$refs.file;
+            var regex = /^([a-zA-Z0-9\s_\\.\-:])+(.xls|.xlsx)$/;
+            if (regex.test(fileUpload.value.toLowerCase())) {
+                if (typeof FileReader != "undefined") {
+                    var reader = new FileReader();
+                    if (reader.readAsBinaryString) {
+                        reader.onload = function(e) {
+                            vm.ProcessExcel(e.target.result);
+                        };
+                        reader.readAsBinaryString(fileUpload.files[0]);
+                    } else {
+                        reader.onload = function(e) {
+                            var data = "";
+                            var bytes = new Uint8Array(e.target.result);
+                            for (var i = 0; i < bytes.byteLength; i++) {
+                                data += String.fromCharCode(bytes[i]);
+                            }
+                            vm.ProcessExcel(data);
+                        };
+                        reader.readAsArrayBuffer(fileUpload.files[0]);
+                    }
+                } else {
+                    alert("This browser does not support HTML5.");
+                }
+            } else {
+                alert("Please upload a valid Excel file.");
+            }
+        },
+        ProcessExcel(data) {
+            var workbook = XLSX.read(data, {
+                type: "binary"
+            });
+            var firstSheet = workbook.SheetNames[0];
+            var excelRows = XLSX.utils.sheet_to_row_object_array(
+                workbook.Sheets[firstSheet]
+            );
+            this.transformData(excelRows);
+        },
+        transformData(excelRows) {
+            this.batchData.domains = [];
+            this.batchData.domains = excelRows;
+            this.batchData.domains.forEach((o, i) => {
+                o.cdns = [];
+                o.cdns = Object.entries(o).map(([name, cname]) => ({
+                    name,
+                    cname
+                }));
+                o.cdns.forEach((obj, idx) => {
+                    obj["ttl"] = 600;
+                });
+                o.cdns.splice(0, 1);
+                o.cdns.pop();
+                o.name = o.Domain;
+                delete o.H7CDN;
+                delete o.Cloudflare;
+                delete o.Cloudfront;
+                delete o.Domain;
+            });
+            this.batchAddDomains();
+        },
+        batchAddDomains() {
             this.$store.dispatch("global/startLoading");
             this.$store
-                .dispatch("domains/getAllDomains")
+                .dispatch("domains/batchNewDomainsAndCdns", this.batchData)
                 .then(
                     function(result) {
-                        // console.log(result.data.domain);
+                        this.getAllDomains();
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                    }.bind(this)
+                );
+        },
+        getAllDomains: function() {
+            this.$store.dispatch("global/startLoading");
+            var domain = {
+                id: this.user_group_id,
+                permission_id: 2
+            };
+            this.$store
+                // .dispatch("domains/getAllDomains")
+                .dispatch("domains/getAllDomainsBySql", domain)
+                .then(
+                    function(result) {
+                        // 調整至原本 API 格式 justin 2020-03-09
+                        for (var i = 0; i < result.data.domains.length; i++) {
+                            var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
+                            var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
+                            var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
+
+                            result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
+                            result.data.domains[i].cdns = [];
+                            if (cdn_provider_id !== null) {
+                                for (var j = 0; j < cdn_provider_id.length; j++) {
+                                    result.data.domains[i].cdns.push({
+                                        "cdn_provider_id": parseInt(cdn_provider_id[j]),
+                                        "cname": cdn_cname[j],
+                                        "default": cdn_default[j] === "1" ? true : false,
+                                    });
+                                }
+                            }
+                        }
+
                         this.filterData = result.data.domains;
-                        // this.handleData();
+                        this.dnsPodDomain = result.data.dnsPodDomain;
                         this.setPages();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -165,12 +284,17 @@ export default {
                 if (this.editedIndex == -1) {
                     this.addNewDomain();
                 } else {
+                    // this.domain.cname = this.domain.name;
                     this.$store.dispatch("global/startLoading");
                     this.$store
                         .dispatch("domains/updateDomain", this.domain)
                         .then(
                             function(result) {
                                 this.$store.dispatch("global/finishLoading");
+                                this.$store.dispatch(
+                                    "global/showSnackbarSuccess",
+                                    "Change domain name success!"
+                                );
                                 this.getAllDomains();
                                 this.closeEditDialog();
                             }.bind(this)
@@ -178,6 +302,7 @@ export default {
                         .catch(
                             function(error) {
                                 this.$store.dispatch("global/finishLoading");
+                                this.closeEditDialog();
                                 this.$store.dispatch(
                                     "global/showSnackbarError",
                                     error.message
@@ -196,7 +321,7 @@ export default {
             this.domain.user_group_id = this.$store.getters[
                 "account/accountGroupId"
             ]();
-            // console.log(this.domain);
+            this.domain.cname = this.domain.name;
             var vm = this;
             if (this.$refs.editForm.validate()) {
                 this.$store.dispatch("global/startLoading");
@@ -206,7 +331,7 @@ export default {
                         function(result) {
                             this.$store.dispatch(
                                 "global/showSnackbarSuccess",
-                                "Update user success!"
+                                "Add new domain success!"
                             );
                             this.getAllDomains();
                             this.$store.dispatch("global/finishLoading");
@@ -234,6 +359,26 @@ export default {
                 this.pages = Math.ceil(this.filterData.length / this.perPage);
             }
         }
+        // transformData() {
+        //     console.log(this.batchData);
+        //     this.batchData.domains.forEach((o, i) => {
+        //         o.cdns = [];
+        //         o.cdns = Object.entries(o).map(([name, cname]) => ({
+        //             name,
+        //             cname
+        //         }));
+        //         o.cdns.forEach((obj, idx) => {
+        //             obj["ttl"] = 600;
+        //         });
+        //         o.cdns.splice(2, 1);
+        //         o.cdns.pop();
+        //         o.name = o.Domain;
+        //         delete o.H7CDN;
+        //         delete o.Cloudflare;
+        //         delete o.Cloudfront;
+        //         delete o.Domain;
+        //     });
+        // }
     },
     computed: {
         formTitle() {
@@ -249,6 +394,8 @@ export default {
     mounted() {
         this.$router.push("admin/domains");
         this.getAllDomains();
+        // console.log(this.batchData);
+        this.transformData();
     },
     created() {
         this.getAllDomains();

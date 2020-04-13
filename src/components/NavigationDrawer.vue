@@ -1,16 +1,16 @@
 <template lang="pug">
-    v-navigation-drawer(v-model="drawer" clipped fixed app :mini-variant="mini" light)
+    v-navigation-drawer(v-model="drawer" clipped fixed app :mini-variant="mini" light :accountPermission="accountPermission")
         v-list(dense)
             template(v-for="item, index in items")
-                v-subheader(v-if="item.header && authLevel >= item.auth" :key="item.header") {{ item.header }}
+                v-subheader(v-if="item.header" :key="item.header") {{ item.header }}
                 v-divider(v-else-if="item.divider" :key="index" :inset="item.inset")
-                .menu-item(v-else-if="$store.getters['account/accountAuth']() >= item.auth")
+                .menu-item(v-else-if="item.show == true")
                     v-list-group(v-if="item.children" v-model="item.model" :prepend-icon="item.icon" value="true" no-action)
-                        v-list-tile(slot="activator" active-class="activePrimary")
+                        v-list-tile(slot="activator" active-class="activePrimary" )
                             v-list-tile-content
                                 v-list-tile-title {{item.title}}
-                        v-list-tile(v-for="(child, i) in item.children" :key="child.title" :to="child.router")
-                            v-list-tile-content(v-if="$store.getters['account/accountAuth']() >= child.auth")
+                        v-list-tile(v-for="(child, i) in item.children" :key="child.title" :to="child.router" v-if="child.show == true")
+                            v-list-tile-content
                                 v-list-tile-title {{child.title}}
                     v-list-tile(v-else :key="item.title" :to="item.router" active-class="activePrimary")
                         v-list-tile-action
@@ -21,31 +21,188 @@
 
 <script>
 export default {
+    props: {
+        accountPermission: {
+            type: Array
+        }
+    },
     data() {
         return {
+            userGroupId: "",
             drawer: true,
             mini: false,
             menu: false,
             items: [
-                { header: "Administration", auth: 2 },
+                { header: "General", auth: 0 },
                 {
-                    title: "Domains List",
-                    icon: "account_circle",
-                    router: "/admin/domains",
+                    title: "Dashboard",
+                    icon: "dashboard",
+                    router: "/dashboard",
                     auth: 0
                 },
                 {
-                    title: "Domain Settings",
-                    icon: "settings",
-                    router: "/admin/setting",
+                    title: "CDN Providers",
+                    icon: "settings_input_component",
+                    router: "/cdn-providers",
+                    auth: 1
+                },
+                {
+                    title: "Domains",
+                    icon: "domain",
+                    router: "/domains",
+                    auth: 1
+                },
+                {
+                    title: "Grouping",
+                    icon: "group",
+                    router: "/grouping",
+                    auth: 1
+                },
+                {
+                    title: "iRouteCDN",
+                    icon: "dns",
+                    router: "/iroutecdn",
                     auth: 0
+                },
+                {
+                    title: "Logs",
+                    icon: "description",
+                    router: "/logs",
+                    auth: 1
+                },
+                {
+                    title: "Tools",
+                    icon: "build",
+                    auth: 0,
+                    children: [
+                        {
+                            title: "Auto Scan",
+                            router: "/auto-scan",
+                            auth: 0
+                        },
+                        {
+                            title: "Config Backup",
+                            router: "/config-backup",
+                            auth: 0
+                        }
+                    ]
+                },
+                { header: "Administration", auth: 2 },
+                {
+                    title: "Networks",
+                    icon: "settings",
+                    router: "/admin/networks",
+                    auth: 2
+                },
+                {
+                    title: "Users Setting",
+                    icon: "account_circle",
+                    auth: 0,
+                    children: [
+                        {
+                            title: "Users",
+                            icon: "list",
+                            router: "/admin/users",
+                            auth: 0
+                        },
+                        {
+                            title: "Roles",
+                            icon: "list",
+                            router: "/admin/roles",
+                            auth: 0
+                        }
+                    ]
+                },
+                {
+                    title: "Groups",
+                    icon: "group_add",
+                    router: "/admin/user-groups",
+                    auth: 2
                 }
             ],
-            right: null
+            right: null,
+            permission: []
         };
     },
+    watch: {
+        drawer: function(val) {
+            this.drawerFlag = val;
+        }
+    },
+    methods: {
+        adjustPermission() {
+            // console.log(this.permission, "prtimvikirn");
+            var rolesPermission = {};
+            this.permission.forEach((o, i) => {
+                if (o.permission.name == "Users") {
+                    rolesPermission.actions = o.actions;
+                    rolesPermission.permission = {
+                        name: "Roles"
+                    };
+                }
+            });
+            this.permission.push(rolesPermission);
+            // console.log(this.permission);
+        },
+        permissionControl() {
+            if (this.userGroupId == 1) {
+                this.items.forEach((o, i) => {
+                    if (o.auth == 2) {
+                        o.show = true;
+                    } else {
+                        o.show = false;
+                    }
+                });
+            }
+            // this.items.forEach((o, i) => {
+            //     if (o.title === "Dashboard") {
+            //         o.show = true;
+            //     }
+            // });
+            this.permission.forEach((o, i) => {
+                this.items.forEach((obj, idx) => {
+                    if (obj.children !== undefined) {
+                        obj.children.forEach((object, index) => {
+                            if (
+                                object.title == o.permission.name &&
+                                o.actions.read == 1
+                            ) {
+                                object.show = true;
+                                obj.show = true;
+                            } else if (
+                                object.title == o.permission.name &&
+                                o.actions.read == 0
+                            ) {
+                                object.show = false;
+                            }
+                        });
+                    } else {
+                        if (
+                            o.permission.name == obj.title &&
+                            o.actions.read == 1
+                        ) {
+                            obj.show = true;
+                        } else if (
+                            o.permission.name == obj.title &&
+                            o.actions.read == 0
+                        ) {
+                            obj.show = false;
+                        }
+                    }
+                });
+            });
+            if (this.permission !== null) {
+                this.$store.dispatch("global/finishLoading");
+            }
+        }
+    },
     created() {
-        this.authLevel = this.$store.getters["account/accountAuth"]();
+        this.$store.dispatch("global/startLoading");
+        this.userGroupId = this.$store.getters["account/accountGroupId"]();
+        this.permission = this.accountPermission;
+        // console.log(this.permission);
+        this.adjustPermission();
+        this.permissionControl();
     }
 };
 </script>

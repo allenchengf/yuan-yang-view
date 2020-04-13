@@ -1,13 +1,13 @@
 <template lang="pug">
     #user-module
         Loading
-        NavigationDrawer(ref="drawer")
+        NavigationDrawer(ref="drawer" :accountPermission="accountPermission")
         v-toolbar(fixed clipped-left app color="primary" dark)
             v-toolbar-side-icon(@click.stop="$refs.drawer.drawer = !$refs.drawer.drawer")
             v-toolbar-title.mr-5.align-center.site-logo
                 span.title
-                    router-link(to="/admin")
-                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="250" )
+                    router-link(to="/")
+                        v-img.logo(:src="require('../assets/images/iRouteCDN.png')" contain width="150" )
             v-spacer
             //- v-btn(icon)
             v-menu(offset-y )
@@ -17,14 +17,14 @@
                     v-btn(v-on="on" flat icon v-show="$vuetify.breakpoint.smAndDown") 
                         v-icon account_circle
                 v-list
-                    v-list-tile(@click="gotoSettings")
+                    v-list-tile(to="/settings")
                         v-list-tile-title Settings
                     v-divider
                     v-list-tile(@click="signout")
                         v-list-tile-title Sign out
         //- Snackbar
-        //- v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
-        //-     v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
+        v-snackbar(v-model="$store.state.global.snackbar.status" :color="$store.state.global.snackbar.color" :timeout="$store.state.global.snackbar.timeout" top ) {{$store.state.global.snackbar.text}}
+            v-btn(dark flat @click="$store.dispatch('global/closeSnackbar')") CLOSE
 
         v-content
             router-view
@@ -50,12 +50,13 @@ export default {
                 name: "James Bond"
             },
             user: "",
-            portalUrl: ""
+            portalUrl: "",
+            accountPermission: []
         };
     },
     methods: {
         gotoSettings: function() {
-            window.open(this.portalUrl + "/admin/settings", "_blank");
+            window.open(this.portalUrl + "/settings", "_blank");
         },
         signout: function() {
             this.$store.dispatch("global/startLoading");
@@ -64,6 +65,10 @@ export default {
                 .then(
                     function(result) {
                         this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarSuccess",
+                            "Sign out success!"
+                        );
                     }.bind(this)
                 )
                 .catch(
@@ -78,6 +83,7 @@ export default {
     },
     created() {
         this.user = this.$store.getters["account/account"]();
+        this.accountPermission = JSON.parse(localStorage.getItem("permission"));
     }
 };
 </script>

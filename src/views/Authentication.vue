@@ -16,7 +16,7 @@ export default {
             .then(
                 function(result) {
                     this.user = this.$store.getters["account/account"]();
-                    this.$router.push("/admin");
+                    this.$router.push("/dashboard");
                 }.bind(this)
             )
             .catch(
