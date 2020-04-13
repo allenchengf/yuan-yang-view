@@ -209,10 +209,34 @@ export default {
         },
         getAllDomains: function() {
             this.$store.dispatch("global/startLoading");
+            var domain = {
+                id: this.user_group_id,
+                permission_id: 2
+            };
             this.$store
-                .dispatch("domains/getAllDomains")
+                // .dispatch("domains/getAllDomains")
+                .dispatch("domains/getAllDomainsBySql", domain)
                 .then(
                     function(result) {
+                        // 調整至原本 API 格式 justin 2020-03-09
+                        for (var i = 0; i < result.data.domains.length; i++) {
+                            var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
+                            var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
+                            var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
+
+                            result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
+                            result.data.domains[i].cdns = [];
+                            if (cdn_provider_id !== null) {
+                                for (var j = 0; j < cdn_provider_id.length; j++) {
+                                    result.data.domains[i].cdns.push({
+                                        "cdn_provider_id": parseInt(cdn_provider_id[j]),
+                                        "cname": cdn_cname[j],
+                                        "default": cdn_default[j] === "1" ? true : false,
+                                    });
+                                }
+                            }
+                        }
+
                         this.filterData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         this.setPages();
