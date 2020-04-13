@@ -40,6 +40,14 @@ export default {
                 timeout: 6000
             });
         },
+        showSnackbarWarning: (context, text) => {
+            context.commit("updateSnackbar", {
+                status: true,
+                text: text,
+                color: "warning",
+                timeout: 6000
+            });
+        },
         showSnackbarError: (context, text) => {
             context.commit("updateSnackbar", {
                 status: true,

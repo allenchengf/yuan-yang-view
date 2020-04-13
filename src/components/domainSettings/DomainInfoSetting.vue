@@ -453,16 +453,20 @@ export default {
             this.cdn.default = true;
             this.dialog.changeDefault = false;
             this.cdn.permission_id = this.permission_id;
-            this.$store.dispatch("global/startLoading");
+            // this.$store.dispatch("global/startLoading");
+            this.$store.dispatch(
+                "global/showSnackbarWarning",
+                "Changing default CDN provider!"
+            );
             this.$store
                 .dispatch("cdns/updateDefaultCDN", this.cdn)
                 .then(
                     function(result) {
-                        this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Change default CDN provider success!"
-                        );
+                        // this.$store.dispatch("global/finishLoading");
+                        // this.$store.dispatch(
+                        //     "global/showSnackbarSuccess",
+                        //     "Change default CDN provider success!"
+                        // );
                         this.initialApis();
                         this.closeEditDialog();
                     }.bind(this)

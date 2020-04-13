@@ -40,7 +40,7 @@ export default {
         },
         perPage: {
             type: Number | String,
-            default: 20
+            default: 25
         },
         sortBy: {
             type: String
@@ -56,7 +56,7 @@ export default {
         return {
             selected: [],
             rowsPerPage: 0,
-            page: [5, 10, 25, "All"],
+            page: [25, 50, 200, 500],
             pagination: {
                 rowsPerPage: this.perPage,
                 sortBy: "index", // The field that you're sorting by

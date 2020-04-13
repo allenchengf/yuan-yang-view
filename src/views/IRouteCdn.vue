@@ -5,10 +5,10 @@
                 .title iRouteCDN
             v-flex(xs12)
                 v-card
-                    v-card-title
-                        .subheading iRouteCDN
-                        v-spacer
-                        v-btn.my-0(color="primary" @click="goToAllPage()") All
+                    //- v-card-title
+                    //-     .subheading iRouteCDN
+                    //-     v-spacer
+                    //-     v-btn.my-0(color="primary" @click="goToAllPage()") ALL
                     v-divider
                     v-card-text
                         v-layout(wrap)
