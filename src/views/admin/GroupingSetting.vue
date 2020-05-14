@@ -168,10 +168,10 @@ export default {
         addNewGroup() {
             this.group.permission_id = this.permission_id
 
-            if (!this.group.id) {
+            if (!this.group.domain_id) {
                 this.$store.dispatch(
                     'global/showSnackbarError',
-                    'Select Correct Domain'
+                    'Please select correct Domain'
                 )
                 return
             }
