@@ -65,7 +65,9 @@
                             v-form(ref="editForm")
                                 v-text-field(v-model="domain.name" label="Domain" type="text" name="name" :rules="[rules.domain]")
                                 v-text-field(v-model="domain.label" label="Note" type="text" name="label")
-                                v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider_id" :rules="[rules.required]")
+                                v-combobox(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider" :rules="[rules.required]")
+                                        template(v-slot:no-data)
+                                            v-card-text No results matching 
                                 v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
                         v-card-actions  
                             v-spacer
@@ -481,7 +483,11 @@ export default {
 
             this.filterAction();
         },
-        chooseCDN() {},
+        chooseCDN() {
+            var id = this.cdn.cdn_provider.id
+            this.cdn.cdn_provider_id = id
+            delete this.cdn.cdn_provider
+        },
         filterAction() {
             console.log(this.filterData);
             console.log(this.selectedCDN);
@@ -1020,7 +1026,14 @@ export default {
             }
         },
         addNewDomain: function() {
-            // console.log(this.domain, "add");
+            if(!this.cdn.cdn_provider_id){
+                this.$store.dispatch(
+                    'global/showSnackbarError',
+                    'Please select correct CDN Provider name'
+                )
+                return
+            }
+
             this.domain.user_group_id = this.$store.getters[
                 "account/accountGroupId"
             ]();
