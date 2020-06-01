@@ -99,7 +99,7 @@ export default {
     data() {
         return {
             currentPage: 1,
-            page: [5, 10, 25, "All"],
+            page: [10, 25, 50, 200, 500, "All"],
             alert: false,
             selectCDN: "",
             selected: [],
@@ -554,9 +554,29 @@ export default {
                 permission_id: this.permission_id
             };
             this.$store
-                .dispatch("domains/getAllDomains", domain)
+                // .dispatch("domains/getAllDomains", domain)
+                .dispatch("domains/getAllDomainsBySql", domain)
                 .then(
                     function(result) {
+                        // 調整至原本 API 格式 justin 2020-03-09
+                        for (var i = 0; i < result.data.domains.length; i++) {
+                            var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
+                            var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
+                            var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
+
+                            result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
+                            result.data.domains[i].cdns = [];
+                            if (cdn_provider_id !== null) {
+                                for (var j = 0; j < cdn_provider_id.length; j++) {
+                                    result.data.domains[i].cdns.push({
+                                        "cdn_provider_id": parseInt(cdn_provider_id[j]),
+                                        "cname": cdn_cname[j],
+                                        "default": cdn_default[j] === "1" ? true : false,
+                                    });
+                                }
+                            }
+                        }
+
                         this.domainList = result.data.domains;
                         // console.log(this.domainList);
                         return Promise.resolve();

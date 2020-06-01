@@ -48,7 +48,7 @@ export default {
     data() {
         return {
             rowsPerPage: 0,
-            page: [5, 10, 25, "All"],
+            page: [10, 25, 50, 200, 500, "All"],
             pagination: {
                 rowsPerPage: this.perPage,
                 sortBy: "time", // The field that you're sorting by

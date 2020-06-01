@@ -28,7 +28,7 @@
                     v-card-text
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
-                                v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
+                                v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details @keydown.enter="onSearch" @click:append="onSearch")
                             v-flex(xs12 sm6 md3)
                                 v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="name" @change="chooseCdnFilter(selectedCDN)" multiple v-model="selectedCDN" :item-disabled="['disable', 'status']")
                             v-flex(xs12 sm6 md3)
@@ -40,7 +40,7 @@
                                 v-progress-linear(color="brown lighten-4" height="20" :value="progress" width="180") {{progressData.done}} / {{progressData.all}}
                             v-flex(xs2 md2)
                                 v-btn.my-0(v-show="showGetResultBtn" color="primary" @click="getProcessResult") Get Result
-                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line v-model="selectedArray" :selectedArray="selectedArray")
+                    h7-selectable-data-table(:headers="headers" :items="filteredItems" :loading="$store.state.global.isLoading" :search-text="doSearchText" :per-page="25" single-line v-model="selectedArray" :selectedArray="selectedArray")
                         template(slot="items" slot-scope="{props, index}")
                             tr 
                                 td
@@ -65,7 +65,9 @@
                             v-form(ref="editForm")
                                 v-text-field(v-model="domain.name" label="Domain" type="text" name="name" :rules="[rules.domain]")
                                 v-text-field(v-model="domain.label" label="Note" type="text" name="label")
-                                v-select(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider_id" :rules="[rules.required]")
+                                v-combobox(:items="cdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="cdn.cdn_provider" :rules="[rules.required]")
+                                        template(v-slot:no-data)
+                                            v-card-text No results matching 
                                 v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
                         v-card-actions  
                             v-spacer
@@ -199,6 +201,7 @@ export default {
             editedIndex: -1,
             domain: {},
             searchText: "",
+            doSearchText: "",
             innerSearchText: "",
             dialog: {
                 edit: false,
@@ -338,6 +341,9 @@ export default {
         }
     },
     methods: {
+        onSearch() {
+            this.doSearchText = this.searchText;
+        },
         closeDialog() {
             this.dialog.batchDeleteCdn = false;
             this.wantDeleteCdn = "";
@@ -348,7 +354,7 @@ export default {
             this.domainList = [];
             // console.log(this.filteredItems);
             this.filteredItems.forEach((o, i) => {
-                if (o.cdns.length > 1 && o.domain_group.length == 0) {
+                if (o.cdns.length > 1 && o.domain_group[0].name == null) {
                     o.cdns.forEach((obj, idx) => {
                         if (
                             obj.cdn_provider_id == this.wantDeleteCdn &&
@@ -477,8 +483,14 @@ export default {
 
             this.filterAction();
         },
-        chooseCDN() {},
+        chooseCDN() {
+            var id = this.cdn.cdn_provider.id
+            this.cdn.cdn_provider_id = id
+            delete this.cdn.cdn_provider
+        },
         filterAction() {
+            console.log(this.filterData);
+            console.log(this.selectedCDN);
             // console.log(this.selectedCDN.length, this.selectedGroup);
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 this.filteredItems = [];
@@ -493,9 +505,10 @@ export default {
                     this.filterData.forEach((o, i) => {
                         o.cdnArrayName.sort();
                         if (
-                            o.cdnArrayName
-                                .join()
-                                .includes(this.selectedCDN.join()) == true
+                            // o.cdnArrayName.join().includes(this.selectedCDN.join()) == true
+                            o.cdnArrayName.find(cdnName => {
+                                return this.selectedCDN.includes(cdnName)
+                            })
                         ) {
                             this.filteredItems.push(o);
                         }
@@ -522,9 +535,10 @@ export default {
                     this.filterData.forEach((o, i) => {
                         if (
                             o.domain_group.length == 0 &&
-                            o.cdnArrayName
-                                .join()
-                                .includes(this.selectedCDN.join()) == true
+                            // o.cdnArrayName.join().includes(this.selectedCDN.join()) == true
+                            o.cdnArrayName.find(cdnName => {
+                                return this.selectedCDN.includes(cdnName)
+                            })
                         ) {
                             this.filteredItems.push(o);
                         }
@@ -534,9 +548,10 @@ export default {
                         o.cdnArrayName.sort();
                         if (
                             o.domain_group.length !== 0 &&
-                            o.cdnArrayName
-                                .join()
-                                .includes(this.selectedCDN.join()) == true &&
+                            // o.cdnArrayName.join().includes(this.selectedCDN.join()) == true
+                            o.cdnArrayName.find(cdnName => {
+                                return this.selectedCDN.includes(cdnName)
+                            }) &&
                             o.domain_group[0].name == this.selectedGroup
                         ) {
                             this.filteredItems.push(o);
@@ -703,7 +718,6 @@ export default {
                         } else {
                             this.batchStatus = false;
                             this.showGetResultBtn = false;
-                            this.initialApis();
                         }
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -835,6 +849,18 @@ export default {
                             }).bind(this)
                         );
                         // console.log(this.cdnProvider);
+
+                        // (傻眼貓咪) 過濾器 Select CDN 
+                        this.cdnArray = result.data;
+                        var nullArray = {
+                            name: "Not Set"
+                        };
+                        this.cdnArray.push(nullArray);
+                        this.cdnArray.forEach((o, i) => {
+                            o.disable = {};
+                            o.disable.status = false;
+                        });
+
                         return Promise.resolve();
                     }.bind(this)
                 )
@@ -844,7 +870,44 @@ export default {
                     }.bind(this)
                 );
         },
-        mapping() {
+        // mapping() {
+        //     this.rawData.forEach((o, i) => {
+        //         o.cdnArray = [];
+        //         o.cdnArrayName = [];
+        //         o.cdnArrayCname = [];
+
+        //         o.cdns.forEach((obj, idx) => {
+        //             o.cdnArrayName.push(
+        //                 this.cdnProviderMapping[obj.cdn_provider_id]
+        //             );
+        //             o.cdnArrayCname.push(obj.cname);
+        //             var cdn = {};
+        //             cdn.default = obj.default;
+        //             cdn.name = this.cdnProviderMapping[obj.cdn_provider_id];
+        //             o.cdnArray.push(cdn);
+        //         });
+        //     });
+        //     this.filterData = this.rawData;
+        //     this.filteredItems = this.filterData;
+        //     this.filterData.forEach((o, i) => {
+        //         o.permission_id = this.permission_id;
+        //         if (o.domain_group.length !== 0) {
+        //             this.groupArray.push(o.domain_group[0].name);
+        //         }
+        //         // o.cdnArray.forEach((obj, idx) => {
+        //         //     this.cdnArray.push(obj.name);
+        //         // });
+        //     });
+        //     var nullArray = {
+        //         name: "Not Set"
+        //     };
+        //     this.groupArray.push(nullArray);
+        //     // console.log(this.cdnArray);
+        //     // console.log(this.filterData, "mm");
+        // },
+        
+        // 調整使用新 API justin 2020-03-09
+        mappingDomainsBySql() {
             this.rawData.forEach((o, i) => {
                 o.cdnArray = [];
                 o.cdnArrayName = [];
@@ -864,20 +927,14 @@ export default {
             this.filterData = this.rawData;
             this.filteredItems = this.filterData;
             this.filterData.forEach((o, i) => {
-                o.permission_id = this.permission_id;
-                if (o.domain_group.length !== 0) {
-                    this.groupArray.push(o.domain_group[0].name);
+                if (o.group_name) {
+                    this.groupArray.push(o.group_name);
                 }
-                // o.cdnArray.forEach((obj, idx) => {
-                //     this.cdnArray.push(obj.name);
-                // });
             });
             var nullArray = {
                 name: "Not Set"
             };
             this.groupArray.push(nullArray);
-            // console.log(this.cdnArray);
-            // console.log(this.filterData, "mm");
         },
         getAllDomains: function() {
             var domain = {
@@ -885,16 +942,37 @@ export default {
                 permission_id: this.permission_id
             };
             return this.$store
-                .dispatch("domains/getAllDomains", domain)
+                // 調整使用新 API justin 2020-03-09
+                // .dispatch("domains/getAllDomains", domain)
+                .dispatch("domains/getAllDomainsBySql", domain)
                 .then(
                     function(result) {
+                        // 調整至原本 API 格式 justin 2020-03-09
+                        for (var i = 0; i < result.data.domains.length; i++) {
+                            var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
+                            var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
+                            var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
+                            var cdn_id= result.data.domains[i].cdn_id === null ? null : result.data.domains[i].cdn_id.split(",");
+                            result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
+                            result.data.domains[i].cdns = [];
+                            if (cdn_provider_id !== null) {
+                                for (var j = 0; j < cdn_provider_id.length; j++) {
+                                    result.data.domains[i].cdns.push({
+                                        "cdn_provider_id": parseInt(cdn_provider_id[j]),
+                                        "cname": cdn_cname[j],
+                                        "default": cdn_default[j] === "1" ? true : false,
+                                        "id": cdn_id[j],
+                                    });
+                                }
+                            }
+                        }
+
                         this.rawData = result.data.domains;
                         this.dnsPodDomain = result.data.dnsPodDomain;
                         this.rawData.forEach((o, i) => {
                             o.cname = o.cname + "." + this.dnsPodDomain;
                             o.index = i + 1;
                         });
-                        // console.log(this.rawData);
                         return Promise.resolve();
                     }.bind(this)
                 )
@@ -909,7 +987,9 @@ export default {
             Promise.all([this.getAllDomains(), this.getAllCdnProvider()])
                 .then(
                     function() {
-                        this.mapping();
+                        // 效能調適 justin 2020-03-09
+                        // this.mapping();
+                        this.mappingDomainsBySql();
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -946,7 +1026,14 @@ export default {
             }
         },
         addNewDomain: function() {
-            // console.log(this.domain, "add");
+            if(!this.cdn.cdn_provider_id){
+                this.$store.dispatch(
+                    'global/showSnackbarError',
+                    'Please select correct CDN Provider name'
+                )
+                return
+            }
+
             this.domain.user_group_id = this.$store.getters[
                 "account/accountGroupId"
             ]();
@@ -1005,6 +1092,7 @@ export default {
         deleteDomain() {
             // console.log(this.domain, "deleteApi");
             this.$store.dispatch("global/startLoading");
+            this.domain.permission_id = this.permission_id;
             this.$store
                 .dispatch("domains/deleteDomain", this.domain)
                 .then(
@@ -1040,6 +1128,8 @@ export default {
         clearBtn() {
             this.selectedCDN = [];
             this.selectedGroup = "";
+            this.searchText = "";
+            this.doSearchText = "";
             this.filterAction();
         },
         goToNextPage(data) {
@@ -1061,39 +1151,6 @@ export default {
             this.initialApis();
             this.selectedArray = new Array();
         },
-        getAllCdnProviders: function() {
-            // console.log(this.filterData);
-
-            this.$store.dispatch("global/startLoading");
-            this.$store
-                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
-                .then(
-                    function(result) {
-                        // console.log(result.data);
-                        this.cdnArray = result.data;
-                        var nullArray = {
-                            name: "Not Set"
-                        };
-                        this.cdnArray.push(nullArray);
-                        this.cdnArray.forEach((o, i) => {
-                            o.disable = {};
-                            o.disable.status = false;
-                        });
-
-                        // console.log(this.cdnArray);
-                        this.$store.dispatch("global/finishLoading");
-                    }.bind(this)
-                )
-                .catch(
-                    function(error) {
-                        this.$store.dispatch("global/finishLoading");
-                        this.$store.dispatch(
-                            "global/showSnackbarError",
-                            error.message
-                        );
-                    }.bind(this)
-                );
-        },
         checkPagePermission() {
             this.permission = JSON.parse(localStorage.getItem("permission"));
 
@@ -1109,7 +1166,6 @@ export default {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
         this.initialApis();
         this.getProcess();
-        this.getAllCdnProviders();
     }
 };
 </script>

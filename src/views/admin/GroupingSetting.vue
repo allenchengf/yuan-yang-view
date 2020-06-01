@@ -32,7 +32,9 @@
                             v-card-text
                                 v-form(ref="editForm")
                                     v-text-field(v-model="group.name" label="Group Name" type="text" name="name" :rules="[rules.required]")
-                                    v-select(:items="domainsData" label="Inherited settings by domain" item-text="name" item-value="id" @change="chooseDomain(group.domain_id)" v-model="group.domain_id" )
+                                    v-combobox(:items="domainsData" label="Inherited settings by domain" item-text="name" item-value="id" @change="chooseDomain(group.domain.id)" v-model="group.domain" hide-selected :rules="[rules.required]")
+                                        template(v-slot:no-data)
+                                            v-card-text No results matching 
                                     v-text-field(v-model="group.label" label="Note" type="text" name="label")
 
                             v-card-actions  
@@ -49,53 +51,53 @@
                                 v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
 </template>
 <script>
-import textFieldRules from "../../utils/textFieldRules.js";
+import textFieldRules from '../../utils/textFieldRules.js'
 
 export default {
     mixins: [textFieldRules],
 
     data() {
         return {
-            searchText: "",
+            searchText: '',
             filterData: [],
             headers: [
                 {
-                    text: "#",
-                    align: "left",
+                    text: '#',
+                    align: 'left',
                     sortable: false,
-                    width: "80px",
-                    value: "index"
+                    width: '80px',
+                    value: 'index'
                 },
                 {
-                    text: "Name",
-                    align: "left",
+                    text: 'Name',
+                    align: 'left',
                     sortable: true,
-                    value: "name"
+                    value: 'name'
                 },
                 {
-                    text: "Number of Domains",
-                    align: "left",
+                    text: 'Number of Domains',
+                    align: 'left',
                     sortable: false,
-                    value: "number"
+                    value: 'number'
                 },
                 {
-                    text: "Default CDN",
-                    align: "left",
+                    text: 'Default CDN',
+                    align: 'left',
                     sortable: false,
-                    value: "default_cdn_name"
+                    value: 'default_cdn_name'
                 },
                 {
-                    text: "Note",
-                    align: "left",
+                    text: 'Note',
+                    align: 'left',
                     sortable: false,
-                    value: "label"
+                    value: 'label'
                 },
                 {
-                    text: "Actions",
-                    align: "left",
-                    value: "action",
+                    text: 'Actions',
+                    align: 'left',
+                    value: 'action',
                     sortable: false,
-                    width: "150px"
+                    width: '150px'
                 }
             ],
             dialog: {
@@ -103,179 +105,235 @@ export default {
                 delete: false
             },
             group: {
-                domain_id: ""
+                domain_id: ''
             },
             editedIndex: -1,
             domainsData: [],
-            user_group_id: "",
+            user_group_id: '',
             permission: [],
             permission_id: 0
-        };
+        }
     },
     methods: {
         chooseDomain(value) {
-            // console.log(value);
+            this.group.domain_id = value
+            delete this.group.domain
         },
         getGroupData() {
             // this.filterData = this.filterData;
-            this.$store.dispatch("global/startLoading");
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("grouping/getAllGroups", this.permission_id)
+                .dispatch('grouping/getAllGroups', this.permission_id)
                 .then(
                     function(result) {
-                        this.filterData = result.data;
+                        this.filterData = result.data
                         // console.log(this.filterData, "allGroupData");
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
-                        this.$store.dispatch("global/finishLoading");
+                        )
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
-                );
+                )
         },
         addItem: function() {
-            this.$refs.editForm.reset();
-            this.editedIndex = -1;
-            this.dialog.edit = true;
-            this.type = "NewGroup";
+            this.$refs.editForm.reset()
+            this.editedIndex = -1
+            this.dialog.edit = true
+            this.type = 'NewGroup'
         },
         editItem: function(item, type) {
             // this.type = type;
-            if (type == "delete") {
+            if (type == 'delete') {
                 // console.log(item);
-                this.dialog.delete = true;
-                this.group = Object.assign({}, item);
+                this.dialog.delete = true
+                this.group = Object.assign({}, item)
             }
             // console.log(this.group);
         },
         updateGroup(type) {
-            if (type == "newGroup") {
-                this.addNewGroup();
-            } else if (type == "deleteGroup") {
+            if (type == 'newGroup') {
+                this.addNewGroup()
+            } else if (type == 'deleteGroup') {
                 //delete
-                this.deleteGroup();
+                this.deleteGroup()
             }
             // console.log(this.group, type);
         },
         addNewGroup() {
-            this.group.permission_id = this.permission_id;
+            this.group.permission_id = this.permission_id
+
+            if (!this.group.domain_id) {
+                this.$store.dispatch(
+                    'global/showSnackbarError',
+                    'Please select correct Domain'
+                )
+                return
+            }
+
             if (this.$refs.editForm.validate()) {
-                this.$store.dispatch("global/startLoading");
+                this.$store.dispatch('global/startLoading')
                 this.$store
-                    .dispatch("grouping/newGroup", this.group)
+                    .dispatch('grouping/newGroup', this.group)
                     .then(
                         function(result) {
                             this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Add group success!"
-                            );
-                            this.getAllDomains();
-                            this.getGroupData();
-                            this.closeEditDialog();
-                            this.$store.dispatch("global/finishLoading");
+                                'global/showSnackbarSuccess',
+                                'Add group success!'
+                            )
+                            this.getAllDomains()
+                            this.getGroupData()
+                            this.closeEditDialog()
+                            this.$store.dispatch('global/finishLoading')
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
                             this.$store.dispatch(
-                                "global/showSnackbarError",
+                                'global/showSnackbarError',
                                 error.message
-                            );
-                            this.$store.dispatch("global/finishLoading");
+                            )
+                            this.$store.dispatch('global/finishLoading')
                         }.bind(this)
-                    );
+                    )
             }
         },
         deleteGroup() {
-            this.group.permission_id = this.permission_id;
-            this.$store.dispatch("global/startLoading");
+            this.group.permission_id = this.permission_id
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("grouping/deleteGroup", this.group)
+                .dispatch('grouping/deleteGroup', this.group)
                 .then(
                     function(result) {
                         this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Delete group success!"
-                        );
-                        this.getAllDomains();
+                            'global/showSnackbarSuccess',
+                            'Delete group success!'
+                        )
+                        this.getAllDomains()
 
-                        this.getGroupData();
-                        this.closeEditDialog();
-                        this.$store.dispatch("global/finishLoading");
+                        this.getGroupData()
+                        this.closeEditDialog()
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
-                        this.$store.dispatch("global/finishLoading");
+                        )
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
-                );
+                )
         },
         closeEditDialog: function() {
-            this.dialog.delete = false;
-            this.dialog.edit = false;
+            this.dialog.delete = false
+            this.dialog.edit = false
         },
         getAllDomains: function() {
             var domain = {
                 id: this.user_group_id,
                 permission_id: this.permission_id
-            };
-            this.$store.dispatch("global/startLoading");
+            }
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("domains/getAllDomains", domain)
+                // .dispatch("domains/getAllDomains", domain)
+                .dispatch('domains/getAllDomainsBySql', domain)
                 .then(
                     function(result) {
+                        // 調整至原本 API 格式 justin 2020-03-09
+                        for (var i = 0; i < result.data.domains.length; i++) {
+                            var cdn_provider_id =
+                                result.data.domains[i].cdn_provider_id === null
+                                    ? null
+                                    : result.data.domains[
+                                          i
+                                      ].cdn_provider_id.split(',')
+                            var cdn_cname =
+                                result.data.domains[i].cdn_cname === null
+                                    ? null
+                                    : result.data.domains[i].cdn_cname.split(
+                                          ','
+                                      )
+                            var cdn_default =
+                                result.data.domains[i].cdn_default === null
+                                    ? null
+                                    : result.data.domains[i].cdn_default.split(
+                                          ','
+                                      )
+
+                            result.data.domains[i].domain_group = [
+                                { name: result.data.domains[i].group_name }
+                            ]
+                            result.data.domains[i].cdns = []
+                            if (cdn_provider_id !== null) {
+                                for (
+                                    var j = 0;
+                                    j < cdn_provider_id.length;
+                                    j++
+                                ) {
+                                    result.data.domains[i].cdns.push({
+                                        cdn_provider_id: parseInt(
+                                            cdn_provider_id[j]
+                                        ),
+                                        cname: cdn_cname[j],
+                                        default:
+                                            cdn_default[j] === '1'
+                                                ? true
+                                                : false
+                                    })
+                                }
+                            }
+                        }
+
                         this.domainsData = result.data.domains.filter(i => {
-                            return i.domain_group.length == 0;
-                        });
-                        this.$store.dispatch("global/finishLoading");
+                            return i.group_id === null
+                        })
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         goToNextPage(data) {
             this.$router.push({
-                name: "groupInfo",
+                name: 'groupInfo',
                 params: {
                     groupId: data.id
                     // info: data
                 }
-            });
+            })
         },
         checkPagePermission() {
-            this.permission = JSON.parse(localStorage.getItem("permission"));
+            this.permission = JSON.parse(localStorage.getItem('permission'))
 
             this.permission.forEach((o, i) => {
                 if (o.permission.name == this.$route.meta.sideBar) {
-                    this.permission_id = o.permission.id;
+                    this.permission_id = o.permission.id
                 }
-            });
+            })
             // console.log(this.permission_id);
         }
     },
     mounted() {
-        this.user_group_id = this.$store.getters["account/accountGroupId"]();
-        this.getGroupData();
-        this.getAllDomains();
+        this.user_group_id = this.$store.getters['account/accountGroupId']()
+        this.getGroupData()
+        this.getAllDomains()
     },
     created() {
-        this.checkPagePermission();
+        this.checkPagePermission()
     }
-};
+}
 </script>

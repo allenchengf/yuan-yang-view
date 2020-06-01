@@ -122,17 +122,40 @@ export default {
         formatNumber(value) {
             return Math.ceil(value);
         },
-        getAllDomains: function() {
-            this.$store.dispatch("global/startLoading");
+        // getAllDomains: function() {
+        //     this.$store.dispatch("global/startLoading");
+        //     var domain = {
+        //         id: this.user_group_id,
+        //         permission_id: 9
+        //     };
+        //     this.$store
+        //         .dispatch("domains/getAllDomains", domain)
+        //         .then(
+        //             function(result) {
+        //                 this.domainCount = result.data.domains.length;
+        //                 this.$store.dispatch("global/finishLoading");
+        //             }.bind(this)
+        //         )
+        //         .catch(
+        //             function(error) {
+        //                 this.$store.dispatch("global/finishLoading");
+        //                 this.$store.dispatch(
+        //                     "global/showSnackbarError",
+        //                     error.message
+        //                 );
+        //             }.bind(this)
+        //         );
+        // },
+        getAllDomainsCount: function() {
             var domain = {
                 id: this.user_group_id,
-                permission_id: 9
+                permission_id: 2
             };
-            this.$store
-                .dispatch("domains/getAllDomains", domain)
+            return this.$store
+                .dispatch("domains/getAllDomainsCount", 9)
                 .then(
                     function(result) {
-                        this.domainCount = result.data.domains.length;
+                        this.domainCount = result.data.total;
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
                 )
@@ -247,7 +270,8 @@ export default {
     },
     mounted() {
         this.user_group_id = this.$store.getters["account/accountGroupId"]();
-        this.getAllDomains();
+        // this.getAllDomains();
+        this.getAllDomainsCount();
         this.getAllCdnProviders();
         this.getAllGroups();
         this.getCdnProviderDetailInfo();
