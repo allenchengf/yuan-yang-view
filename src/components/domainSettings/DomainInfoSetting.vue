@@ -80,7 +80,9 @@
                     v-card-title.title {{formTitle}}
                     v-card-text
                         v-form(ref="editForm")
-                            v-select(:items="filteredCdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN(cdn.cdn_provider_id)" v-model="cdn.cdn_provider_id" v-if="editedIndex == -1")
+                            v-combobox(v-if="editedIndex == -1" :items="filteredCdnProvider" label="CDN Name" item-text="name" item-value="id" @change="chooseCDN" v-model="selectCDNProvider" )
+                                template(v-slot:no-data)
+                                    v-card-text No results matching 
                             v-text-field(v-model="cdn.cname" label="CDN CNAME" type="text" name="cname" :rules="[rules.domain]")
                     v-card-actions  
                         v-spacer
@@ -113,48 +115,48 @@
 
 </template>
 <script>
-import textFieldRules from "../../utils/textFieldRules.js";
-import _ from "lodash";
+import textFieldRules from '../../utils/textFieldRules.js'
+import _ from 'lodash'
 
 export default {
     mixins: [textFieldRules],
-    props: ["domain_id"],
+    props: ['domain_id'],
     data() {
         return {
             domain: {},
-            searchText: "",
-            dnsPodDomain: "",
+            searchText: '',
+            dnsPodDomain: '',
             headers: [
                 {
-                    text: "#",
-                    align: "left",
+                    text: '#',
+                    align: 'left',
                     sortable: false,
-                    width: "80px",
-                    value: "index"
+                    width: '80px',
+                    value: 'index'
                 },
                 {
-                    text: "Name",
-                    align: "left",
+                    text: 'Name',
+                    align: 'left',
                     sortable: true,
-                    value: "name"
+                    value: 'name'
                 },
                 {
-                    text: "CDN CNAME",
-                    align: "left",
+                    text: 'CDN CNAME',
+                    align: 'left',
                     sortable: true,
-                    value: "cname"
+                    value: 'cname'
                 },
                 {
-                    text: "Default",
-                    align: "left",
+                    text: 'Default',
+                    align: 'left',
                     sortable: false,
-                    value: "default"
+                    value: 'default'
                 },
                 {
-                    text: "Actions",
-                    align: "left",
+                    text: 'Actions',
+                    align: 'left',
                     sortable: false,
-                    width: "150px"
+                    width: '150px'
                 }
             ],
             filterData: [],
@@ -163,9 +165,10 @@ export default {
                 domain_group: []
             },
             domainEditedInfo: {},
+            selectCDNProvider: '',
             cdn: {
                 cdn_provider: {
-                    name: ""
+                    name: ''
                 }
             },
 
@@ -178,135 +181,135 @@ export default {
             },
             cdnProvider: [],
             cdnProviderMapping: {},
-            type: "",
+            type: '',
             editedIndex: -1,
             filteredCdnProvider: [],
             permission_id: 0
-        };
+        }
     },
     computed: {
         formTitle() {
-            return this.editedIndex === -1 ? "New CDN" : "Edit CDN";
+            return this.editedIndex === -1 ? 'New CDN' : 'Edit CDN'
         }
     },
     methods: {
-        chooseCDN(value) {
-            // console.log(value);
+        chooseCDN() {
+            this.cdn.cdn_provider_id = this.selectCDNProvider.id
         },
         removeBtn() {
             // console.log(this.domainInfo);
-            this.dialog.remove = true;
+            this.dialog.remove = true
         },
         removeFromGroup() {
-            this.domainInfo.groupId = this.domainInfo.domain_group[0].id;
-            this.domainInfo.permission_id = this.permission_id;
-            this.$store.dispatch("global/startLoading");
+            this.domainInfo.groupId = this.domainInfo.domain_group[0].id
+            this.domainInfo.permission_id = this.permission_id
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("grouping/deleteDomainFromGroup", this.domainInfo)
+                .dispatch('grouping/deleteDomainFromGroup', this.domainInfo)
                 .then(
                     function(result) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Remove domain from group success!"
-                        );
-                        this.getDomainInfo();
-                        this.initialApis();
-                        this.closeEditDialog();
+                            'global/showSnackbarSuccess',
+                            'Remove domain from group success!'
+                        )
+                        this.getDomainInfo()
+                        this.initialApis()
+                        this.closeEditDialog()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
-                        this.closeEditDialog();
+                        this.$store.dispatch('global/finishLoading')
+                        this.closeEditDialog()
 
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         getDomainInfo() {
             var domain = {
                 id: this.domain_id,
                 permission_id: this.permission_id
-            };
-            this.$store.dispatch("global/startLoading");
+            }
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("domains/getDomainById", domain)
+                .dispatch('domains/getDomainById', domain)
                 .then(
                     function(result) {
-                        this.domainInfo = result.data.domain;
+                        this.domainInfo = result.data.domain
                         // console.log(this.domainInfo, "domainInfo");
-                        this.dnsPodDomain = result.data.dnsPodDomain;
+                        this.dnsPodDomain = result.data.dnsPodDomain
                         // console.log(result.data, "inner");
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         getAllCdnProvider() {
             return this.$store
-                .dispatch("cdnProviders/getAllCdnProvider", this.permission_id)
+                .dispatch('cdnProviders/getAllCdnProvider', this.permission_id)
                 .then(
                     function(result) {
-                        this.cdnProvider = result.data;
+                        this.cdnProvider = result.data
 
                         // console.log(this.cdnProvider);
-                        return Promise.resolve();
+                        return Promise.resolve()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        return Promise.reject(error);
+                        return Promise.reject(error)
                     }.bind(this)
-                );
+                )
         },
         getCdnData() {
-            this.domainInfo.id = this.domain_id;
-            this.domainInfo.permission_id = this.permission_id;
+            this.domainInfo.id = this.domain_id
+            this.domainInfo.permission_id = this.permission_id
             return this.$store
-                .dispatch("cdns/getCDNsByDomainId", this.domainInfo)
+                .dispatch('cdns/getCDNsByDomainId', this.domainInfo)
                 .then(
                     function(result) {
-                        this.cdnData = result.data;
+                        this.cdnData = result.data
                         // console.log(this.cdnData);
-                        return Promise.resolve();
+                        return Promise.resolve()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        return Promise.reject(error);
+                        return Promise.reject(error)
                     }.bind(this)
-                );
+                )
         },
         initialApis: function() {
-            this.$store.dispatch("global/startLoading");
+            this.$store.dispatch('global/startLoading')
             Promise.all([this.getCdnData(), this.getAllCdnProvider()])
                 .then(
                     function() {
-                        this.mapping();
-                        this.$store.dispatch("global/finishLoading");
+                        this.mapping()
+                        this.$store.dispatch('global/finishLoading')
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         mapping() {
             // console.log(this.cdnProvider);
@@ -314,152 +317,159 @@ export default {
             this.cdnProvider.forEach((o, i) => {
                 this.cdnData.forEach((obj, idx) => {
                     if (o.id == obj.cdn_provider_id) {
-                        delete this.cdnProvider[i];
+                        delete this.cdnProvider[i]
                     }
-                });
-            });
+                })
+            })
 
-            this.filteredCdnProvider = _.compact(this.cdnProvider);
+            this.filteredCdnProvider = _.compact(this.cdnProvider)
         },
         addItem: function() {
-            this.$refs.editForm.reset();
-            this.editedIndex = -1;
-            this.dialog.editCDN = true;
-            this.type = "NewCdn";
+            this.$refs.editForm.reset()
+            this.editedIndex = -1
+            this.dialog.editCDN = true
+            this.type = 'NewCdn'
         },
         editItem: function(item, type) {
-            this.type = type;
-            if (type == "domainInfo") {
+            this.type = type
+            if (type == 'domainInfo') {
                 // console.log(item);
-                this.editedIndex = this.filterData.indexOf(item);
-                this.dialog.edit = true;
-                this.domainEditedInfo = Object.assign({}, item);
-            } else if (type == "changeDefault") {
+                this.editedIndex = this.filterData.indexOf(item)
+                this.dialog.edit = true
+                this.domainEditedInfo = Object.assign({}, item)
+            } else if (type == 'changeDefault') {
                 //changeDefault
-                this.dialog.changeDefault = true;
-                this.cdn = Object.assign({}, item);
-            } else if (type == "edit") {
+                this.dialog.changeDefault = true
+                this.cdn = Object.assign({}, item)
+            } else if (type == 'edit') {
                 // edit cname
-                this.editedIndex = this.cdnData.indexOf(item);
-                this.dialog.editCDN = true;
-                this.cdn = Object.assign({}, item);
+                this.editedIndex = this.cdnData.indexOf(item)
+                this.dialog.editCDN = true
+                this.cdn = Object.assign({}, item)
             } else {
                 //delete
-                this.dialog.delete = true;
-                this.cdn = Object.assign({}, item);
+                this.dialog.delete = true
+                this.cdn = Object.assign({}, item)
             }
         },
         updateDomain: function() {
             // console.log(this.domainInfo, "edit");
-            this.domainEditedInfo.permission_id = this.permission_id;
+            this.domainEditedInfo.permission_id = this.permission_id
             if (this.$refs.editDomainForm.validate()) {
-                this.$store.dispatch("global/startLoading");
+                this.$store.dispatch('global/startLoading')
                 this.$store
-                    .dispatch("domains/updateDomain", this.domainEditedInfo)
+                    .dispatch('domains/updateDomain', this.domainEditedInfo)
                     .then(
                         function(result) {
-                            this.$store.dispatch("global/finishLoading");
+                            this.$store.dispatch('global/finishLoading')
                             this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Update domain info success!"
-                            );
-                            this.getDomainInfo();
-                            this.$emit("childMethod");
-                            this.closeEditDialog();
+                                'global/showSnackbarSuccess',
+                                'Update domain info success!'
+                            )
+                            this.getDomainInfo()
+                            this.$emit('childMethod')
+                            this.closeEditDialog()
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
-                            this.$store.dispatch("global/finishLoading");
-                            this.closeEditDialog();
+                            this.$store.dispatch('global/finishLoading')
+                            this.closeEditDialog()
                             this.$store.dispatch(
-                                "global/showSnackbarError",
+                                'global/showSnackbarError',
                                 error.message
-                            );
+                            )
                         }.bind(this)
-                    );
+                    )
             }
         },
         updateCDN: function(type) {
             // console.log(type);
             // console.log(this.cdn, type);
-            this.cdn.domain_id = this.domain_id;
-            if (type == "newCDN" && this.type == "NewCdn") {
-                this.addNewCdn();
-            } else if (type == "newCDN" && this.type == "edit") {
-                this.changeCdnCname();
-            } else if (type == "changeDefault") {
-                this.changeDefaultCdnProvider();
+            this.cdn.domain_id = this.domain_id
+            if (type == 'newCDN' && this.type == 'NewCdn') {
+                this.addNewCdn()
+            } else if (type == 'newCDN' && this.type == 'edit') {
+                this.changeCdnCname()
+            } else if (type == 'changeDefault') {
+                this.changeDefaultCdnProvider()
             } else {
-                this.deleteCdn();
+                this.deleteCdn()
             }
         },
         addNewCdn() {
             // console.log(this.cdn);
-            this.cdn.permission_id = this.permission_id;
+            if (!this.cdn.cdn_provider_id) {
+                alert('Please select correct CDN Provider name')
+                this.selectCDNProvider = ''
+                return
+            }
+
+            this.cdn.permission_id = this.permission_id
+
             if (this.$refs.editForm.validate()) {
-                this.$store.dispatch("global/startLoading");
+                this.$store.dispatch('global/startLoading')
                 this.$store
-                    .dispatch("cdns/newCDN", this.cdn)
+                    .dispatch('cdns/newCDN', this.cdn)
                     .then(
                         function(result) {
                             this.$store.dispatch(
-                                "global/showSnackbarSuccess",
-                                "Add CDN success!"
-                            );
-                            this.initialApis();
-                            this.closeEditDialog();
-                            this.$store.dispatch("global/finishLoading");
+                                'global/showSnackbarSuccess',
+                                'Add CDN success!'
+                            )
+                            this.initialApis()
+                            this.closeEditDialog()
+                            this.$store.dispatch('global/finishLoading')
                         }.bind(this)
                     )
                     .catch(
                         function(error) {
                             this.$store.dispatch(
-                                "global/showSnackbarError",
+                                'global/showSnackbarError',
                                 error.message
-                            );
-                            this.$store.dispatch("global/finishLoading");
+                            )
+                            this.$store.dispatch('global/finishLoading')
                         }.bind(this)
-                    );
+                    )
             }
         },
         changeCdnCname() {
-            this.cdn.permission_id = this.permission_id;
-            this.$store.dispatch("global/startLoading");
+            this.cdn.permission_id = this.permission_id
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("cdns/updateCdnCname", this.cdn)
+                .dispatch('cdns/updateCdnCname', this.cdn)
                 .then(
                     function(result) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Change CDN cname success!"
-                        );
-                        this.initialApis();
-                        this.closeEditDialog();
+                            'global/showSnackbarSuccess',
+                            'Change CDN cname success!'
+                        )
+                        this.initialApis()
+                        this.closeEditDialog()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         changeDefaultCdnProvider() {
-            this.cdn.default = true;
-            this.dialog.changeDefault = false;
-            this.cdn.permission_id = this.permission_id;
+            this.cdn.default = true
+            this.dialog.changeDefault = false
+            this.cdn.permission_id = this.permission_id
             // this.$store.dispatch("global/startLoading");
             this.$store.dispatch(
-                "global/showSnackbarWarning",
-                "Changing default CDN provider!"
-            );
+                'global/showSnackbarWarning',
+                'Changing default CDN provider!'
+            )
             this.$store
-                .dispatch("cdns/updateDefaultCDN", this.cdn)
+                .dispatch('cdns/updateDefaultCDN', this.cdn)
                 .then(
                     function(result) {
                         // this.$store.dispatch("global/finishLoading");
@@ -467,84 +477,83 @@ export default {
                         //     "global/showSnackbarSuccess",
                         //     "Change default CDN provider success!"
                         // );
-                        this.initialApis();
-                        this.closeEditDialog();
+                        this.initialApis()
+                        this.closeEditDialog()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
         deleteCdn() {
             // console.log(this.cdn);
-            this.cdn.permission_id = this.permission_id;
-            this.$store.dispatch("global/startLoading");
+            this.cdn.permission_id = this.permission_id
+            this.$store.dispatch('global/startLoading')
             this.$store
-                .dispatch("cdns/deleteCDN", this.cdn)
+                .dispatch('cdns/deleteCDN', this.cdn)
                 .then(
                     function(result) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarSuccess",
-                            "Change default CDN provider success!"
-                        );
-                        this.initialApis();
-                        this.closeEditDialog();
+                            'global/showSnackbarSuccess',
+                            'Change default CDN provider success!'
+                        )
+                        this.initialApis()
+                        this.closeEditDialog()
                     }.bind(this)
                 )
                 .catch(
                     function(error) {
-                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch('global/finishLoading')
                         this.$store.dispatch(
-                            "global/showSnackbarError",
+                            'global/showSnackbarError',
                             error.message
-                        );
+                        )
                     }.bind(this)
-                );
+                )
         },
 
         closeEditDialog: function() {
             // console.log(this.type);
-            if (this.type == "domainInfo") {
-                this.dialog.edit = false;
-                this.getDomainInfo();
+            if (this.type == 'domainInfo') {
+                this.dialog.edit = false
+                this.getDomainInfo()
             } else {
-                this.dialog.editCDN = false;
-                this.dialog.changeDefault = false;
-                this.dialog.delete = false;
-                this.dialog.remove = false;
+                this.dialog.editCDN = false
+                this.dialog.changeDefault = false
+                this.dialog.delete = false
+                this.dialog.remove = false
                 this.cdn = {
                     cdn_provider: {
-                        name: ""
+                        name: ''
                     }
-                };
+                }
             }
         },
         checkPagePermission() {
-            this.permission = JSON.parse(localStorage.getItem("permission"));
+            this.permission = JSON.parse(localStorage.getItem('permission'))
 
             this.permission.forEach((o, i) => {
                 if (o.permission.name == this.$route.meta.sideBar) {
-                    this.permission_id = o.permission.id;
+                    this.permission_id = o.permission.id
                 }
-            });
+            })
         }
     },
     mounted() {
-        this.initialApis();
-        this.getDomainInfo();
+        this.initialApis()
+        this.getDomainInfo()
     },
     created() {
-        this.checkPagePermission();
+        this.checkPagePermission()
     }
-};
+}
 </script>
 <style lang="sass">
-
 </style>
