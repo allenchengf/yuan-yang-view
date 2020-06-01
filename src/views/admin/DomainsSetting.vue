@@ -354,7 +354,7 @@ export default {
             this.domainList = [];
             // console.log(this.filteredItems);
             this.filteredItems.forEach((o, i) => {
-                if (o.cdns.length > 1 && o.domain_group.length == 0) {
+                if (o.cdns.length > 1 && o.domain_group[0].name == null) {
                     o.cdns.forEach((obj, idx) => {
                         if (
                             obj.cdn_provider_id == this.wantDeleteCdn &&
@@ -952,7 +952,7 @@ export default {
                             var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
                             var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
                             var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
-
+                            var cdn_id= result.data.domains[i].cdn_id === null ? null : result.data.domains[i].cdn_id.split(",");
                             result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
                             result.data.domains[i].cdns = [];
                             if (cdn_provider_id !== null) {
@@ -961,6 +961,7 @@ export default {
                                         "cdn_provider_id": parseInt(cdn_provider_id[j]),
                                         "cname": cdn_cname[j],
                                         "default": cdn_default[j] === "1" ? true : false,
+                                        "id": cdn_id[j],
                                     });
                                 }
                             }
@@ -972,7 +973,6 @@ export default {
                             o.cname = o.cname + "." + this.dnsPodDomain;
                             o.index = i + 1;
                         });
-                        // console.log(this.rawData);
                         return Promise.resolve();
                     }.bind(this)
                 )
