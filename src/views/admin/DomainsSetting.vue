@@ -118,7 +118,10 @@
                                 v-card-title.title Please choose a CDN
                                 v-card-text
                                     v-flex(xs12 sm6 md3)
-                                        v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="id" v-model="wantDeleteCdn")
+                                        //- v-select(:items="cdnArray" label="Select CDN" item-text="name" item-value="id" v-model="wantDeleteCdn")
+                                        v-combobox(:items="cdnArray" label="Select CDN" item-text="name" item-value="id" v-model="wantDeleteCdn")
+                                            template(v-slot:no-data)
+                                                v-card-text No results matching 
                                 v-card-actions  
                                     v-spacer
                                     v-btn(color="grey" flat="flat" @click="closeDialog") Cancel
@@ -350,14 +353,18 @@ export default {
             this.step = 1;
         },
         chooseDomains() {
-            // console.log(this.wantDeleteCdn);
+            if(!this.wantDeleteCdn.id){
+                alert("Please select correct CDN Provider name")
+                this.wantDeleteCdn = ""
+                return
+            }
             this.domainList = [];
             // console.log(this.filteredItems);
             this.filteredItems.forEach((o, i) => {
                 if (o.cdns.length > 1 && o.domain_group[0].name == null) {
                     o.cdns.forEach((obj, idx) => {
                         if (
-                            obj.cdn_provider_id == this.wantDeleteCdn &&
+                            obj.cdn_provider_id == this.wantDeleteCdn.id &&
                             obj.default !== true
                         ) {
                             this.domainList.push(o);
@@ -395,7 +402,7 @@ export default {
                 domainInfo.domain_id = o.id;
                 domainInfo.permission_id = this.permission_id;
                 o.cdns.forEach((obj, idx) => {
-                    if (obj.cdn_provider_id == this.wantDeleteCdn) {
+                    if (obj.cdn_provider_id == this.wantDeleteCdn.id) {
                         domainInfo.id = obj.id;
                     }
                 });
