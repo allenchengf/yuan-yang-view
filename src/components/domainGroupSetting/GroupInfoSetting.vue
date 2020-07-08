@@ -721,8 +721,13 @@ export default {
             defaultCdnData.defaultCdnId = this.selectedCdnProvider;
             defaultCdnData.permission_id = this.permission_id;
 
+            this.$store.dispatch(
+                "global/showSnackbarWarning",
+                "Changing default CDN provider!"
+            );
+
             // console.log(defaultCdnData, "changeDefault");
-            this.$store.dispatch("global/startLoading");
+            // this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("grouping/changeGroupCdnProvider", defaultCdnData)
                 .then(
