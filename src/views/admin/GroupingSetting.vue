@@ -10,7 +10,7 @@
                         v-spacer
                         v-btn.my-0(color="primary" @click="addItem") Add Group
                         //- v-btn.my-0(color="primary" @click="reGetGroupData") reGetGroupData
-                        v-btn.my-0(color="primary" @click="getGroupData")
+                        //- v-btn.my-0(color="primary" @click="getGroupData")
                             v-icon refresh
                     v-divider
                     v-card-text
