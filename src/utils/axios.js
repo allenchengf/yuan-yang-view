@@ -26,7 +26,24 @@ axios.interceptors.response.use(
         return response;
     },
     error => {
-        // console.log(error.response);
+        if (error.response === undefined) {
+
+            store.dispatch(
+                "global/showSnackbarWarning",
+                "The server is busy, please refresh the page."
+            );
+
+            return Promise.reject({
+                response: {
+                    data: {
+                        message: "The server is busy, please refresh the page."
+                    }
+                },
+                request: {
+                    status: 400
+                }
+            });
+        }
 
         switch (error.response.status) {
             case 401:
