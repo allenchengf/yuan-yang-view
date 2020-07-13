@@ -25,9 +25,13 @@
                             //-     v-flex(v-for="(item,index) in cdnProvider" :key="item.name" )
                             //-         v-checkbox(:label="item.name" v-model="item.selected" readonly=true color="primary")
                         v-flex(sm5 md2)
+                            .text.font-weight-bold Status
+                        v-flex(sm5 md10)
+                            .text(:class="groupInfo.change_status ? 'red--text' : ''") {{groupInfo.change_status ? "Switching" : "Completed" }}
+                        v-flex(sm5 md2)
                             .text.font-weight-bold Default CDN Provider
-                        v-flex(sm5 md2)    
-                            v-select(:items="groupCdnProvider" item-text="name" item-value="name" @change="chooseCdnProvider(defaultCdnProvider)" v-model="defaultCdnProvider" :item-disabled="['disable', 'status']")
+                        v-flex(sm5 md3)    
+                            v-select(:items="groupCdnProvider" item-text="name" item-value="name" @change="chooseCdnProvider(defaultCdnProvider)" v-model="defaultCdnProvider" :item-disabled="['disable', 'status']" :disabled="groupInfo.change_status")
                             
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
                         v-card
@@ -721,8 +725,14 @@ export default {
             defaultCdnData.defaultCdnId = this.selectedCdnProvider;
             defaultCdnData.permission_id = this.permission_id;
 
+            this.$store.dispatch(
+                "global/showSnackbarWarning",
+                "Changing default CDN provider!"
+            );
+            this.groupInfo.change_status = true
+
             // console.log(defaultCdnData, "changeDefault");
-            this.$store.dispatch("global/startLoading");
+            // this.$store.dispatch("global/startLoading");
             this.$store
                 .dispatch("grouping/changeGroupCdnProvider", defaultCdnData)
                 .then(
@@ -732,6 +742,7 @@ export default {
                             "global/showSnackbarSuccess",
                             "Change group's default CDN provider success!"
                         );
+                        this.groupInfo.change_status = false
                         this.initialApis();
                         this.closeEditDialog();
                     }.bind(this)
@@ -744,6 +755,8 @@ export default {
                             "global/showSnackbarError",
                             error.message
                         );
+                        this.groupInfo.change_status = false
+
                     }.bind(this)
                 );
         },

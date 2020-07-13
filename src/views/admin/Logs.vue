@@ -129,20 +129,23 @@ export default {
                             if (o.changed_to.domain !== undefined) {
                                 o.changed_to["name"] = o.changed_to.domain;
                             }
-
+                            o.change_to = o.changed_to["name"];
                             break;
                         case "Update":
                             var changedTo = [];
                             changedTo = Object.keys(o.changed_to);
                             changedTo.forEach((obj, idx) => {
-                                o.changed_to[obj] =
+                                o.change_to = o.changed_to[obj] = 
                                     obj + " : " + o.changed_to[obj];
                             });
                             if (o.changed_from.domain !== undefined) {
                                 o.changed_from["name"] = o.changed_from.domain;
                             }
+                            o.change_from = o.changed_from['name'];
                             break;
                         case "Delete":
+                            o.change_from = o.changed_from['name'];
+                            o.change_to = o.changed_to['name'];
                             break;
                         default:
                             break;

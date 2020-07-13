@@ -14,13 +14,14 @@
                         v-layout(wrap)
                             v-flex(xs12 sm6 md4)
                                 v-text-field(v-model="searchText" append-icon="search" label="Search" single-line hide-details)
-                    h7-data-table(:headers="headers" :items="filterData" :loading="$store.state.global.isLoading" :search-text="searchText" :per-page="10" single-line)
+                    h7-data-table(:headers="headers" :items="filterData" :loading="loading" :search-text="searchText" :per-page="10" single-line)
                         template(slot="items" slot-scope="{props, index}")
                             td {{ index }}
                             td {{ props.item.name }}
                             td {{ props.item.domains.length }}
                             td {{ props.item.default_cdn_name }}
-                            td {{props.item.label}}
+                            td(:class="props.item.change_status ? 'red--text' : ''") {{ props.item.change_status ? "Switching" : "Completed" }}
+                            td {{ props.item.label }}
                             td
                                 v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
                                     v-icon(small) edit
@@ -54,6 +55,8 @@
 import textFieldRules from '../../utils/textFieldRules.js'
 
 export default {
+    name: 'grouping',
+
     mixins: [textFieldRules],
 
     data() {
@@ -87,6 +90,12 @@ export default {
                     value: 'default_cdn_name'
                 },
                 {
+                    text: 'Status',
+                    align: 'left',
+                    sortable: true,
+                    value: 'change_status'
+                },
+                {
                     text: 'Note',
                     align: 'left',
                     sortable: false,
@@ -100,6 +109,7 @@ export default {
                     width: '150px'
                 }
             ],
+            loading: true,
             dialog: {
                 edit: false,
                 delete: false
@@ -121,14 +131,15 @@ export default {
         },
         getGroupData() {
             // this.filterData = this.filterData;
-            this.$store.dispatch('global/startLoading')
-            this.$store
+            // this.$store.dispatch('global/startLoading')
+            return this.$store
                 .dispatch('grouping/getAllGroups', this.permission_id)
                 .then(
                     function(result) {
                         this.filterData = result.data
-                        // console.log(this.filterData, "allGroupData");
                         this.$store.dispatch('global/finishLoading')
+                        this.loading = false
+                        return Promise.resolve()
                     }.bind(this)
                 )
                 .catch(
@@ -137,7 +148,9 @@ export default {
                             'global/showSnackbarError',
                             error.message
                         )
+                        this.loading = false
                         this.$store.dispatch('global/finishLoading')
+                        return Promise.reject(error)
                     }.bind(this)
                 )
         },
@@ -325,12 +338,37 @@ export default {
                 }
             })
             // console.log(this.permission_id);
+        },
+        startTimer() {
+            const pathName = this.$router.currentRoute.name
+                .toString()
+                .toLocaleUpperCase()
+
+            if ('GROUPING' === pathName) {
+                setTimeout(
+                    function() {
+                        this.loading = true
+                        this.reGetGroupData()
+                    }.bind(this),
+                    5000
+                )
+            }
+        },
+        reGetGroupData() {
+            Promise.all([this.getGroupData()])
+                .then(
+                    function(value) {
+                        this.startTimer()
+                    }.bind(this)
+                )
+                .catch(function(error) {}.bind(this))
         }
     },
     mounted() {
         this.user_group_id = this.$store.getters['account/accountGroupId']()
         this.getGroupData()
         this.getAllDomains()
+        this.reGetGroupData()
     },
     created() {
         this.checkPagePermission()
