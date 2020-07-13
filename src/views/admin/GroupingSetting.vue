@@ -9,9 +9,6 @@
                         .subheading Grouping
                         v-spacer
                         v-btn.my-0(color="primary" @click="addItem") Add Group
-                        //- v-btn.my-0(color="primary" @click="reGetGroupData") reGetGroupData
-                        //- v-btn.my-0(color="primary" @click="getGroupData")
-                            v-icon refresh
                     v-divider
                     v-card-text
                         v-layout(wrap)
@@ -23,7 +20,7 @@
                             td {{ props.item.name }}
                             td {{ props.item.domains.length }}
                             td {{ props.item.default_cdn_name }}
-                            td {{ props.item.change_status ? "Switching" : "Completed" }}
+                            td(:class="props.item.change_status ? 'red--text' : ''") {{ props.item.change_status ? "Switching" : "Completed" }}
                             td {{ props.item.label }}
                             td
                                 v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
@@ -95,7 +92,7 @@ export default {
                 {
                     text: 'Status',
                     align: 'left',
-                    sortable: false,
+                    sortable: true,
                     value: 'change_status'
                 },
                 {
@@ -140,7 +137,6 @@ export default {
                 .then(
                     function(result) {
                         this.filterData = result.data
-                        // console.log(this.filterData, "allGroupData");
                         this.$store.dispatch('global/finishLoading')
                         this.loading = false
                         return Promise.resolve()

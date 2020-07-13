@@ -27,10 +27,10 @@
                         v-flex(sm5 md2)
                             .text.font-weight-bold Status
                         v-flex(sm5 md10)
-                            .text {{groupInfo.change_status ? "Switching" : "Completed" }}
+                            .text(:class="groupInfo.change_status ? 'red--text' : ''") {{groupInfo.change_status ? "Switching" : "Completed" }}
                         v-flex(sm5 md2)
                             .text.font-weight-bold Default CDN Provider
-                        v-flex(sm5 md2)    
+                        v-flex(sm5 md3)    
                             v-select(:items="groupCdnProvider" item-text="name" item-value="name" @change="chooseCdnProvider(defaultCdnProvider)" v-model="defaultCdnProvider" :item-disabled="['disable', 'status']" :disabled="groupInfo.change_status")
                             
                 v-dialog.edit-dialog(v-model="dialog.edit" max-width="460" persistent)
