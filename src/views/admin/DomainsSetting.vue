@@ -455,52 +455,62 @@ export default {
                 );
         },
         batchDeleteAction() {
-            var selectObject = [];
-            selectObject = this.selectedArray;
-            this.dialog.check = true;
             this.$store.dispatch("global/startLoading");
-            var domainName = [];
+
+            this.dialog.check = true;
             this.info = [];
             this.detailInfo = [];
-            this.selectedArray.forEach((o, i) => {
-                var data = {};
-                data.id = o.id;
-                data.permission_id = this.permission_id;
-                this.$store
-                    .dispatch("domains/deleteDomain", data)
-                    .then(
-                        function(result) {
-                            var detail = {};
-                            detail.domain_name = result.data.domain_name;
-                            var msg = [];
-                            msg.push("Success");
-                            detail.status = msg;
-                            domainName.push(detail);
-                            this.info = domainName;
-                            if (this.dialog.check == true) {
-                                this.detailInfo = this.info;
-                            }
-                            var selectArrayLength = 0;
-                            selectArrayLength = selectObject.length;
+            
+            this.closeEditDialog()
+            this.batchDeleteDomain()
+        },
+        batchDeleteDomain(selectedKey = 0){
+            if (!this.checkCurrentPage()) {
+                return
+            }
+            var data = {};
+            data.id = this.selectedArray[selectedKey].id;
+            data.permission_id = this.permission_id;
 
-                            if (selectArrayLength == this.info.length) {
-                                this.initialApis();
-                                this.selectedArray = new Array();
-                            }
-                        }.bind(this)
-                    )
-                    .catch(
-                        function(error) {
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
-                            this.$store.dispatch("global/finishLoading");
-                        }.bind(this)
-                    );
-            });
-            this.closeEditDialog();
-            // this.initialApis();
+            this.$store
+                .dispatch("domains/deleteDomain", data)
+                .then(
+                    function(result) {
+                        if (!this.checkCurrentPage()) {
+                            return
+                        }
+
+                        var detail = {};
+                        var msg = [];
+
+                        detail.domain_name = result.data.domain_name;
+                        msg.push("Success");
+                        detail.status = msg;
+                        this.info.push(detail);
+
+                        if (this.dialog.check == true) {
+                            this.detailInfo = this.info;
+                        }
+
+                        selectedKey++
+                        if(this.selectedArray.length === selectedKey){
+                            this.closeDialog()
+                            this.selectedArray = []
+                            this.$store.dispatch("global/finishLoading")
+                        }else{
+                            this.batchDeleteDomain(selectedKey)
+                        }
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.$store.dispatch("global/finishLoading");
+                    }.bind(this)
+                );
         },
         chooseCdnFilter() {
             // console.log(this.selectedCDN);
