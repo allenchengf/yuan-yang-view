@@ -159,6 +159,8 @@ import _ from "lodash";
 import { setTimeout } from "timers";
 
 export default {
+    name: 'DomainSetting',
+
     mixins: [textFieldRules, timeUtils],
 
     data() {
@@ -396,41 +398,61 @@ export default {
             // console.log(this.wantDeleteCdn);
             this.deleteCdn();
         },
-        deleteCdn() {
+        deleteCdn(index = 0) {
+            if (!this.checkCurrentPage()) {
+                return
+            }
+
             var domainInfo = {};
-            this.selectedArray.forEach((o, i) => {
-                domainInfo.domain_id = o.id;
-                domainInfo.permission_id = this.permission_id;
-                o.cdns.forEach((obj, idx) => {
-                    if (obj.cdn_provider_id == this.wantDeleteCdn.id) {
-                        domainInfo.id = obj.id;
-                    }
-                });
-                this.$store.dispatch("global/startLoading");
-                this.$store
-                    .dispatch("cdns/deleteCDN", domainInfo)
-                    .then(
-                        function(result) {
-                            // console.log(result.data);
-                            this.$store.dispatch("global/finishLoading");
+            var selectedDomain = this.selectedArray[index]
+
+            domainInfo.domain_id = selectedDomain.id;
+            domainInfo.permission_id = this.permission_id;
+            selectedDomain.cdns.forEach((obj, idx) => {
+                if (obj.cdn_provider_id == this.wantDeleteCdn.id) {
+                    domainInfo.id = obj.id;
+                }
+            });
+
+            this.$store.dispatch("global/startLoading");
+            this.$store
+                .dispatch("cdns/deleteCDN", domainInfo)
+                .then(
+                    function() {
+                        index++
+
+                        if (!this.checkCurrentPage()) {
+                            return
+                        }
+
+                        if(this.selectedArray.length === index){
+                            this.initialApis()
+
+                            this.closeDialog()
+
+                            this.selectedArray = []
+
                             this.$store.dispatch(
                                 "global/showSnackbarSuccess",
                                 "Quick delete CDN success!"
                             );
-                            this.initialApis();
-                            this.closeDialog();
-                        }.bind(this)
-                    )
-                    .catch(
-                        function(error) {
-                            this.$store.dispatch("global/finishLoading");
-                            this.$store.dispatch(
-                                "global/showSnackbarError",
-                                error.message
-                            );
-                        }.bind(this)
-                    );
-            });
+                            this.$store.dispatch("global/finishLoading")
+                        }else{
+                            this.deleteCdn(index)
+                        }
+                    }.bind(this)
+                )
+                .catch(
+                    function(error) {
+                        this.$store.dispatch("global/finishLoading");
+                        this.$store.dispatch(
+                            "global/showSnackbarError",
+                            error.message
+                        );
+                        this.selectedArray = []
+                        this.closeDialog()
+                    }.bind(this)
+                );
         },
         batchDeleteAction() {
             var selectObject = [];
@@ -1166,6 +1188,10 @@ export default {
                     this.permission_id = o.permission.id;
                 }
             });
+        },
+        checkCurrentPage(){
+            const componentName = this.$options.name.toString()
+            return componentName == 'DomainSetting'
         }
     },
     created() {
