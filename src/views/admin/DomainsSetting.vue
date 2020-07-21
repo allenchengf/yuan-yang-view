@@ -450,6 +450,7 @@ export default {
                             error.message
                         );
                         this.selectedArray = []
+                        this.closeDialog()
                     }.bind(this)
                 );
         },
