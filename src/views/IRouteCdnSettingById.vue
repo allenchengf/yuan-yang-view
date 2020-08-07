@@ -76,7 +76,7 @@
                         v-card-title.title {{formTitle}}
                         v-card-text {{formText}}
                             v-form(ref="editForm")
-                                v-select(:items="cdnProvider" label="CDN Provider" item-text="name" item-value="cdn_provider_id" @change="chooseCdnProvider(iRouteCDN.cdn.cdn_provider_id)" v-model="iRouteCDN.cdn.cdn_provider_id")
+                                v-select(:items="cdnProvider" label="CDN Provider" :item-text="changeSelectText" item-value="cdn_provider_id" @change="chooseCdnProvider(iRouteCDN.cdn.cdn_provider_id)" v-model="iRouteCDN.cdn.cdn_provider_id")
 
                         h7-data-table(:headers="headers" :items="selected" single-line v-if="editedIndex == -1" :per-page="5")
                             template(slot="items" slot-scope="{props, index}" ) 
@@ -238,9 +238,7 @@ export default {
         },
         formText() {
             return this.editedIndex === -1
-                ? "Which CDN Provider you want to change for this " +
-                      this.selected.length +
-                      " iRouteCDN?"
+                ? "Which CDN Provider you want to change for this " + this.selected.length + " iRouteCDN?"
                 : "Please choose a CDN Provider you want to change for this iRouteCDN.";
         }
     },
@@ -1172,6 +1170,9 @@ export default {
                 }
             });
             // console.log(this.permission_id);
+        },
+        changeSelectText(item){
+            return this.cdnProviderIdMapping[item.cdn_provider_id]
         }
     },
     mounted() {
