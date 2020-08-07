@@ -88,3 +88,24 @@ sudo docker run --name yuanyang \
 --restart=always \
 -d nginx
 ```
+
+
+## /home/ubuntu/xxx/conf/default.conf
+```
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    # listen 443 ssl default_server;
+    # listen [::]:443 ssl default_server;
+
+    # server_name _;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+```
