@@ -671,14 +671,10 @@ export default {
                             ];
                         });
 
-                        // this.cdnProviderItems = this.cdnProvider;
-
-                        // this.cdnProviderItems.unshift("All");
                         this.cdnProvider.forEach((o, i) => {
                             this.cdnProviderItems.push(o.name);
                         });
                         this.cdnProviderItems.unshift("All");
-                        // console.log(this.cdnProviderItems, "cdnProviderItems");
 
                         this.$store.dispatch("global/finishLoading");
                     }.bind(this)
@@ -767,7 +763,6 @@ export default {
             }
             // console.log(this.cdnProvider);
 
-            // this.cdnProviderItems = this.cdnProvider;
             if (this.cdnProvider !== undefined) {
                 this.cdnProvider.forEach((o, i) => {
                     this.cdnProviderItems.push(o.name);
@@ -775,7 +770,6 @@ export default {
                 this.cdnProviderItems.unshift("All");
             }
 
-            // console.log(this.cdnProviderItems, "cdnProviderItems");
         },
         getList() {
             // this.$store.dispatch("global/startLoading");
@@ -956,11 +950,9 @@ export default {
         },
         editItem(item) {
             this.iRouteCDN = Object.assign({}, item);
-            // console.log(this.iRouteCDN);
             if (this.$route.query.id !== undefined) {
                 this.cdnProvider = item.cdn_provider;
             } else {
-                // this.cdnProvider = this.cdnProviderItems.slice(1);
                 if (this.groupId !== undefined) {
                     this.iRouteCDN.groupId = this.groupId;
                 } else {
@@ -987,7 +979,8 @@ export default {
                     }
                     this.cdnProvider = arr1;
                 } else {
-                    this.cdnProvider = this.cdnProviderItems.slice(1);
+                    // 不明錯誤 勿用
+                    // this.cdnProvider = this.cdnProviderItems.slice(1);
                 }
             }
         },
