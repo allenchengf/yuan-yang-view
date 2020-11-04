@@ -15,7 +15,7 @@ export default {
                     (value != null && value.length == 6) ||
                     "Please enter 6-digit code.",
                 domain: value => {
-                    const pattern = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\.[a-zA-Z]{2,11}?$/;
+                    const pattern = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9]+\.[a-zA-Z]{2,11}?$/;
                     return pattern.test(value) || "Invalid Domain Name.";
                 },
                 email: value => {
