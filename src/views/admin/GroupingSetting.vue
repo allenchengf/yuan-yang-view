@@ -18,7 +18,8 @@
                         template(slot="items" slot-scope="{props, index}")
                             td {{ index }}
                             td {{ props.item.name }}
-                            td {{ props.item.domains.length }}
+                            //- need think
+                            td {{ props.item.domain_count }}
                             td {{ props.item.default_cdn_name }}
                             td(:class="props.item.change_status ? 'red--text' : ''") {{ props.item.change_status ? "Switching" : "Completed" }}
                             td {{ props.item.label }}
