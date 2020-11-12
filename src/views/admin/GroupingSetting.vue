@@ -24,7 +24,7 @@
                             td(:class="props.item.change_status ? 'red--text' : ''") {{ props.item.change_status ? "Switching" : "Completed" }}
                             td {{ props.item.label }}
                             td
-                                v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
+                                v-btn.ma-0(flat icon small color="primary" :to="{name: 'groupInfo', params:{groupId: props.item.id}}")
                                     v-icon(small) edit
                                 v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                     v-icon(small) delete
@@ -122,7 +122,8 @@ export default {
             domainsData: [],
             user_group_id: '',
             permission: [],
-            permission_id: 0
+            permission_id: 0,
+            refreshTimer: 15000 // ms
         }
     },
     methods: {
@@ -351,7 +352,7 @@ export default {
                         this.loading = true
                         this.reGetGroupData()
                     }.bind(this),
-                    5000
+                    this.refreshTimer
                 )
             }
         },
