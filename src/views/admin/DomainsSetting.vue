@@ -519,7 +519,6 @@ export default {
         },
         chooseGroupFilter() {
             // console.log(this.selectedGroup);
-
             this.filterAction();
         },
         chooseCDN() {
@@ -528,8 +527,8 @@ export default {
             delete this.cdn.cdn_provider
         },
         filterAction() {
-            console.log(this.filterData);
-            console.log(this.selectedCDN);
+            // console.log(this.filterData);
+            // console.log(this.selectedCDN);
             // console.log(this.selectedCDN.length, this.selectedGroup);
             if (this.selectedCDN.length !== 0 && this.selectedGroup == "") {
                 this.filteredItems = [];
@@ -991,8 +990,8 @@ export default {
                             var cdn_provider_id = result.data.domains[i].cdn_provider_id === null ? null : result.data.domains[i].cdn_provider_id.split(",");
                             var cdn_cname = result.data.domains[i].cdn_cname === null ? null : result.data.domains[i].cdn_cname.split(",");
                             var cdn_default = result.data.domains[i].cdn_default === null ? null : result.data.domains[i].cdn_default.split(",");
-                            var cdn_id= result.data.domains[i].cdn_id === null ? null : result.data.domains[i].cdn_id.split(",");
-                            result.data.domains[i].domain_group = [{name: result.data.domains[i].group_name}];
+                            var cdn_id = result.data.domains[i].cdn_id === null ? null : result.data.domains[i].cdn_id.split(",")
+                            result.data.domains[i].domain_group = result.data.domains[i].group_name ? [{name: result.data.domains[i].group_name}] : []
                             result.data.domains[i].cdns = [];
                             if (cdn_provider_id !== null) {
                                 for (var j = 0; j < cdn_provider_id.length; j++) {
