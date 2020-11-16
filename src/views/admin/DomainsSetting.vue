@@ -351,6 +351,7 @@ export default {
         },
         closeDialog() {
             this.dialog.batchDeleteCdn = false;
+            this.selectedArray = []
             this.wantDeleteCdn = "";
             this.step = 1;
         },
@@ -363,7 +364,7 @@ export default {
             this.domainList = [];
             // console.log(this.filteredItems);
             this.filteredItems.forEach((o, i) => {
-                if (o.cdns.length > 1 && o.domain_group[0].name == null) {
+                if (o.cdns.length > 1 && o.domain_group.length === 0 ) {
                     o.cdns.forEach((obj, idx) => {
                         if (
                             obj.cdn_provider_id == this.wantDeleteCdn.id &&
@@ -392,6 +393,7 @@ export default {
         },
         batchDeleteDomainCdns() {
             this.dialog.batchDeleteCdn = true;
+            this.selectedArray = []
         },
         batchDeleteCdnAction() {
             // console.log(this.selectedArray);
