@@ -54,7 +54,7 @@
                                 td {{props.item.domain_group.length !== 0? props.item.domain_group[0].name : ""}}
                                 td {{props.item.label}}
                                 td
-                                    v-btn.ma-0(flat icon small color="primary" @click="goToNextPage(props.item)")
+                                    v-btn.ma-0(flat icon small color="primary" :to="{name: 'DomainInfo', params:{domain_id: props.item.id, info: props.item}}")
                                         v-icon(small) edit
                                     v-btn.ma-0(flat icon small color="primary" @click="editItem(props.item, 'delete')")
                                         v-icon(small) delete

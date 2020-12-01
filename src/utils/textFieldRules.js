@@ -14,8 +14,13 @@ export default {
                 otp: value =>
                     (value != null && value.length == 6) ||
                     "Please enter 6-digit code.",
-                domain: value => {
-                    const pattern = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9]+\.[a-zA-Z]{2,11}?$/;
+                // 舊的驗證 domain
+                // domain: value => {
+                //     const pattern = /^(?!:\/\/)([a-zA-Z0-9-_]+\.)*[a-zA-Z0-9]+\.[a-zA-Z]{2,11}?$/;
+                //     return pattern.test(value) || "Invalid Domain Name.";
+                // },
+                domain: value=>{
+                    const pattern = /^([a-zA-Z0-9_-]+\.)*[a-zA-Z0-9_-]+\.[a-zA-Z]{2,11}?$/;
                     return pattern.test(value) || "Invalid Domain Name.";
                 },
                 email: value => {
