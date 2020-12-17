@@ -119,7 +119,7 @@
                     v-card-actions  
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                        v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')") Save
+                        v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')" :disabled='selectedArray.length <= 0') Save
             v-dialog.delete-dialog(v-model="dialog.delete" max-width="960" persistent)
                 v-card
                     v-card-title.title Delete Domain from {{groupInfo.name}}
