@@ -119,7 +119,7 @@
                     v-card-actions  
                         v-spacer
                         v-btn(color="grey" flat="flat" @click="closeEditDialog") Cancel
-                        v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')") Save
+                        v-btn(color="primary" flat="flat" @click="updateDomain('newDomain')" :disabled='selectedArray.length <= 0') Save
             v-dialog.delete-dialog(v-model="dialog.delete" max-width="960" persistent)
                 v-card
                     v-card-title.title Delete Domain from {{groupInfo.name}}
@@ -772,6 +772,7 @@ export default {
         },
         addNewDomain() {
             var selectObject = [];
+            this.innerSearchText = ''
             selectObject = this.selectedArray;
             this.info = [];
             this.detailInfo = [];
@@ -800,6 +801,7 @@ export default {
                             if (selectArrayLength == this.info.length) {
                                 this.initialApis();
                             }
+                            delete this.selectedArray[i]
                             // this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -861,6 +863,7 @@ export default {
         closeCheckDialog() {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
+            this.selectedDomains = []
             this.initialApis();
         },
         checkPagePermission() {
