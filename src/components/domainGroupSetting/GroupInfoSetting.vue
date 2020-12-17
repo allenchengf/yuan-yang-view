@@ -772,6 +772,7 @@ export default {
         },
         addNewDomain() {
             var selectObject = [];
+            this.innerSearchText = ''
             selectObject = this.selectedArray;
             this.info = [];
             this.detailInfo = [];
@@ -800,6 +801,7 @@ export default {
                             if (selectArrayLength == this.info.length) {
                                 this.initialApis();
                             }
+                            delete this.selectedArray[i]
                             // this.$store.dispatch("global/finishLoading");
                         }.bind(this)
                     )
@@ -861,6 +863,7 @@ export default {
         closeCheckDialog() {
             this.$store.dispatch("global/finishLoading");
             this.dialog.check = false;
+            this.selectedDomains = []
             this.initialApis();
         },
         checkPagePermission() {
