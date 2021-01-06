@@ -20,7 +20,7 @@ export default {
                 //     return pattern.test(value) || "Invalid Domain Name.";
                 // },
                 domain: value=>{
-                    const pattern = /^([a-zA-Z0-9_-]+\.)*[a-zA-Z0-9_-]+\.[a-zA-Z]{2,11}?$/;
+                    const pattern = /^([a-zA-Z0-9_-]+\.)*[a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]{2,25}?$/;
                     return pattern.test(value) || "Invalid Domain Name.";
                 },
                 email: value => {
